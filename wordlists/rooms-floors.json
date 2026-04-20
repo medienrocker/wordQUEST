@@ -1,0 +1,24 @@
+{
+  "title": "Haus & Stockwerke",
+  "description": "Räume im Haus und die Stockwerke – Grundwortschatz.",
+  "categories": {
+    "room":  "🏠 Räume",
+    "floor": "🏢 Stockwerke"
+  },
+  "words": [
+    { "en": "attic",           "de": "Dachboden",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_attic.png",          "cat": "room"  },
+    { "en": "bedroom",         "de": "Schlafzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bedroom.png",        "cat": "room"  },
+    { "en": "children's room", "de": "Kinderzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_childrens-room.png", "cat": "room"  },
+    { "en": "bathroom",        "de": "Badezimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bathroom.png",       "cat": "room"  },
+    { "en": "living room",     "de": "Wohnzimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_living-room.png",    "cat": "room"  },
+    { "en": "kitchen",         "de": "Küche",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_kitchen.png",        "cat": "room"  },
+    { "en": "dining room",     "de": "Esszimmer",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_dining-room.png",    "cat": "room"  },
+    { "en": "garden",          "de": "Garten",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garden.png",         "cat": "room"  },
+    { "en": "garage",          "de": "Garage",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garage.png",         "cat": "room"  },
+    { "en": "floors",          "de": "Stockwerke",   "emoji": "🏢",  "cat": "floor" },
+    { "en": "ground floor",    "de": "Erdgeschoss",  "emoji": "🏠",  "cat": "floor" },
+    { "en": "first floor",     "de": "erster Stock", "emoji": "1️⃣", "cat": "floor" },
+    { "en": "second floor",    "de": "zweiter Stock","emoji": "2️⃣", "cat": "floor" },
+    { "en": "third floor",     "de": "dritter Stock","emoji": "3️⃣", "cat": "floor" }
+  ]
+}
