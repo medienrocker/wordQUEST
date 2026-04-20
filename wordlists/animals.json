@@ -1,0 +1,18 @@
+{
+  "title": "Tiere",
+  "description": "Kleiner Demo-Datensatz, der zeigt, wie Bild-URLs statt Emojis verwendet werden können.",
+  "categories": {
+    "pet":  "🏠 Haustiere",
+    "wild": "🦁 Wildtiere"
+  },
+  "words": [
+    { "en": "cat",     "de": "Katze",    "img": "https://img.bildungssprit.de/wordquest/animals/wq_cat.png",      "cat": "pet"  },
+    { "en": "dog",     "de": "Hund",     "img": "https://img.bildungssprit.de/wordquest/animals/wq_dog.png",      "cat": "pet"  },
+    { "en": "rabbit",  "de": "Hase",     "img": "https://img.bildungssprit.de/wordquest/animals/wq_rabbit.png",   "cat": "pet"  },
+    { "en": "hamster", "de": "Hamster",  "img": "https://img.bildungssprit.de/wordquest/animals/wq_hamster.png",  "cat": "pet"  },
+    { "en": "lion",    "de": "Löwe",     "img": "https://img.bildungssprit.de/wordquest/animals/wq_lion.png",     "cat": "wild" },
+    { "en": "tiger",   "de": "Tiger",    "img": "https://img.bildungssprit.de/wordquest/animals/wq_tiger.png",    "cat": "wild" },
+    { "en": "elephant","de": "Elefant",  "img": "https://img.bildungssprit.de/wordquest/animals/wq_elephant.png", "cat": "wild" },
+    { "en": "giraffe", "de": "Giraffe",  "img": "https://img.bildungssprit.de/wordquest/animals/wq_giraffe.png",  "cat": "wild" }
+  ]
+}

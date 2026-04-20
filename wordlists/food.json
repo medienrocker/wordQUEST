@@ -1,0 +1,36 @@
+{
+  "title": "Obst & Gemüse",
+  "description": "Grundwortschatz Essen – Klasse 4",
+  "categories": {
+    "fruit":  "🍎 Früchte",
+    "veggie": "🥦 Gemüse"
+  },
+  "words": [
+    { "en": "apple",      "de": "Apfel",        "emoji": "🍎", "cat": "fruit"  },
+    { "en": "strawberry", "de": "Erdbeere",     "emoji": "🍓", "cat": "fruit"  },
+    { "en": "pear",       "de": "Birne",        "emoji": "🍐", "cat": "fruit"  },
+    { "en": "tomato",     "de": "Tomate",       "emoji": "🍅", "cat": "fruit"  },
+    { "en": "banana",     "de": "Banane",       "emoji": "🍌", "cat": "fruit"  },
+    { "en": "kiwi",       "de": "Kiwi",         "emoji": "🥝", "cat": "fruit"  },
+    { "en": "pineapple",  "de": "Ananas",       "emoji": "🍍", "cat": "fruit"  },
+    { "en": "cherry",     "de": "Kirsche",      "emoji": "🍒", "cat": "fruit"  },
+    { "en": "orange",     "de": "Orange",       "emoji": "🍊", "cat": "fruit"  },
+    { "en": "lemon",      "de": "Zitrone",      "emoji": "🍋", "cat": "fruit"  },
+    { "en": "plum",       "de": "Pflaume",      "emoji": "🍑", "cat": "fruit"  },
+    { "en": "watermelon", "de": "Wassermelone", "emoji": "🍉", "cat": "fruit"  },
+    { "en": "grape",      "de": "Traube",       "emoji": "🍇", "cat": "fruit"  },
+    { "en": "peach",      "de": "Pfirsich",     "emoji": "🍑", "cat": "fruit"  },
+    { "en": "raspberry",  "de": "Himbeere",     "emoji": "🫐", "cat": "fruit"  },
+    { "en": "blueberry",  "de": "Blaubeere",    "emoji": "🫐", "cat": "fruit"  },
+    { "en": "corn",       "de": "Mais",         "emoji": "🌽", "cat": "veggie" },
+    { "en": "pea",        "de": "Erbse",        "emoji": "🫛", "cat": "veggie" },
+    { "en": "onion",      "de": "Zwiebel",      "emoji": "🧅", "cat": "veggie" },
+    { "en": "pepper",     "de": "Paprika",      "emoji": "🫑", "cat": "veggie" },
+    { "en": "pumpkin",    "de": "Kürbis",       "emoji": "🎃", "cat": "veggie" },
+    { "en": "potato",     "de": "Kartoffel",    "emoji": "🥔", "cat": "veggie" },
+    { "en": "cucumber",   "de": "Gurke",        "emoji": "🥒", "cat": "veggie" },
+    { "en": "mushroom",   "de": "Pilz",         "emoji": "🍄", "cat": "veggie" },
+    { "en": "broccoli",   "de": "Brokkoli",     "emoji": "🥦", "cat": "veggie" },
+    { "en": "carrot",     "de": "Karotte",      "emoji": "🥕", "cat": "veggie" }
+  ]
+}

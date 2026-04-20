@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<!--
+  wordQUEST – Vokabeln spielend lernen
+  © 2026 Created by bildungssprit | Falk Szyba @medienrocker
+-->
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="Falk Szyba (@medienrocker) – bildungssprit" />
+  <meta name="copyright" content="© 2026 bildungssprit | Falk Szyba @medienrocker" />
+  <title>wordQUEST – Vokabeln spielend lernen</title>
+  <meta name="description" content="wordQUEST – Vokabeln spielend lernen mit Quiz, Memory, Scramble und Spelling Bee." />
+  <meta name="theme-color" content="#4caf50" />
+
+  <!-- Favicons / App Icons -->
+  <link rel="icon" type="image/png" sizes="any" href="wordQUEST_icon.png" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="wordQUEST_icon.png" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <!-- canvas-confetti via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<header>
+  <h1>
+    <img src="wordQUEST_icon.png" alt="" class="app-logo" width="72" height="72" />
+    <span>wordQUEST</span>
+  </h1>
+  <p>Vokabeln spielend lernen</p>
+</header>
+
+<div id="wordlist-bar">
+  <label for="wordlist-select">📚 Wortliste:</label>
+  <select id="wordlist-select" aria-label="Wortliste auswählen" disabled>
+    <option>Lade…</option>
+  </select>
+  <div id="wordlist-meta" aria-live="polite"></div>
+</div>
+
+<!-- Globaler Lernrichtungsschalter: bestimmt, welche Sprache als
+     Frage/Hinweis gezeigt und welche vom Lernenden produziert wird.
+     Wirkt auf Quiz, Memory, Scramble & Spelling zugleich. -->
+<div id="direction-bar" role="group" aria-label="Lernrichtung wählen">
+  <span class="dir-label">🎯 Lernrichtung:</span>
+  <div class="dir-group">
+    <button type="button" class="dir-btn" data-dir="de2en" aria-pressed="true" title="Deutsch sehen – Englisch lernen">
+      <span class="flag">🇩🇪</span><span class="arrow">→</span><span class="flag">EN</span>
+    </button>
+    <button type="button" class="dir-btn" data-dir="en2de" aria-pressed="false" title="Englisch sehen – Deutsch lernen">
+      <span class="flag">EN</span><span class="arrow">→</span><span class="flag">🇩🇪</span>
+    </button>
+  </div>
+</div>
+<div id="load-status" role="alert" hidden></div>
+
+<div id="score-bar">
+  <div class="score-item">⭐ Punkte: <span id="total-score">0</span></div>
+  <div class="score-item">🏆 Bestleistung: <span id="high-score">0</span></div>
+</div>
+
+<nav>
+  <button class="tab-btn active" data-tab="menu">🏠 Menü</button>
+  <button class="tab-btn" data-tab="quiz">❓ Quiz</button>
+  <button class="tab-btn" data-tab="memory">🃏 Memory</button>
+  <button class="tab-btn" data-tab="scramble">🔀 Scramble</button>
+  <button class="tab-btn" data-tab="spelling">✍️ Spelling</button>
+  <button class="tab-btn" data-tab="vocab">📚 Vokabeln</button>
+</nav>
+
+<!-- ══════════════ MENU ══════════════ -->
+<section id="section-menu" class="section active">
+  <h2 style="text-align:center; font-size:1.8rem; margin:10px 0 20px;">Wähle ein Spiel! 🎮</h2>
+  <div class="menu-grid">
+    <div class="menu-card c-blue" onclick="openTab('quiz')">
+      <span class="icon">❓</span>
+      <h3>Quiz</h3>
+      <p>Wähle die richtige Antwort</p>
+    </div>
+    <div class="menu-card c-purple" onclick="openTab('memory')">
+      <span class="icon">🃏</span>
+      <h3>Memory</h3>
+      <p>Finde zusammengehörige Paare</p>
+    </div>
+    <div class="menu-card c-orange" onclick="openTab('scramble')">
+      <span class="icon">🔀</span>
+      <h3>Word Scramble</h3>
+      <p>Bringe die Buchstaben in Ordnung</p>
+    </div>
+    <div class="menu-card c-red" onclick="openTab('spelling')">
+      <span class="icon">✍️</span>
+      <h3>Spelling Bee</h3>
+      <p>Schreibe das Wort</p>
+    </div>
+    <div class="menu-card c-yellow" onclick="openTab('vocab')">
+      <span class="icon">📚</span>
+      <h3>Vokabelliste</h3>
+      <p>Alle Wörter auf einen Blick</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ QUIZ ══════════════ -->
+<section id="section-quiz" class="section">
+  <div class="game-header">
+    <h2>❓ Quiz</h2>
+    <span class="game-badge badge-blue" id="quiz-counter">1 / 10</span>
+    <button class="btn btn-blue next-btn-inline" id="quiz-next-top" onclick="quizNext()" disabled>Weiter →</button>
+    <div class="feedback" id="quiz-feedback" aria-live="polite"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="quiz-progress" style="width:10%"></div></div>
+  <div class="card">
+    <div id="quiz-question"></div>
+    <div id="quiz-hint">Was ist das auf Englisch?</div>
+    <div id="quiz-choices"></div>
+  </div>
+  <div id="result-screen">
+    <div id="result-emoji"></div>
+    <div class="stars" id="result-stars"></div>
+    <div id="result-title"></div>
+    <div id="result-score"></div>
+    <button class="btn btn-green" onclick="startQuiz()">🔄 Nochmal spielen</button>
+    &nbsp;
+    <button class="btn btn-grey" onclick="openTab('menu')">🏠 Menü</button>
+  </div>
+</section>
+
+<!-- ══════════════ MEMORY ══════════════ -->
+<section id="section-memory" class="section">
+  <div class="game-header">
+    <h2>🃏 Memory</h2>
+    <span class="game-badge badge-purple" id="memory-pairs">0 / 8 Paare</span>
+  </div>
+  <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+    <span style="font-weight:700;">Versuche: <b id="memory-tries">0</b></span>
+    <span style="font-weight:700;">Zeit: <b id="memory-time">0:00</b></span>
+  </div>
+  <div id="memory-grid"></div>
+  <div style="text-align:center; margin-top:18px;">
+    <button class="btn btn-grey" onclick="startMemory(8)">🔄 Neu starten</button>
+    <button class="btn" style="background:var(--purple);color:white; margin-left:8px;" onclick="startMemory(12)">💪 12 Paare</button>
+  </div>
+</section>
+
+<!-- ══════════════ SCRAMBLE ══════════════ -->
+<section id="section-scramble" class="section">
+  <div class="game-header">
+    <h2>🔀 Word Scramble</h2>
+    <span class="game-badge badge-orange" id="scramble-counter">1 / 10</span>
+    <button class="btn btn-orange next-btn-inline" id="scramble-next-top" onclick="scrambleNext()" disabled>Weiter →</button>
+    <div class="feedback" id="scramble-feedback" aria-live="polite"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="scramble-progress" style="width:10%"></div></div>
+  <div class="card">
+    <div id="scramble-emoji"></div>
+    <div id="scramble-hint"></div>
+    <div id="scramble-display"></div>
+    <div id="answer-slots"></div>
+    <div id="letter-bank"></div>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="btn btn-grey" onclick="clearAnswer()">↩ Zurücksetzen</button>
+      <button class="btn btn-orange" onclick="checkScramble()" style="margin-left:8px;">✓ Prüfen</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SPELLING BEE ══════════════ -->
+<section id="section-spelling" class="section">
+  <div class="game-header">
+    <h2>✍️ Spelling Bee</h2>
+    <span class="game-badge badge-red" id="spelling-counter">1 / 10</span>
+    <button class="btn btn-red next-btn-inline" id="spelling-next-top" onclick="spellingNext()" disabled>Weiter →</button>
+    <div class="feedback" id="spelling-feedback" aria-live="polite"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="spelling-progress" style="width:10%"></div></div>
+  <div class="card">
+    <div id="spelling-emoji"></div>
+    <div id="spelling-german"></div>
+    <input type="text" id="spelling-input" placeholder="Englisches Wort eingeben..." autocomplete="off" autocorrect="off" spellcheck="false" />
+    <div style="text-align:center; margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-grey" onclick="showHint()">💡 Tipp</button>
+      <button class="btn btn-red" onclick="checkSpelling()">✓ Prüfen</button>
+    </div>
+    <div id="spelling-hint-text" style="text-align:center; color:#888; margin-top:10px; font-size:.95rem; min-height:22px;"></div>
+  </div>
+</section>
+
+<!-- ══════════════ VOCAB LIST ══════════════ -->
+<section id="section-vocab" class="section">
+  <h2 style="font-size:1.7rem; margin-bottom:14px;">📚 Alle Vokabeln</h2>
+  <div class="vocab-filter" id="vocab-filter"></div>
+  <div id="vocab-grid" class="vocab-grid"></div>
+</section>
+
+<!-- ══════════════ CREDITS ══════════════ -->
+<footer class="credits">
+  <a class="credits-logo" href="https://bildungssprit.de" target="_blank" rel="noopener" aria-label="bildungssprit.de">
+    <img src="https://img.bildungssprit.de/bildungssprit_logo.png" alt="bildungssprit Logo" loading="lazy" />
+  </a>
+  <span>
+    © 2026 Created by
+    <a href="https://bildungssprit.de" target="_blank" rel="noopener"><strong>bildungssprit</strong></a>
+    | Falk Szyba @medienrocker
+  </span>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════
+   wordQUEST – Application Script
+   © 2026 Created by bildungssprit | Falk Szyba @medienrocker
+═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let VOCAB = [];
+let CURRENT_WORDLIST = null;   // { file, title, description, categories, words }
+let WORDLIST_INDEX  = [];      // [{ file, title, description, count }]
+let LAST_TAB = 'menu';
+let VOCAB_FILTER = 'all';      // aktiver Kategorie-Filter in der Vokabel-Ansicht
+
+/* ─────────── Lernrichtung ───────────
+   'de2en' = Deutsch wird gezeigt, Englisch ist das Lernziel (Default).
+   'en2de' = Englisch wird gezeigt, Deutsch ist das Lernziel.
+   Eine einzige globale Variable steuert alle Spiele konsistent. */
+let LEARN_DIR = localStorage.getItem('wq.dir') === 'en2de' ? 'en2de' : 'de2en';
+
+/* Quelle (was der Lernende SIEHT) und Ziel (was er PRODUZIEREN soll). */
+function srcText(item) { return LEARN_DIR === 'de2en' ? item.de : item.en; }
+function tgtText(item) { return LEARN_DIR === 'de2en' ? item.en : item.de; }
+/* Menschlich lesbare Sprachnamen für Hinweistexte & Feedback. */
+function srcLangName() { return LEARN_DIR === 'de2en' ? 'Deutsch'   : 'Englisch'; }
+function tgtLangName() { return LEARN_DIR === 'de2en' ? 'Englisch'  : 'Deutsch';  }
+
+/* Palette für automatisch generierte Kategorie-Akzentfarben */
+const CAT_PALETTE = ['#ff9800', '#4caf50', '#2196f3', '#9c27b0', '#f44336', '#ffc107', '#00bcd4', '#795548'];
+
+/* ─────────── Growth-Mindset-Feedback ───────────
+   Kurze, variierende Phrasen statt "Falsch!" – fördert
+   Lernmotivation: Fehler als Lernchance, nicht als Urteil.
+   (Dweck, C.S. – Mindset; "the power of yet") */
+const PRAISE_PHRASES = [
+  '✨ Stark! +10',
+  '🎯 Genau! +10',
+  '💪 Klasse! +10',
+  '🌟 Top! +10',
+  '👏 Sauber! +10',
+  '🚀 Weiter so! +10'
+];
+const GROWTH_PHRASES = [
+  'Fast! Merk dir: ',
+  'Knapp daneben – es heißt: ',
+  "Gleich hast du's! Richtig: ",
+  'Noch nicht – es ist: ',
+  'Nochmal merken: ',
+  'Gut mitgedacht – richtig: '
+];
+function praiseMsg() {
+  return PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+}
+function growthMsg(answer) {
+  const tpl = GROWTH_PHRASES[Math.floor(Math.random() * GROWTH_PHRASES.length)];
+  return tpl + answer;
+}
+
+/* ─────────── small helpers ─────────── */
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function getRandom(arr, n) { return shuffle(arr).slice(0, n); }
+function celebrate() { confetti({ particleCount:120, spread:80, origin:{y:.6} }); }
+
+/* ─────────── visual helper (emoji / image / fallback) ─────────── */
+function visual(item, size) {
+  size = size || 'md';
+  if (!item) return '';
+  const alt = escapeHtml(item.de || item.en || '');
+  if (item.img) {
+    const src = escapeHtml(item.img);
+    return `<img class="word-visual word-visual-${size}" src="${src}" alt="${alt}" loading="lazy" onerror="handleImgError(this)">`;
+  }
+  if (item.emoji) {
+    return `<span class="word-visual word-visual-${size}">${escapeHtml(item.emoji)}</span>`;
+  }
+  // Fallback: erster Buchstabe in farbigem Kreis
+  const letter = (item.en || item.de || '?').trim().charAt(0).toUpperCase();
+  return `<span class="word-visual word-visual-${size} is-fallback">${escapeHtml(letter)}</span>`;
+}
+
+/* Aktiviert/deaktiviert den "Weiter →"-Button im Game-Header.
+   Der Button ist dauerhaft sichtbar: grau/disabled während einer
+   offenen Frage, in Spielfarbe/enabled nach der Antwort. */
+function setNextReady(game, ready) {
+  const top = document.getElementById(`${game}-next-top`);
+  if (top) top.disabled = !ready;
+}
+
+/* Wechselt die globale Lernrichtung und startet die aktive Section
+   frisch, damit das Spiel sofort in der neuen Richtung weiterläuft.
+   Auch der Spelling-Input-Platzhalter wird aktualisiert. */
+function setDirection(dir) {
+  if (dir !== 'de2en' && dir !== 'en2de') return;
+  if (dir === LEARN_DIR) return;
+  LEARN_DIR = dir;
+  localStorage.setItem('wq.dir', dir);
+  syncDirectionButtons();
+  updateSpellingPlaceholder();
+  rerunActiveSection();
+}
+
+function syncDirectionButtons() {
+  document.querySelectorAll('#direction-bar .dir-btn').forEach(b => {
+    const active = b.dataset.dir === LEARN_DIR;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function updateSpellingPlaceholder() {
+  const inp = document.getElementById('spelling-input');
+  if (!inp) return;
+  inp.placeholder = LEARN_DIR === 'de2en'
+    ? 'Englisches Wort eingeben...'
+    : 'Deutsches Wort eingeben...';
+}
+
+function handleImgError(imgEl) {
+  const sizeClass = Array.from(imgEl.classList).find(c => /^word-visual-(sm|md|lg)$/.test(c));
+  const size = sizeClass ? sizeClass.replace('word-visual-','') : 'md';
+  const label = (imgEl.alt || '?').trim().charAt(0).toUpperCase() || '?';
+  const span = document.createElement('span');
+  span.className = `word-visual word-visual-${size} is-fallback`;
+  span.textContent = label;
+  imgEl.replaceWith(span);
+}
+
+/* ═══════════════════════════════════════════════
+   WORDLIST LOADER
+═══════════════════════════════════════════════ */
+async function discoverWordlists() {
+  // 1) PHP-Endpoint (Plesk/Apache) — auto-discovery
+  try {
+    const r = await fetch('wordlists/index.php', { cache: 'no-store' });
+    if (r.ok) {
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      const txt = await r.text();
+      if (ct.includes('json') || txt.trim().startsWith('[')) {
+        const j = JSON.parse(txt);
+        if (Array.isArray(j) && j.length) return j;
+      }
+    }
+  } catch (_) { /* fallback */ }
+
+  // 2) Manifest-Fallback (statischer Host / lokaler Dev-Server)
+  const r = await fetch('wordlists/index.json', { cache: 'no-store' });
+  if (!r.ok) throw new Error('Weder wordlists/index.php noch wordlists/index.json erreichbar.');
+  const names = await r.json();
+  if (!Array.isArray(names)) throw new Error('wordlists/index.json ist kein Array.');
+
+  const metas = await Promise.all(names.map(async (n) => {
+    try {
+      const rr = await fetch('wordlists/' + n, { cache: 'no-store' });
+      if (!rr.ok) throw 0;
+      const d = await rr.json();
+      return {
+        file: n,
+        title: d.title || n.replace(/\.json$/i, ''),
+        description: d.description || '',
+        count: Array.isArray(d.words) ? d.words.length : 0
+      };
+    } catch {
+      return { file: n, title: n, description: '', count: 0 };
+    }
+  }));
+  return metas;
+}
+
+async function loadWordlist(file) {
+  const sel = document.getElementById('wordlist-select');
+  sel.disabled = true;
+  try {
+    const r = await fetch('wordlists/' + encodeURIComponent(file) + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error(`Datei "${file}" nicht geladen (HTTP ${r.status}).`);
+    const data = await r.json();
+
+    if (!data || !Array.isArray(data.words) || !data.words.length) {
+      throw new Error(`"${file}" enthält keine gültigen Wörter.`);
+    }
+
+    CURRENT_WORDLIST = {
+      file,
+      title: data.title || file,
+      description: data.description || '',
+      categories: data.categories && typeof data.categories === 'object' ? data.categories : {},
+      words: data.words
+    };
+
+    // Normalisieren: fehlende Felder tolerieren
+    VOCAB = data.words
+      .filter(w => w && typeof w === 'object' && w.en && w.de)
+      .map(w => ({
+        en:    String(w.en).trim(),
+        de:    String(w.de).trim(),
+        emoji: typeof w.emoji === 'string' && w.emoji.trim() ? w.emoji.trim() : null,
+        img:   typeof w.img   === 'string' && w.img.trim()   ? w.img.trim()   : null,
+        cat:   typeof w.cat   === 'string' && w.cat.trim()   ? w.cat.trim()   : 'default'
+      }));
+
+    if (!VOCAB.length) throw new Error(`"${file}" enthält keine verwertbaren Einträge (en + de fehlen).`);
+
+    localStorage.setItem('wq.lastList', file);
+    updateWordlistMeta();
+    hideError();
+    // aktive Section neu initialisieren, damit die neuen Daten sofort sichtbar sind
+    rerunActiveSection();
+  } catch (err) {
+    showError(err.message || String(err));
+    VOCAB = [];
+    CURRENT_WORDLIST = null;
+  } finally {
+    sel.disabled = false;
+  }
+}
+
+function updateWordlistMeta() {
+  const meta = document.getElementById('wordlist-meta');
+  if (!CURRENT_WORDLIST) { meta.textContent = ''; return; }
+  const n = VOCAB.length;
+  const parts = [`${n} Wörter`];
+  if (CURRENT_WORDLIST.description) parts.push(CURRENT_WORDLIST.description);
+  meta.textContent = parts.join(' · ');
+}
+
+function populateDropdown(list) {
+  const sel = document.getElementById('wordlist-select');
+  sel.innerHTML = '';
+  list.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.file;
+    opt.textContent = item.title + (item.count ? ` (${item.count})` : '');
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+}
+
+function showError(msg) {
+  const el = document.getElementById('load-status');
+  el.textContent = '⚠️ ' + msg;
+  el.hidden = false;
+}
+function hideError() {
+  const el = document.getElementById('load-status');
+  el.hidden = true;
+  el.textContent = '';
+}
+
+/* ═══════════════════════════════════════════════
+   SCORE
+═══════════════════════════════════════════════ */
+let totalScore = parseInt(localStorage.getItem('wq.score') || localStorage.getItem('fruitScore') || '0');
+let highScore  = parseInt(localStorage.getItem('wq.high')  || localStorage.getItem('fruitHigh')  || '0');
+
+function updateScoreBar() {
+  document.getElementById('total-score').textContent = totalScore;
+  document.getElementById('high-score').textContent  = highScore;
+}
+function addScore(pts) {
+  totalScore += pts;
+  if (totalScore > highScore) {
+    highScore = totalScore;
+    localStorage.setItem('wq.high', highScore);
+  }
+  localStorage.setItem('wq.score', totalScore);
+  updateScoreBar();
+  const el = document.getElementById('total-score');
+  el.classList.remove('animate__animated','animate__bounceIn');
+  void el.offsetWidth;
+  el.classList.add('animate__animated','animate__bounceIn');
+}
+updateScoreBar();
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+function openTab(name) {
+  LAST_TAB = name;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  const btn = document.querySelector('[data-tab="' + name + '"]');
+  if (btn) btn.classList.add('active');
+
+  if (!VOCAB.length && name !== 'menu') {
+    // Daten noch nicht geladen oder leer — zeige Hinweis in der Section
+    showEmptyState(name);
+    return;
+  }
+
+  if (name === 'quiz')    startQuiz();
+  if (name === 'scramble')startScramble();
+  if (name === 'spelling')startSpelling();
+  if (name === 'memory')  startMemory(8);
+  if (name === 'vocab')   renderVocab('all');
+}
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => openTab(btn.dataset.tab));
+});
+
+function rerunActiveSection() {
+  if (!VOCAB.length) return;
+  if (LAST_TAB === 'quiz')    startQuiz();
+  if (LAST_TAB === 'scramble')startScramble();
+  if (LAST_TAB === 'spelling')startSpelling();
+  if (LAST_TAB === 'memory')  startMemory(8);
+  if (LAST_TAB === 'vocab' || LAST_TAB === 'menu') renderVocab(VOCAB_FILTER);
+}
+
+function showEmptyState(name) {
+  const empty = `<div class="empty-state">📭 Keine Wortliste geladen. Wähle oben eine Wortliste aus.</div>`;
+  const sec = document.getElementById('section-' + name);
+  if (sec) {
+    // nur wenn noch kein eigener Inhalt generiert ist
+    const existing = sec.querySelector('.empty-state');
+    if (!existing) sec.insertAdjacentHTML('beforeend', empty);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════ */
+let quizItems, quizIdx, quizScore;
+
+function startQuiz() {
+  if (!VOCAB.length) return;
+  const pool = VOCAB.slice();
+  quizItems = shuffle(pool).slice(0, Math.min(10, pool.length));
+  quizIdx   = 0;
+  quizScore = 0;
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('result-screen').style.display = 'none';
+  document.querySelector('#section-quiz .card').style.display = '';
+  document.getElementById('quiz-feedback').textContent = '';
+  showQuizQuestion();
+}
+
+function showQuizQuestion() {
+  const item = quizItems[quizIdx];
+  document.getElementById('quiz-counter').textContent   = `${quizIdx+1} / ${quizItems.length}`;
+  document.getElementById('quiz-progress').style.width  = `${((quizIdx+1)/quizItems.length)*100}%`;
+  document.getElementById('quiz-question').innerHTML    = visual(item, 'lg');
+  document.getElementById('quiz-hint').innerHTML        =
+    `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`;
+  document.getElementById('quiz-feedback').textContent  = '';
+  setNextReady('quiz', false);
+
+  const others = VOCAB.filter(v => v !== item);
+  const distractors = getRandom(others, Math.min(3, others.length));
+  const choices = shuffle([item, ...distractors]);
+  const rightAnswer = tgtText(item);
+  const grid = document.getElementById('quiz-choices');
+  grid.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = tgtText(c);
+    btn.onclick = () => handleQuizAnswer(btn, c === item, rightAnswer);
+    grid.appendChild(btn);
+  });
+}
+
+function handleQuizAnswer(btn, correct, rightAnswer) {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === rightAnswer) b.classList.add('correct-ans');
+  });
+  const fb = document.getElementById('quiz-feedback');
+  if (correct) {
+    btn.classList.add('correct-ans');
+    fb.textContent = praiseMsg();
+    fb.className   = 'feedback correct';
+    addScore(10);
+    quizScore++;
+  } else {
+    btn.classList.add('wrong-ans');
+    fb.textContent = growthMsg(rightAnswer);
+    fb.className   = 'feedback wrong';
+  }
+  setNextReady('quiz', true);
+}
+
+function quizNext() {
+  quizIdx++;
+  if (quizIdx >= quizItems.length) {
+    showQuizResult();
+  } else {
+    showQuizQuestion();
+  }
+}
+
+function showQuizResult() {
+  document.querySelector('#section-quiz .card').style.display = 'none';
+  document.getElementById('quiz-feedback').textContent = '';
+  setNextReady('quiz', false);
+  const pct = quizScore / quizItems.length;
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  rs.classList.add('active');
+  document.getElementById('result-emoji').textContent = pct >= .8 ? '🏆' : pct >= .5 ? '😊' : '💪';
+  document.getElementById('result-stars').textContent = '⭐'.repeat(Math.round(pct * 5));
+  document.getElementById('result-title').textContent = pct >= .8 ? 'Super gemacht!' : pct >= .5 ? 'Gut gemacht!' : 'Weiter üben!';
+  document.getElementById('result-score').textContent = `${quizScore} von ${quizItems.length} richtig`;
+  if (pct >= .8) celebrate();
+}
+
+/* ═══════════════════════════════════════════════
+   MEMORY
+═══════════════════════════════════════════════ */
+let memCards = [], memFlipped = [], memMatched = 0, memTries = 0;
+let memTimer, memSeconds = 0;
+
+function startMemory(pairCount) {
+  if (!VOCAB.length) return;
+  clearInterval(memTimer);
+  memSeconds = 0;
+  memFlipped = [];
+  memMatched = 0;
+  memTries   = 0;
+
+  const maxPairs = VOCAB.length;
+  pairCount = Math.min(pairCount, maxPairs);
+
+  document.getElementById('memory-tries').textContent = '0';
+  document.getElementById('memory-time').textContent  = '0:00';
+  document.getElementById('memory-pairs').textContent = `0 / ${pairCount} Paare`;
+
+  const selected = getRandom(VOCAB, pairCount);
+  const tiles = [];
+  selected.forEach((v, i) => {
+    tiles.push({ id: i*2,   pairId: i, type:'visual', item: v });
+    tiles.push({ id: i*2+1, pairId: i, type:'word',   item: v });
+  });
+
+  memCards = shuffle(tiles);
+
+  const cols = pairCount <= 8 ? 4 : 6;
+  const grid = document.getElementById('memory-grid');
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.dataset.cols = cols;
+  grid.innerHTML = '';
+
+  memCards.forEach((tile, idx) => {
+    const div = document.createElement('div');
+    div.className  = 'mem-card';
+    div.dataset.idx = idx;
+    const back = tile.type === 'visual'
+      ? visual(tile.item, 'md')
+      : `<span>${escapeHtml(tgtText(tile.item))}</span>`;
+    div.innerHTML  = `<span class="front-icon">❓</span><span class="back">${back}</span>`;
+    div.onclick = () => flipCard(idx);
+    grid.appendChild(div);
+  });
+
+  memTimer = setInterval(() => {
+    memSeconds++;
+    const m = Math.floor(memSeconds/60);
+    const s = String(memSeconds%60).padStart(2,'0');
+    document.getElementById('memory-time').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function flipCard(idx) {
+  if (memFlipped.length === 2) return;
+  const el = document.querySelectorAll('.mem-card')[idx];
+  if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
+
+  el.classList.add('flipped', 'animate__animated', 'animate__flipInY');
+  memFlipped.push(idx);
+
+  if (memFlipped.length === 2) {
+    memTries++;
+    document.getElementById('memory-tries').textContent = memTries;
+    const [a, b] = memFlipped.map(i => memCards[i]);
+    if (a.pairId === b.pairId && a.type !== b.type) {
+      setTimeout(() => {
+        memFlipped.forEach(i => {
+          const e = document.querySelectorAll('.mem-card')[i];
+          e.classList.remove('flipped','animate__flipInY');
+          e.classList.add('matched','animate__animated','animate__pulse');
+        });
+        memFlipped = [];
+        memMatched++;
+        const total = memCards.length / 2;
+        document.getElementById('memory-pairs').textContent = `${memMatched} / ${total} Paare`;
+        addScore(15);
+        if (memMatched === total) {
+          clearInterval(memTimer);
+          celebrate();
+          setTimeout(() => alert(`🎉 Alle Paare gefunden!\nVersuche: ${memTries} | Zeit: ${document.getElementById('memory-time').textContent}`), 200);
+        }
+      }, 500);
+    } else {
+      setTimeout(() => {
+        memFlipped.forEach(i => {
+          const e = document.querySelectorAll('.mem-card')[i];
+          e.classList.remove('flipped','animate__animated','animate__flipInY');
+          e.classList.add('animate__animated','animate__shakeX');
+          setTimeout(() => e.classList.remove('animate__animated','animate__shakeX'), 600);
+        });
+        memFlipped = [];
+      }, 900);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   WORD SCRAMBLE
+═══════════════════════════════════════════════ */
+let scrambleItems, scrambleIdx, scrambleScore;
+let scrambleAnswer = [], scrambleShuffled = [];
+/* Map: letterIdx (0..N-1) → dom-index des zugehörigen .answer-slot
+   Nötig, weil das angezeigte Wort fixe Slots (Space, Apostroph) enthalten
+   kann, die nicht editierbar sind. */
+let scrambleSlotMap = [];
+
+/* Ein Zeichen gilt als "Buchstabe", wenn es ein Unicode-Letter ist.
+   So funktionieren auch Sonderzeichen wie é oder ß, falls irgendwann
+   in einer Wortliste vorhanden. */
+function isLetterChar(ch) {
+  return /\p{L}/u.test(ch);
+}
+
+function startScramble() {
+  if (!VOCAB.length) return;
+  scrambleItems = shuffle(VOCAB).slice(0, Math.min(10, VOCAB.length));
+  scrambleIdx   = 0;
+  scrambleScore = 0;
+  showScrambleQuestion();
+}
+
+function showScrambleQuestion() {
+  const item = scrambleItems[scrambleIdx];
+  const target = tgtText(item);
+  document.getElementById('scramble-counter').textContent  = `${scrambleIdx+1} / ${scrambleItems.length}`;
+  document.getElementById('scramble-progress').style.width = `${((scrambleIdx+1)/scrambleItems.length)*100}%`;
+  document.getElementById('scramble-emoji').innerHTML      = visual(item, 'md');
+  document.getElementById('scramble-hint').textContent     = `${srcLangName()}: ${srcText(item)}`;
+  document.getElementById('scramble-feedback').textContent = '';
+  setNextReady('scramble', false);
+
+  scrambleAnswer   = [];
+  const letters    = Array.from(target.toUpperCase()).filter(isLetterChar);
+  scrambleShuffled = shuffleLetters(letters);
+  renderScramble(target);
+}
+
+/* Garantiert, dass das Ergebnis nicht mit der Originalreihenfolge identisch
+   ist (bei > 1 Buchstabe). Akzeptiert und gibt ein Array zurück. */
+function shuffleLetters(letters) {
+  if (letters.length <= 1) return [...letters];
+  const original = letters.join('');
+  let out;
+  do { out = shuffle(letters); } while (out.join('') === original);
+  return out;
+}
+
+function renderScramble(word) {
+  const slots = document.getElementById('answer-slots');
+  slots.innerHTML = '';
+  scrambleSlotMap = [];
+
+  const chars = Array.from(word.toUpperCase());
+  chars.forEach((ch, i) => {
+    const slot = document.createElement('div');
+    if (isLetterChar(ch)) {
+      const letterIdx = scrambleSlotMap.length;
+      scrambleSlotMap.push(i);
+      slot.className = 'answer-slot';
+      slot.dataset.letterIdx = letterIdx;
+      slot.onclick = () => removeFromAnswer(letterIdx);
+    } else if (ch === ' ') {
+      slot.className = 'answer-slot gap';
+      slot.setAttribute('aria-hidden', 'true');
+    } else {
+      slot.className = 'answer-slot fixed';
+      slot.textContent = ch;
+    }
+    slots.appendChild(slot);
+  });
+
+  const bank = document.getElementById('letter-bank');
+  bank.innerHTML = '';
+  scrambleShuffled.forEach((letter, i) => {
+    const tile = document.createElement('button');
+    tile.className = 'letter-tile';
+    tile.textContent = letter;
+    tile.dataset.bankIdx = i;
+    tile.onclick = () => addToAnswer(i, letter, tile);
+    bank.appendChild(tile);
+  });
+}
+
+function addToAnswer(bankIdx, letter, tileEl) {
+  if (tileEl.classList.contains('used')) return;
+  const pos = scrambleAnswer.length;
+  if (pos >= scrambleSlotMap.length) return;
+  scrambleAnswer.push({ letter, bankIdx });
+  tileEl.classList.add('used');
+  const slot = document.querySelectorAll('.answer-slot')[scrambleSlotMap[pos]];
+  slot.textContent = letter;
+  slot.classList.add('filled');
+}
+
+function removeFromAnswer(letterIdx) {
+  if (letterIdx >= scrambleAnswer.length) return;
+  const removed = scrambleAnswer.splice(letterIdx);
+  removed.forEach(r => {
+    document.querySelectorAll('.letter-tile')[r.bankIdx].classList.remove('used');
+  });
+  const allSlots = document.querySelectorAll('.answer-slot');
+  for (let k = letterIdx; k < scrambleSlotMap.length; k++) {
+    const slot = allSlots[scrambleSlotMap[k]];
+    slot.textContent = '';
+    slot.classList.remove('filled');
+  }
+  scrambleAnswer.forEach((r, i) => {
+    const slot = allSlots[scrambleSlotMap[i]];
+    slot.textContent = r.letter;
+    slot.classList.add('filled');
+  });
+}
+
+function clearAnswer() {
+  scrambleAnswer = [];
+  document.querySelectorAll('.answer-slot').forEach(s => {
+    if (!s.classList.contains('fixed') && !s.classList.contains('gap')) {
+      s.textContent = '';
+      s.classList.remove('filled');
+    }
+  });
+  document.querySelectorAll('.letter-tile').forEach(t => t.classList.remove('used'));
+  document.getElementById('scramble-feedback').textContent = '';
+  document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents = '');
+}
+
+function checkScramble() {
+  const item     = scrambleItems[scrambleIdx];
+  const target   = tgtText(item);
+  const expected = Array.from(target.toUpperCase()).filter(isLetterChar).join('');
+  const answer   = scrambleAnswer.map(r => r.letter).join('');
+  const fb       = document.getElementById('scramble-feedback');
+  if (answer === expected) {
+    fb.textContent = praiseMsg();
+    fb.className   = 'feedback correct';
+    addScore(10); scrambleScore++;
+    celebrate();
+    setNextReady('scramble', true);
+    document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
+  } else if (answer.length < expected.length) {
+    fb.textContent = '💭 Noch ein paar Buchstaben …';
+    fb.className   = 'feedback info';
+  } else {
+    fb.textContent = growthMsg(target);
+    fb.className   = 'feedback wrong';
+    setNextReady('scramble', true);
+    document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
+  }
+}
+
+function scrambleNext() {
+  scrambleIdx++;
+  document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='');
+  if (scrambleIdx >= scrambleItems.length) {
+    alert(`🎉 Scramble beendet!\n${scrambleScore} von ${scrambleItems.length} richtig.`);
+    startScramble();
+  } else {
+    showScrambleQuestion();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SPELLING BEE
+═══════════════════════════════════════════════ */
+let spellingItems, spellingIdx, spellingScore;
+
+function startSpelling() {
+  if (!VOCAB.length) return;
+  spellingItems = shuffle(VOCAB).slice(0, Math.min(10, VOCAB.length));
+  spellingIdx   = 0;
+  spellingScore = 0;
+  showSpellingQuestion();
+}
+
+function showSpellingQuestion() {
+  const item = spellingItems[spellingIdx];
+  document.getElementById('spelling-counter').textContent  = `${spellingIdx+1} / ${spellingItems.length}`;
+  document.getElementById('spelling-progress').style.width = `${((spellingIdx+1)/spellingItems.length)*100}%`;
+  document.getElementById('spelling-emoji').innerHTML      = visual(item, 'lg');
+  document.getElementById('spelling-german').textContent   = `${srcLangName()}: ${srcText(item)}`;
+  const inp = document.getElementById('spelling-input');
+  inp.value     = '';
+  inp.className = '';
+  inp.disabled  = false;
+  updateSpellingPlaceholder();
+  inp.focus();
+  document.getElementById('spelling-feedback').textContent  = '';
+  document.getElementById('spelling-hint-text').textContent = '';
+  setNextReady('spelling', false);
+}
+
+document.getElementById('spelling-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkSpelling();
+});
+
+function showHint() {
+  const item = spellingItems[spellingIdx];
+  const target = tgtText(item);
+  const hint = target.slice(0,2) + '_'.repeat(Math.max(0, target.length - 2));
+  document.getElementById('spelling-hint-text').textContent = `Tipp: ${hint} (${target.length} Buchstaben)`;
+}
+
+/* Normalisierung für großzügigen Vergleich:
+   - Unicode-Normalform (é == é, auch wenn kombiniert vs. precomposed)
+   - Kleinschreibung
+   - Alles außer Buchstaben entfernen → Apostroph, Bindestrich, Leerzeichen
+     sind damit optional. "children's room" == "childrens room" == "diningroom".
+   Die korrekte Schreibweise wird im Feedback trotzdem angezeigt. */
+function normalizeSpelling(s) {
+  return String(s || '')
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[^\p{L}]/gu, '');
+}
+
+function checkSpelling() {
+  const item   = spellingItems[spellingIdx];
+  const inp    = document.getElementById('spelling-input');
+  const typed  = inp.value.trim();
+  const fb     = document.getElementById('spelling-feedback');
+
+  if (!typed) return;
+  inp.disabled = true;
+
+  const target        = tgtText(item);
+  const exactMatch    = typed.toLowerCase() === target.toLowerCase();
+  const tolerantMatch = normalizeSpelling(typed) === normalizeSpelling(target);
+
+  if (exactMatch) {
+    inp.className  = 'correct';
+    fb.textContent = praiseMsg();
+    fb.className   = 'feedback correct';
+    addScore(10); spellingScore++;
+    celebrate();
+  } else if (tolerantMatch) {
+    inp.className  = 'almost';
+    fb.textContent = `⚠️ Fast perfekt! Schreibweise: ${target}`;
+    fb.className   = 'feedback almost';
+    addScore(10); spellingScore++;
+    celebrate();
+  } else {
+    inp.className  = 'wrong';
+    fb.textContent = growthMsg(`"${target}"`);
+    fb.className   = 'feedback wrong';
+  }
+  setNextReady('spelling', true);
+}
+
+function spellingNext() {
+  spellingIdx++;
+  if (spellingIdx >= spellingItems.length) {
+    alert(`🐝 Spelling Bee beendet!\n${spellingScore} von ${spellingItems.length} richtig.`);
+    startSpelling();
+  } else {
+    showSpellingQuestion();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   VOCAB LIST (dynamische Kategorien)
+═══════════════════════════════════════════════ */
+function getCategories() {
+  const cats = [];
+  const seen = new Set();
+  VOCAB.forEach(v => {
+    const c = v.cat || 'default';
+    if (!seen.has(c)) { seen.add(c); cats.push(c); }
+  });
+  return cats;
+}
+
+function categoryLabel(cat) {
+  if (!CURRENT_WORDLIST) return cat;
+  return (CURRENT_WORDLIST.categories && CURRENT_WORDLIST.categories[cat]) || cat;
+}
+
+function categoryColor(cat) {
+  const cats = getCategories();
+  const idx = cats.indexOf(cat);
+  return CAT_PALETTE[idx % CAT_PALETTE.length];
+}
+
+function renderVocabFilters() {
+  const wrap = document.getElementById('vocab-filter');
+  const cats = getCategories();
+  const total = VOCAB.length;
+  let html = `<button class="filter-btn active" data-cat="all">🌈 Alle (${total})</button>`;
+  // Filter nur anzeigen, wenn es mehr als eine Kategorie gibt
+  if (cats.length > 1) {
+    cats.forEach(c => {
+      const label = escapeHtml(categoryLabel(c));
+      const count = VOCAB.filter(v => (v.cat || 'default') === c).length;
+      html += `<button class="filter-btn" data-cat="${escapeHtml(c)}">${label} (${count})</button>`;
+    });
+  }
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.onclick = () => filterVocab(btn.dataset.cat, btn);
+  });
+}
+
+function renderVocab(filter) {
+  VOCAB_FILTER = filter || 'all';
+  renderVocabFilters();
+  if (VOCAB_FILTER !== 'all') {
+    const active = document.querySelector(`.filter-btn[data-cat="${CSS.escape(VOCAB_FILTER)}"]`);
+    if (active) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      active.classList.add('active');
+    }
+  }
+  const grid = document.getElementById('vocab-grid');
+  const items = VOCAB_FILTER === 'all' ? VOCAB : VOCAB.filter(v => (v.cat || 'default') === VOCAB_FILTER);
+  grid.innerHTML = items.map(v => `
+    <div class="vocab-card" style="--cat-color:${categoryColor(v.cat || 'default')}">
+      <div class="v-visual">${visual(v, 'sm')}</div>
+      <div class="v-en">${escapeHtml(v.en)}</div>
+      <div class="v-de">${escapeHtml(v.de)}</div>
+    </div>`).join('');
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">Keine Wörter in dieser Kategorie.</div>`;
+  }
+}
+
+function filterVocab(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVocab(cat);
+}
+
+/* ═══════════════════════════════════════════════
+   BOOTSTRAP
+═══════════════════════════════════════════════ */
+document.getElementById('wordlist-select').addEventListener('change', (e) => {
+  loadWordlist(e.target.value);
+});
+
+/* Lernrichtungsschalter verdrahten + initialen Zustand anzeigen */
+document.querySelectorAll('#direction-bar .dir-btn').forEach(btn => {
+  btn.addEventListener('click', () => setDirection(btn.dataset.dir));
+});
+syncDirectionButtons();
+updateSpellingPlaceholder();
+
+(async function bootstrap() {
+  try {
+    WORDLIST_INDEX = await discoverWordlists();
+    if (!WORDLIST_INDEX.length) throw new Error('Keine Wortlisten im Ordner /wordlists/ gefunden.');
+    populateDropdown(WORDLIST_INDEX);
+
+    const lastFile = localStorage.getItem('wq.lastList');
+    const pick = WORDLIST_INDEX.find(x => x.file === lastFile) || WORDLIST_INDEX[0];
+    document.getElementById('wordlist-select').value = pick.file;
+    await loadWordlist(pick.file);
+  } catch (err) {
+    console.error(err);
+    const sel = document.getElementById('wordlist-select');
+    sel.innerHTML = '<option>– keine Listen –</option>';
+    sel.disabled = true;
+    showError(err.message || 'Unbekannter Fehler beim Laden der Wortlisten.');
+  }
+})();
+</script>
+</body>
+</html>
+

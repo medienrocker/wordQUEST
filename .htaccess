@@ -1,0 +1,22 @@
+# wordQUEST – Apache/Plesk config
+
+# MIME-Types
+AddType application/json .json
+
+# Kein Directory-Listing für Root
+Options -Indexes
+
+# Kurzes Caching für die HTML-Shell, lange Cache für Fonts/Libs
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.json$">
+    Header set Cache-Control "no-store"
+  </FilesMatch>
+</IfModule>
+
+# Gzip für Text-Assets
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>

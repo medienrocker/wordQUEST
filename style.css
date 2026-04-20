@@ -1,0 +1,1201 @@
+/* ═══════════════════════════════════════════════
+       wordQUEST – Stylesheet
+       © 2026 Created by bildungssprit | Falk Szyba @medienrocker
+    ═══════════════════════════════════════════════ */
+:root {
+    --green: #4caf50;
+    --lime: #8bc34a;
+    --orange: #ff9800;
+    --red: #f44336;
+    --blue: #2196f3;
+    --purple: #9c27b0;
+    --yellow: #ffc107;
+    --bg: #f0faf0;
+    --card: #ffffff;
+    --text: #2e2e2e;
+    --radius: 18px;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ─── HEADER ─── */
+header {
+    background: linear-gradient(135deg, var(--green), var(--lime));
+    color: white;
+    text-align: center;
+    padding: 28px 20px 20px;
+    position: relative;
+}
+
+header h1 {
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 900;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+}
+
+header .app-logo {
+    width: clamp(48px, 8vw, 72px);
+    height: clamp(48px, 8vw, 72px);
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .25));
+    animation: logo-pop .6s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes logo-pop {
+    0% {
+        transform: scale(.4) rotate(-12deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    header .app-logo {
+        animation: none;
+    }
+}
+
+header p {
+    font-size: 1.1rem;
+    margin-top: 6px;
+    opacity: .9;
+}
+
+/* ─── WORDLIST BAR ─── */
+#wordlist-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eef0ea;
+    flex-wrap: wrap;
+    font-weight: 700;
+}
+
+#wordlist-bar label {
+    color: #555;
+}
+
+#wordlist-select {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 50px;
+    border: 2px solid var(--green);
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+    min-width: 220px;
+    max-width: 100%;
+}
+
+#wordlist-select:focus-visible {
+    outline: 3px solid var(--lime);
+    outline-offset: 2px;
+}
+
+#wordlist-select:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+#wordlist-meta {
+    flex-basis: 100%;
+    text-align: center;
+    color: #888;
+    font-weight: 500;
+    font-size: .9rem;
+    margin-top: 2px;
+}
+
+/* ─── LERNRICHTUNGS-SCHALTER ───
+   Zwei-Zustand-Segmented-Control unterhalb der Wortliste.
+   Bewusst klein & farblich zurückhaltend, damit er nicht
+   mit dem primären Wortlisten-Dropdown konkurriert. */
+#direction-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px 10px;
+    background: #fff;
+    border-bottom: 1px solid #eef0ea;
+    flex-wrap: wrap;
+    font-weight: 700;
+}
+
+#direction-bar .dir-label {
+    color: #555;
+}
+
+#direction-bar .dir-group {
+    display: inline-flex;
+    gap: 0;
+    padding: 3px;
+    background: #f4f5f0;
+    border-radius: 50px;
+    border: 1px solid #e5e7df;
+}
+
+#direction-bar .dir-btn {
+    font-family: 'Nunito', sans-serif;
+    font-size: .95rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .2s, color .2s, box-shadow .2s;
+}
+
+#direction-bar .dir-btn:hover {
+    color: var(--text);
+}
+
+#direction-bar .dir-btn.active {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, .35);
+}
+
+#direction-bar .dir-btn .flag {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+#direction-bar .dir-btn .arrow {
+    opacity: .8;
+    font-weight: 900;
+}
+
+#direction-bar .dir-btn:focus-visible {
+    outline: 3px solid var(--lime);
+    outline-offset: 2px;
+}
+
+#load-status[hidden] {
+    display: none;
+}
+
+#load-status {
+    background: #ffebee;
+    color: var(--red);
+    padding: 10px 18px;
+    text-align: center;
+    font-weight: 700;
+}
+
+/* ─── SCORE BAR ─── */
+#score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    background: white;
+    padding: 10px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.score-item span {
+    color: var(--green);
+    font-size: 1.25rem;
+}
+
+/* ─── NAV TABS ─── */
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 16px 10px;
+}
+
+.tab-btn {
+    background: white;
+    border: 3px solid transparent;
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .1);
+}
+
+.tab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .15);
+}
+
+.tab-btn.active {
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.tab-btn[data-tab="menu"] {
+    border-color: var(--green);
+}
+
+.tab-btn[data-tab="quiz"] {
+    border-color: var(--blue);
+}
+
+.tab-btn[data-tab="memory"] {
+    border-color: var(--purple);
+}
+
+.tab-btn[data-tab="scramble"] {
+    border-color: var(--orange);
+}
+
+.tab-btn[data-tab="spelling"] {
+    border-color: var(--red);
+}
+
+.tab-btn[data-tab="vocab"] {
+    border-color: var(--yellow);
+    color: #555;
+}
+
+.tab-btn.active[data-tab="menu"] {
+    background: var(--green);
+}
+
+.tab-btn.active[data-tab="quiz"] {
+    background: var(--blue);
+}
+
+.tab-btn.active[data-tab="memory"] {
+    background: var(--purple);
+}
+
+.tab-btn.active[data-tab="scramble"] {
+    background: var(--orange);
+}
+
+.tab-btn.active[data-tab="spelling"] {
+    background: var(--red);
+}
+
+.tab-btn.active[data-tab="vocab"] {
+    background: var(--yellow);
+    color: #333;
+}
+
+/* ─── SECTIONS ─── */
+.section {
+    display: none;
+    padding: 16px;
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.section.active {
+    display: block;
+}
+
+/* ─── CREDITS FOOTER ─── */
+.credits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    text-align: center;
+    padding: 18px 16px 28px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    opacity: 0.9;
+}
+
+.credits a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+}
+
+.credits a:hover {
+    color: var(--green);
+}
+
+.credits-logo {
+    display: inline-flex;
+    align-items: center;
+    border-bottom: none;
+    transition: transform 0.2s ease;
+}
+
+.credits-logo:hover {
+    transform: scale(1.08);
+}
+
+.credits-logo img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: block;
+}
+
+/* ─── MENU GRID ─── */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 10px 0 30px;
+}
+
+.menu-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    border: 4px solid transparent;
+    transition: all .25s;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+}
+
+.menu-card .icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.menu-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.menu-card p {
+    font-size: .88rem;
+    color: #666;
+    margin-top: 6px;
+}
+
+.menu-card.c-blue {
+    border-color: var(--blue);
+}
+
+.menu-card.c-purple {
+    border-color: var(--purple);
+}
+
+.menu-card.c-orange {
+    border-color: var(--orange);
+}
+
+.menu-card.c-red {
+    border-color: var(--red);
+}
+
+.menu-card.c-yellow {
+    border-color: var(--yellow);
+}
+
+.menu-card.c-blue:hover {
+    background: #e3f2fd;
+}
+
+.menu-card.c-purple:hover {
+    background: #f3e5f5;
+}
+
+.menu-card.c-orange:hover {
+    background: #fff3e0;
+}
+
+.menu-card.c-red:hover {
+    background: #ffebee;
+}
+
+.menu-card.c-yellow:hover {
+    background: #fffde7;
+}
+
+/* ─── GAME HEADER ─── */
+.game-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.game-header h2 {
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.game-badge {
+    padding: 5px 16px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: .9rem;
+    color: white;
+}
+
+.badge-blue {
+    background: var(--blue);
+}
+
+.badge-purple {
+    background: var(--purple);
+}
+
+.badge-orange {
+    background: var(--orange);
+}
+
+.badge-red {
+    background: var(--red);
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, .2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-green {
+    background: var(--green);
+    color: white;
+}
+
+.btn-blue {
+    background: var(--blue);
+    color: white;
+}
+
+.btn-orange {
+    background: var(--orange);
+    color: white;
+}
+
+.btn-red {
+    background: var(--red);
+    color: white;
+}
+
+.btn-grey {
+    background: #e0e0e0;
+    color: #555;
+}
+
+/* ─── PROGRESS BAR ─── */
+.progress-wrap {
+    background: #e0e0e0;
+    border-radius: 50px;
+    height: 12px;
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, var(--green), var(--lime));
+    transition: width .4s ease;
+}
+
+/* ─── FEEDBACK ─── */
+.feedback {
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    min-height: 40px;
+    margin: 12px 0;
+}
+
+.feedback.correct {
+    color: var(--green);
+}
+
+.feedback.wrong {
+    color: var(--red);
+}
+
+/* Feedback displayed inline within a game header (next to title/counter).
+   Layout-Idee: `Weiter`-Button klebt am rechten Rand (via `order`),
+   die Feedback-Pille schwebt mittig im freien Raum zwischen Badge und
+   Button – das erreichen die beidseitigen `auto`-Margins.
+   So bleibt der Button ortsfest, egal ob die Pille leer oder gefüllt ist. */
+.game-header .feedback {
+    order: 1;
+    margin: 0 auto;
+    min-height: 0;
+    font-size: 1rem;
+    padding: 6px 14px;
+    border-radius: 50px;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+/* "Weiter →"-Button direkt im Game-Header (zwischen Badge und
+   Feedback-Pill). Dauerhaft sichtbar: wird zu Beginn einer Frage
+   disabled (grau), nach der Antwort enabled (farbig). So weiß der
+   User jederzeit, wo der nächste Schritt hingeht. */
+.game-header .next-btn-inline {
+    order: 2;
+    padding: 10px 24px;
+    margin: 0;
+    font-size: 1rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .18);
+    transition: background .2s, color .2s, opacity .2s, transform .2s;
+}
+.game-header .next-btn-inline:disabled {
+    background: #d8d8d8;
+    color: #8a8a8a;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: .9;
+}
+.game-header .next-btn-inline:disabled:hover {
+    transform: none;
+    background: #d8d8d8;
+    box-shadow: none;
+}
+/* Kleine Pop-Animation, wenn der Button aus disabled in enabled wechselt
+   – zieht Aufmerksamkeit auf den nächsten Schritt. */
+.game-header .next-btn-inline:not(:disabled) {
+    animation: feedback-pop .4s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.game-header .feedback:not(:empty) {
+    opacity: 1;
+    transform: translateY(0);
+    animation: feedback-pop .35s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.game-header .feedback.correct {
+    color: var(--text);
+    background: rgba(76, 175, 80, .18);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, .35);
+}
+
+.game-header .feedback.wrong {
+    color: var(--text);
+    background: rgba(244, 67, 54, .16);
+    box-shadow: inset 0 0 0 1px rgba(244, 67, 54, .35);
+}
+
+.game-header .feedback.info {
+    color: var(--text);
+    background: rgba(255, 193, 7, .22);
+    box-shadow: inset 0 0 0 1px rgba(255, 152, 0, .4);
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* "Fast richtig" – inhaltlich korrekt, aber Schreibweise nicht exakt.
+       Bewusst auffälliger als .info: kräftigerer Rand + doppelter Puls,
+       damit Lernende die Hinweis-Pille nicht übersehen. */
+.game-header .feedback.almost {
+    color: var(--text);
+    background: rgba(255, 193, 7, .28);
+    box-shadow: inset 0 0 0 1.5px rgba(255, 152, 0, .6);
+    animation: feedback-attention .9s ease 1;
+}
+
+@keyframes feedback-attention {
+    0% {
+        transform: scale(.9) translateY(-4px);
+    }
+
+    25% {
+        transform: scale(1.1) translateY(0);
+    }
+
+    50% {
+        transform: scale(1) translateY(0);
+    }
+
+    75% {
+        transform: scale(1.06) translateY(0);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-header .feedback.almost {
+        animation: none;
+    }
+}
+
+@keyframes feedback-pop {
+    0% {
+        transform: scale(.85) translateY(-4px);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-header .feedback:not(:empty) {
+        animation: none;
+    }
+}
+
+/* Auf schmalen Displays bricht die Feedback-Pille in eine eigene Zeile um
+   (Desktop-Zentrierung lässt sich dort nicht sinnvoll halten). Die Pille
+   wandert per `order: 3` ans Ende, der Button bleibt rechts oben neben
+   Titel und Badge. */
+@media (max-width: 560px) {
+    .game-header .feedback {
+        order: 3;
+        margin: 0;
+        flex-basis: 100%;
+        text-align: center;
+    }
+    .game-header .next-btn-inline {
+        margin-left: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-header .next-btn-inline {
+        animation: none;
+    }
+}
+
+/* ─── CARD ─── */
+.card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+}
+
+/* ─── WORD VISUAL (emoji / image / fallback) ───
+       Bilder werden in ein festes Quadrat "gezwungen" —
+       object-fit:contain erhält das Seitenverhältnis egal ob
+       Hoch-, Quer- oder quadratisches Format. */
+.word-visual {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+img.word-visual {
+    object-fit: contain;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04);
+}
+
+.word-visual-sm {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 2.2rem;
+}
+
+.word-visual-md {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 3.8rem;
+}
+
+.word-visual-lg {
+    width: 6rem;
+    height: 6rem;
+    font-size: 4.8rem;
+}
+
+.word-visual.is-fallback {
+    background: linear-gradient(135deg, var(--green), var(--lime));
+    color: white;
+    border-radius: 50%;
+    font-weight: 900;
+}
+
+.word-visual-sm.is-fallback {
+    font-size: 1.2rem;
+}
+
+.word-visual-md.is-fallback {
+    font-size: 2rem;
+}
+
+.word-visual-lg.is-fallback {
+    font-size: 2.6rem;
+}
+
+/* ─── QUIZ ─── */
+#quiz-question {
+    text-align: center;
+    margin-bottom: 8px;
+    min-height: 6rem;
+}
+
+#quiz-hint {
+    text-align: center;
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+/* Hervorhebung des Abfragewortes (Deutsch) in der Quiz-Frage.
+   Chip-Stil: 1px-Rahmen + leichter Hintergrund + fette Schrift in
+   Textfarbe, damit das Wort visuell "anspringt" ohne schrill zu wirken. */
+.q-word {
+    display: inline-block;
+    font-weight: 800;
+    color: var(--text);
+    background: #fafafa;
+    padding: 1px 10px;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    white-space: nowrap;
+    /* Etwas größer, damit es trotz #888-Umgebungstext heraussticht */
+    font-size: 1.05em;
+}
+
+#quiz-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.choice-btn {
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.choice-btn:hover:not(:disabled) {
+    border-color: var(--blue);
+    background: #e3f2fd;
+    transform: scale(1.03);
+}
+
+.choice-btn.correct-ans {
+    border-color: var(--green);
+    background: #e8f5e9;
+    color: var(--green);
+}
+
+.choice-btn.wrong-ans {
+    border-color: var(--red);
+    background: #ffebee;
+    color: var(--red);
+}
+
+.choice-btn:disabled {
+    cursor: default;
+}
+
+/* ─── MEMORY ─── */
+#memory-grid {
+    display: grid;
+    gap: 10px;
+    /* Auf Desktop nicht über volle Breite strecken – sonst werden
+       die Karten riesig. Mobil: max-width = 100% (Grid füllt Viewport). */
+    max-width: var(--mem-max-width, 100%);
+    margin-left: auto;
+    margin-right: auto;
+}
+#memory-grid[data-cols="4"] { --mem-max-width: 480px; }
+#memory-grid[data-cols="6"] { --mem-max-width: 660px; }
+
+.mem-card {
+    background: linear-gradient(135deg, var(--purple), #7b1fa2);
+    border-radius: 14px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: white;
+    transition: transform .2s;
+    user-select: none;
+    overflow: hidden;
+    padding: 4px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.mem-card:hover:not(.flipped):not(.matched) {
+    transform: scale(1.05);
+}
+
+.mem-card .back {
+    display: none;
+}
+
+.mem-card.flipped,
+.mem-card.matched {
+    background: white;
+    color: var(--text);
+    border: 3px solid var(--purple);
+}
+
+.mem-card.matched {
+    border-color: var(--green);
+    background: #e8f5e9;
+    cursor: default;
+}
+
+.mem-card .front-icon {
+    font-size: 2.2rem;
+}
+
+.mem-card.flipped .front-icon,
+.mem-card.matched .front-icon {
+    display: none;
+}
+
+.mem-card .back {
+    display: none;
+    font-size: .95rem;
+}
+
+.mem-card.flipped .back,
+.mem-card.matched .back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ─── SCRAMBLE ─── */
+#scramble-display {
+    text-align: center;
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--orange);
+    margin: 10px 0 20px;
+}
+
+#scramble-emoji {
+    text-align: center;
+    margin-bottom: 6px;
+    min-height: 4.5rem;
+}
+
+#scramble-hint {
+    text-align: center;
+    color: #888;
+    font-size: .95rem;
+    margin-bottom: 18px;
+}
+
+#letter-bank {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.letter-tile {
+    width: 44px;
+    height: 44px;
+    background: var(--orange);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all .15s;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+    border: none;
+}
+
+.letter-tile:hover:not(.used) {
+    transform: scale(1.12);
+    background: #e65100;
+}
+
+.letter-tile.used {
+    background: #ccc;
+    cursor: default;
+    transform: none;
+}
+
+#answer-slots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.answer-slot {
+    width: 44px;
+    height: 44px;
+    border: 3px dashed var(--orange);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 900;
+    background: white;
+    cursor: pointer;
+}
+
+.answer-slot.filled {
+    background: #fff3e0;
+    cursor: pointer;
+}
+
+/* Fixer Slot für Satzzeichen wie Apostroph: sichtbar, aber nicht bespielbar */
+.answer-slot.fixed {
+    border-style: solid;
+    border-color: #bbb;
+    background: #f3f3f3;
+    color: #666;
+    cursor: default;
+}
+
+/* Lücke zwischen zwei Wörtern: unsichtbarer Abstandhalter */
+.answer-slot.gap {
+    border: none;
+    background: transparent;
+    width: 18px;
+    cursor: default;
+    box-shadow: none;
+}
+
+/* ─── SPELLING BEE ─── */
+#spelling-emoji {
+    text-align: center;
+    margin-bottom: 4px;
+    min-height: 6rem;
+}
+
+#spelling-german {
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+#spelling-input {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border: 3px solid #ccc;
+    border-radius: var(--radius);
+    text-align: center;
+    outline: none;
+    transition: border-color .2s;
+}
+
+#spelling-input:focus {
+    border-color: var(--red);
+}
+
+#spelling-input.correct {
+    border-color: var(--green);
+    background: #e8f5e9;
+}
+
+#spelling-input.wrong {
+    border-color: var(--red);
+    background: #ffebee;
+}
+
+#spelling-input.almost {
+    border-color: var(--orange);
+    background: #fff8e1;
+}
+
+/* ─── VOCAB TABLE ─── */
+.vocab-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 2px solid var(--green);
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: var(--green);
+    color: white;
+}
+
+.vocab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.vocab-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+    border: 2px solid transparent;
+    border-top: 4px solid var(--cat-color, var(--green));
+    transition: transform .2s;
+}
+
+.vocab-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--green);
+}
+
+.vocab-card .v-visual {
+    margin-bottom: 4px;
+    min-height: 2.8rem;
+}
+
+.vocab-card .v-en {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.vocab-card .v-de {
+    font-size: .85rem;
+    color: #777;
+    margin-top: 2px;
+}
+
+/* ─── RESULT SCREEN ─── */
+#result-screen {
+    display: none;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+#result-screen.active {
+    display: block;
+}
+
+#result-emoji {
+    font-size: 5rem;
+    margin-bottom: 12px;
+}
+
+#result-title {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+#result-score {
+    font-size: 1.3rem;
+    color: #555;
+    margin-bottom: 24px;
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+    font-weight: 700;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 500px) {
+    #quiz-choices {
+        grid-template-columns: 1fr;
+    }
+
+    .letter-tile,
+    .answer-slot {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+}
+
+/* ─── STARS ─── */
+.stars {
+    font-size: 2.5rem;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+}
