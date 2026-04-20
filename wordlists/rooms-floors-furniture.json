@@ -1,0 +1,37 @@
+{
+  "title": "Haus & Stockwerke",
+  "description": "Räume im Haus, Möbel und die Stockwerke – Grundwortschatz.",
+  "categories": {
+    "room":      "🏠 Räume",
+    "furniture": "🪑 Möbel",
+    "floor":     "🏢 Stockwerke"
+  },
+  "words": [
+    { "en": "attic",           "de": "Dachboden",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_attic.png",          "cat": "room"  },
+    { "en": "bedroom",         "de": "Schlafzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bedroom.png",        "cat": "room"  },
+    { "en": "children's room", "de": "Kinderzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_childrens-room.png", "cat": "room"  },
+    { "en": "bathroom",        "de": "Badezimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bathroom.png",       "cat": "room"  },
+    { "en": "living room",     "de": "Wohnzimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_living-room.png",    "cat": "room"  },
+    { "en": "kitchen",         "de": "Küche",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_kitchen.png",        "cat": "room"  },
+    { "en": "dining room",     "de": "Esszimmer",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_dining-room.png",    "cat": "room"  },
+    { "en": "garden",          "de": "Garten",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_garden.png",         "cat": "room"  },
+    { "en": "garage",          "de": "Garage",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_garage.png",         "cat": "room"  },
+    { "en": "bed",             "de": "Bett",         "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bed.png",             "cat": "furniture" },
+    { "en": "sofa",            "de": "Sofa",         "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_sofa.png",            "cat": "furniture" },
+    { "en": "chair",           "de": "Stuhl",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_chair.png",           "cat": "furniture" },
+    { "en": "shelf",           "de": "Regal",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shelf.png",           "cat": "furniture" },
+    { "en": "fridge",          "de": "Kühlschrank",  "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_fridge.png",          "cat": "furniture" },
+    { "en": "toilet",          "de": "Toilette",     "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_toilet.png",          "cat": "furniture" },
+    { "en": "shower",          "de": "Dusche",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shower.png",           "cat": "furniture" },
+    { "en": "cooker",          "de": "Herd",         "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_cooker.png",           "cat": "furniture" },
+    { "en": "wardrobe",        "de": "Kleiderschrank", "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_wardrobe.png",      "cat": "furniture" },
+    { "en": "table",           "de": "Tisch",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_table.png",           "cat": "furniture" },
+    { "en": "lamp",            "de": "Lampe",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_lamp.png",            "cat": "furniture" },
+    { "en": "plant",           "de": "Pflanze",      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_plant.png",            "cat": "furniture" },
+    { "en": "floors",          "de": "Stockwerke",   "emoji": "🏢",  "cat": "floor" },
+    { "en": "ground floor",    "de": "Erdgeschoss",  "emoji": "🏠",  "cat": "floor" },
+    { "en": "first floor",     "de": "erster Stock", "emoji": "1️⃣", "cat": "floor" },
+    { "en": "second floor",    "de": "zweiter Stock","emoji": "2️⃣", "cat": "floor" },
+    { "en": "third floor",     "de": "dritter Stock","emoji": "3️⃣", "cat": "floor" }
+  ]
+}
