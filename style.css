@@ -94,32 +94,49 @@ header p {
     font-weight: 700;
 }
 
-#wordlist-bar label {
+#wordlist-bar .wordlist-bar-label {
     color: #555;
 }
 
-#wordlist-select {
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    padding: 8px 14px;
-    border-radius: 50px;
-    border: 2px solid var(--green);
-    background: white;
-    color: var(--text);
-    cursor: pointer;
-    min-width: 220px;
-    max-width: 100%;
+.wordlist-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: center;
+    align-items: center;
+    max-width: min(100%, 640px);
 }
 
-#wordlist-select:focus-visible {
+.wordlist-picker.is-loading {
+    opacity: .65;
+    pointer-events: none;
+}
+
+.wl-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 50px;
+    border: 2px solid #cfe9cf;
+    background: #fff;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.wl-opt:focus-within {
     outline: 3px solid var(--lime);
     outline-offset: 2px;
 }
 
-#wordlist-select:disabled {
-    opacity: .6;
-    cursor: wait;
+.wl-opt input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--green);
+    cursor: pointer;
 }
 
 #wordlist-meta {
@@ -288,6 +305,11 @@ nav {
     color: #555;
 }
 
+.tab-btn[data-tab="practice"] {
+    border-color: #009688;
+    color: #555;
+}
+
 .tab-btn.active[data-tab="menu"] {
     background: var(--green);
 }
@@ -311,6 +333,11 @@ nav {
 .tab-btn.active[data-tab="vocab"] {
     background: var(--yellow);
     color: #333;
+}
+
+.tab-btn.active[data-tab="practice"] {
+    background: #009688;
+    color: #fff;
 }
 
 /* ─── SECTIONS ─── */
@@ -425,6 +452,10 @@ nav {
 
 .menu-card.c-yellow {
     border-color: var(--yellow);
+}
+
+.menu-card.c-teal {
+    border-color: #009688;
 }
 
 .menu-card.c-blue:hover {
@@ -1080,6 +1111,84 @@ img.word-visual {
 }
 
 /* ─── VOCAB TABLE ─── */
+.practice-lead {
+    color: #555;
+    margin-bottom: 14px;
+    line-height: 1.45;
+}
+
+.practice-card {
+    padding: 18px 20px;
+}
+
+.practice-count-line {
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+}
+
+.practice-actions {
+    margin-bottom: 8px;
+}
+
+.practice-hint {
+    min-height: 1.4em;
+    color: #c62828;
+    font-size: .95rem;
+    margin-top: 8px;
+}
+
+.practice-privacy {
+    margin-top: 10px;
+    font-size: .85rem;
+    color: #888;
+}
+
+.vocab-toolbar {
+    margin-bottom: 12px;
+}
+
+.vocab-toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.vocab-toolbar-label {
+    font-weight: 800;
+    color: #555;
+}
+
+.vocab-tb-btn {
+    padding: 8px 16px !important;
+    font-size: .9rem !important;
+}
+
+.vocab-learn-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: .8rem;
+    font-weight: 800;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+}
+
+.vocab-learn-toggle input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+
+.vocab-learn-label {
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
 .vocab-filter {
     display: flex;
     gap: 10px;

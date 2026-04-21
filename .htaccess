@@ -2,6 +2,7 @@
 
 # MIME-Types
 AddType application/json .json
+AddType application/manifest+json .webmanifest
 
 # Kein Directory-Listing für Root
 Options -Indexes

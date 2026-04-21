@@ -17,6 +17,7 @@
   <link rel="icon" type="image/png" sizes="any" href="wordQUEST_icon.png" />
   <link rel="shortcut icon" href="favicon.ico" />
   <link rel="apple-touch-icon" href="wordQUEST_icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
@@ -38,10 +39,8 @@
 </header>
 
 <div id="wordlist-bar">
-  <label for="wordlist-select">📚 Wortliste:</label>
-  <select id="wordlist-select" aria-label="Wortliste auswählen" disabled>
-    <option>Lade…</option>
-  </select>
+  <span class="wordlist-bar-label" id="wordlist-bar-label">📚 Wortlisten:</span>
+  <div id="wordlist-picker" class="wordlist-picker" role="group" aria-labelledby="wordlist-bar-label"></div>
   <div id="wordlist-meta" aria-live="polite"></div>
 </div>
 
@@ -72,6 +71,7 @@
   <button class="tab-btn" data-tab="memory">🃏 Memory</button>
   <button class="tab-btn" data-tab="scramble">🔀 Scramble</button>
   <button class="tab-btn" data-tab="spelling">✍️ Spelling</button>
+  <button class="tab-btn" data-tab="practice">📈 Üben</button>
   <button class="tab-btn" data-tab="vocab">📚 Vokabeln</button>
 </nav>
 
@@ -99,6 +99,11 @@
       <h3>Spelling Bee</h3>
       <p>Schreibe das Wort</p>
     </div>
+    <div class="menu-card c-teal" onclick="openTab('practice')">
+      <span class="icon">📈</span>
+      <h3>Üben</h3>
+      <p>Schwache Vokabeln gezielt trainieren</p>
+    </div>
     <div class="menu-card c-yellow" onclick="openTab('vocab')">
       <span class="icon">📚</span>
       <h3>Vokabelliste</h3>
@@ -107,10 +112,27 @@
   </div>
 </section>
 
+<!-- ══════════════ PRACTICE / DIAGNOSE ══════════════ -->
+<section id="section-practice" class="section">
+  <h2 style="font-size:1.7rem; margin-bottom:12px;">📈 Üben &amp; Diagnose</h2>
+  <p class="practice-lead">Nach falschen Antworten merkt sich wordQUEST betroffene Wörter – nur in diesem Browser, ohne Anmeldung.</p>
+  <div class="card practice-card">
+    <p class="practice-count-line">Aktuell schwierige Wörter (aktives Lernset): <strong id="practice-weak-count">0</strong></p>
+    <div class="practice-actions">
+      <button type="button" class="btn btn-green" id="practice-start-btn" onclick="startPracticeQuiz()">❓ Übungs-Quiz starten</button>
+    </div>
+    <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <button type="button" class="btn btn-grey" onclick="clearDiagnosis()">🗑 Diagnose-Daten löschen</button>
+    <p class="practice-privacy">Daten bleiben ausschließlich lokal auf deinem Gerät.</p>
+  </div>
+</section>
+
 <!-- ══════════════ QUIZ ══════════════ -->
 <section id="section-quiz" class="section">
   <div class="game-header">
-    <h2>❓ Quiz</h2>
+    <h2 id="quiz-heading">❓ Quiz</h2>
     <span class="game-badge badge-blue" id="quiz-counter">1 / 10</span>
     <button class="btn btn-blue next-btn-inline" id="quiz-next-top" onclick="quizNext()" disabled>Weiter →</button>
     <div class="feedback" id="quiz-feedback" aria-live="polite"></div>
@@ -195,6 +217,7 @@
 <!-- ══════════════ VOCAB LIST ══════════════ -->
 <section id="section-vocab" class="section">
   <h2 style="font-size:1.7rem; margin-bottom:14px;">📚 Alle Vokabeln</h2>
+  <div class="vocab-toolbar" id="vocab-toolbar"></div>
   <div class="vocab-filter" id="vocab-filter"></div>
   <div id="vocab-grid" class="vocab-grid"></div>
 </section>
@@ -221,10 +244,12 @@
    STATE
 ═══════════════════════════════════════════════ */
 let VOCAB = [];
-let CURRENT_WORDLIST = null;   // { file, title, description, categories, words }
+let CURRENT_WORDLIST = null;   // { files[], title, description, categories, words }
 let WORDLIST_INDEX  = [];      // [{ file, title, description, count }]
 let LAST_TAB = 'menu';
 let VOCAB_FILTER = 'all';      // aktiver Kategorie-Filter in der Vokabel-Ansicht
+let PRACTICE_MODE = false;     // Quiz nur mit schwachen Wörtern
+let WORDLIST_LOAD_TIMER = null;
 
 /* ─────────── Lernrichtung ───────────
    'de2en' = Deutsch wird gezeigt, Englisch ist das Lernziel (Default).
@@ -290,6 +315,84 @@ function shuffle(arr) {
 }
 function getRandom(arr, n) { return shuffle(arr).slice(0, n); }
 function celebrate() { confetti({ particleCount:120, spread:80, origin:{y:.6} }); }
+
+/* Stabile Wort-ID: Dateiname + en + de (Duplikate in verschiedenen Dateien bleiben unterscheidbar). */
+function makeWqId(file, en, de) {
+  const s = `${file}\u0000${en}\u0000${de}`;
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+  return 'w' + (h >>> 0).toString(36);
+}
+function stemFile(file) {
+  return file.replace(/\.json$/i, '').replace(/[^a-z0-9_-]/gi, '_');
+}
+
+/* ─────────── Lernauswahl: deaktivierte _wqId (Default: alle aktiv) ─────────── */
+function getDisabledSet() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('wq.disabledIds') || '[]');
+    return new Set(Array.isArray(raw) ? raw : []);
+  } catch {
+    return new Set();
+  }
+}
+function saveDisabledSet(set) {
+  localStorage.setItem('wq.disabledIds', JSON.stringify([...set]));
+}
+function setWordDisabled(wqId, disabled) {
+  const s = getDisabledSet();
+  if (disabled) s.add(wqId); else s.delete(wqId);
+  saveDisabledSet(s);
+}
+function pruneDisabledIds() {
+  const valid = new Set(VOCAB.map(v => v._wqId));
+  const s = getDisabledSet();
+  [...s].forEach(id => { if (!valid.has(id)) s.delete(id); });
+  saveDisabledSet(s);
+}
+function getActiveVocab() {
+  const dis = getDisabledSet();
+  return VOCAB.filter(v => !dis.has(v._wqId));
+}
+
+/* ─────────── Diagnose (Fehlerzähler pro _wqId, nur localStorage) ─────────── */
+const DIAG_KEY = 'wq.diag.v1';
+function loadDiag() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DIAG_KEY) || '{}');
+    return (d && typeof d === 'object') ? d : {};
+  } catch {
+    return {};
+  }
+}
+function saveDiag(d) {
+  localStorage.setItem(DIAG_KEY, JSON.stringify(d));
+}
+function recordWrong(wqId) {
+  if (!wqId) return;
+  const d = loadDiag();
+  d[wqId] = (d[wqId] || 0) + 1;
+  saveDiag(d);
+}
+function recordCorrect(wqId) {
+  if (!wqId) return;
+  const d = loadDiag();
+  if (d[wqId]) d[wqId] = Math.max(0, d[wqId] - 1);
+  saveDiag(d);
+}
+function getWeakWords() {
+  const d = loadDiag();
+  return getActiveVocab().filter(v => (d[v._wqId] || 0) > 0);
+}
+function clearDiagnosis() {
+  localStorage.removeItem(DIAG_KEY);
+  updatePracticePanel();
+}
+function updatePracticePanel() {
+  const n = getWeakWords().length;
+  const el = document.getElementById('practice-weak-count');
+  if (el) el.textContent = String(n);
+}
 
 /* ─────────── visual helper (emoji / image / fallback) ─────────── */
 function visual(item, size) {
@@ -396,50 +499,116 @@ async function discoverWordlists() {
   return metas;
 }
 
-async function loadWordlist(file) {
-  const sel = document.getElementById('wordlist-select');
-  sel.disabled = true;
-  try {
-    const r = await fetch('wordlists/' + encodeURIComponent(file) + '?t=' + Date.now(), { cache: 'no-store' });
-    if (!r.ok) throw new Error(`Datei "${file}" nicht geladen (HTTP ${r.status}).`);
-    const data = await r.json();
+function normalizeWordEntry(w, file, catKey) {
+  const en = String(w.en).trim();
+  const de = String(w.de).trim();
+  return {
+    en,
+    de,
+    emoji: typeof w.emoji === 'string' && w.emoji.trim() ? w.emoji.trim() : null,
+    img:   typeof w.img   === 'string' && w.img.trim()   ? w.img.trim()   : null,
+    cat:   catKey,
+    _srcFile: file,
+    _wqId: makeWqId(file, en, de)
+  };
+}
 
-    if (!data || !Array.isArray(data.words) || !data.words.length) {
-      throw new Error(`"${file}" enthält keine gültigen Wörter.`);
+async function fetchOneWordlist(file) {
+  const r = await fetch('wordlists/' + encodeURIComponent(file) + '?t=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error(`„${file}“ (${r.status})`);
+  const data = await r.json();
+  if (!data || !Array.isArray(data.words) || !data.words.length) {
+    throw new Error(`„${file}“ enthält keine gültigen Wörter.`);
+  }
+  return data;
+}
+
+async function loadWordlists(files) {
+  const picker = document.getElementById('wordlist-picker');
+  if (picker) picker.classList.add('is-loading');
+
+  try {
+    if (!files || !files.length) {
+      VOCAB = [];
+      CURRENT_WORDLIST = null;
+      updateWordlistMeta();
+      showError('Bitte mindestens eine Wortliste auswählen.');
+      rerunActiveSection();
+      return;
     }
 
+    const merged = [];
+    const mergedCategories = {};
+    const titles = [];
+    const descriptions = [];
+    const errors = [];
+
+    for (const file of files) {
+      try {
+        const data = await fetchOneWordlist(file);
+        const stem = stemFile(file);
+        const listTitle = data.title || file.replace(/\.json$/i, '');
+        titles.push(listTitle);
+        if (data.description) descriptions.push(data.description);
+        const srcCats = data.categories && typeof data.categories === 'object' ? data.categories : {};
+
+        const words = data.words.filter(w => w && typeof w === 'object' && w.en && w.de);
+        for (const w of words) {
+          const rawCat = typeof w.cat === 'string' && w.cat.trim() ? w.cat.trim() : 'default';
+          const catKey = stem + ':' + rawCat;
+          if (!mergedCategories[catKey]) {
+            const catLabel = srcCats[rawCat] || (rawCat === 'default' ? 'Alle' : rawCat);
+            mergedCategories[catKey] = listTitle + ' · ' + catLabel;
+          }
+          merged.push(normalizeWordEntry(w, file, catKey));
+        }
+      } catch (e) {
+        errors.push(e.message || String(e));
+      }
+    }
+
+    if (errors.length && !merged.length) {
+      showError('Wortlisten konnten nicht geladen werden: ' + errors.join(' · '));
+      VOCAB = [];
+      CURRENT_WORDLIST = null;
+      rerunActiveSection();
+      return;
+    }
+
+    if (!merged.length) {
+      showError('Keine verwertbaren Wörter in den gewählten Listen.');
+      VOCAB = [];
+      CURRENT_WORDLIST = null;
+      rerunActiveSection();
+      return;
+    }
+
+    VOCAB = merged;
     CURRENT_WORDLIST = {
-      file,
-      title: data.title || file,
-      description: data.description || '',
-      categories: data.categories && typeof data.categories === 'object' ? data.categories : {},
-      words: data.words
+      files: [...files],
+      title: titles.join(' + '),
+      description: descriptions.join(' · '),
+      categories: mergedCategories,
+      words: merged
     };
 
-    // Normalisieren: fehlende Felder tolerieren
-    VOCAB = data.words
-      .filter(w => w && typeof w === 'object' && w.en && w.de)
-      .map(w => ({
-        en:    String(w.en).trim(),
-        de:    String(w.de).trim(),
-        emoji: typeof w.emoji === 'string' && w.emoji.trim() ? w.emoji.trim() : null,
-        img:   typeof w.img   === 'string' && w.img.trim()   ? w.img.trim()   : null,
-        cat:   typeof w.cat   === 'string' && w.cat.trim()   ? w.cat.trim()   : 'default'
-      }));
+    localStorage.setItem('wq.selectedLists', JSON.stringify(files));
+    localStorage.setItem('wq.lastList', files[0]);
 
-    if (!VOCAB.length) throw new Error(`"${file}" enthält keine verwertbaren Einträge (en + de fehlen).`);
-
-    localStorage.setItem('wq.lastList', file);
-    updateWordlistMeta();
+    pruneDisabledIds();
     hideError();
-    // aktive Section neu initialisieren, damit die neuen Daten sofort sichtbar sind
+    if (errors.length) {
+      showError('Einige Listen fehlen: ' + errors.join(' · '));
+    }
+    updateWordlistMeta();
+    updatePracticePanel();
     rerunActiveSection();
   } catch (err) {
     showError(err.message || String(err));
     VOCAB = [];
     CURRENT_WORDLIST = null;
   } finally {
-    sel.disabled = false;
+    if (picker) picker.classList.remove('is-loading');
   }
 }
 
@@ -447,21 +616,56 @@ function updateWordlistMeta() {
   const meta = document.getElementById('wordlist-meta');
   if (!CURRENT_WORDLIST) { meta.textContent = ''; return; }
   const n = VOCAB.length;
-  const parts = [`${n} Wörter`];
+  const nf = CURRENT_WORDLIST.files ? CURRENT_WORDLIST.files.length : 1;
+  const parts = [`${nf} ${nf === 1 ? 'Liste' : 'Listen'} · ${n} Wörter`];
   if (CURRENT_WORDLIST.description) parts.push(CURRENT_WORDLIST.description);
   meta.textContent = parts.join(' · ');
 }
 
-function populateDropdown(list) {
-  const sel = document.getElementById('wordlist-select');
-  sel.innerHTML = '';
-  list.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.file;
-    opt.textContent = item.title + (item.count ? ` (${item.count})` : '');
-    sel.appendChild(opt);
+function getPickerSelectedFiles() {
+  const picker = document.getElementById('wordlist-picker');
+  if (!picker) return [];
+  return [...picker.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
+}
+
+function scheduleLoadWordlists() {
+  clearTimeout(WORDLIST_LOAD_TIMER);
+  WORDLIST_LOAD_TIMER = setTimeout(() => {
+    loadWordlists(getPickerSelectedFiles());
+  }, 280);
+}
+
+function renderWordlistPicker() {
+  const picker = document.getElementById('wordlist-picker');
+  if (!picker || !WORDLIST_INDEX.length) return;
+
+  let saved = [];
+  try {
+    saved = JSON.parse(localStorage.getItem('wq.selectedLists') || '[]');
+  } catch {
+    saved = [];
+  }
+  if (!saved.length) {
+    const last = localStorage.getItem('wq.lastList');
+    if (last) saved = [last];
+  }
+  if (!saved.length && WORDLIST_INDEX[0]) saved = [WORDLIST_INDEX[0].file];
+
+  picker.innerHTML = WORDLIST_INDEX.map(item => {
+    const id = 'wl-' + item.file.replace(/[^a-z0-9._-]/gi, '_');
+    const checked = saved.includes(item.file) ? ' checked' : '';
+    return `<label class="wl-opt" for="${id}">
+      <input type="checkbox" id="${id}" value="${escapeHtml(item.file)}"${checked} />
+      <span>${escapeHtml(item.title)}${item.count ? ` (${item.count})` : ''}</span>
+    </label>`;
+  }).join('');
+
+  picker.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      localStorage.setItem('wq.selectedLists', JSON.stringify(getPickerSelectedFiles()));
+      scheduleLoadWordlists();
+    });
   });
-  sel.disabled = false;
 }
 
 function showError(msg) {
@@ -503,7 +707,13 @@ updateScoreBar();
 /* ═══════════════════════════════════════════════
    TABS
 ═══════════════════════════════════════════════ */
-function openTab(name) {
+function clearEmptyStateInSection(name) {
+  const sec = document.getElementById('section-' + name);
+  if (sec) sec.querySelectorAll('.empty-state').forEach(e => e.remove());
+}
+
+function openTab(name, opts) {
+  PRACTICE_MODE = (name === 'quiz' && opts && opts.practice) === true;
   LAST_TAB = name;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -511,17 +721,26 @@ function openTab(name) {
   const btn = document.querySelector('[data-tab="' + name + '"]');
   if (btn) btn.classList.add('active');
 
+  const pool = getActiveVocab();
+  const needsPool = ['quiz', 'memory', 'scramble', 'spelling'].includes(name);
+
   if (!VOCAB.length && name !== 'menu') {
-    // Daten noch nicht geladen oder leer — zeige Hinweis in der Section
-    showEmptyState(name);
+    showEmptyState(name, 'no-data');
     return;
   }
+  if (needsPool && !pool.length) {
+    showEmptyState(name, 'no-active');
+    return;
+  }
+
+  clearEmptyStateInSection(name);
 
   if (name === 'quiz')    startQuiz();
   if (name === 'scramble')startScramble();
   if (name === 'spelling')startSpelling();
   if (name === 'memory')  startMemory(8);
   if (name === 'vocab')   renderVocab('all');
+  if (name === 'practice') updatePracticePanel();
 }
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => openTab(btn.dataset.tab));
@@ -529,21 +748,51 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 function rerunActiveSection() {
   if (!VOCAB.length) return;
+  if (!getActiveVocab().length && ['quiz', 'memory', 'scramble', 'spelling'].includes(LAST_TAB)) {
+    showEmptyState(LAST_TAB, 'no-active');
+    return;
+  }
+  clearEmptyStateInSection(LAST_TAB);
   if (LAST_TAB === 'quiz')    startQuiz();
   if (LAST_TAB === 'scramble')startScramble();
   if (LAST_TAB === 'spelling')startSpelling();
   if (LAST_TAB === 'memory')  startMemory(8);
-  if (LAST_TAB === 'vocab' || LAST_TAB === 'menu') renderVocab(VOCAB_FILTER);
+  if (LAST_TAB === 'vocab') renderVocab(VOCAB_FILTER);
+  if (LAST_TAB === 'practice') updatePracticePanel();
 }
 
-function showEmptyState(name) {
-  const empty = `<div class="empty-state">📭 Keine Wortliste geladen. Wähle oben eine Wortliste aus.</div>`;
+function showEmptyState(name, reason) {
+  let msg = '📭 Keine Wortliste geladen. Wähle oben mindestens eine Wortliste aus.';
+  if (reason === 'no-active') {
+    msg = '📭 Für die Spiele sind keine Vokabeln aktiv. Wähle unter „Vokabeln“ Wörter zum Lernen aus.';
+  }
+  const empty = `<div class="empty-state">${msg}</div>`;
   const sec = document.getElementById('section-' + name);
   if (sec) {
-    // nur wenn noch kein eigener Inhalt generiert ist
-    const existing = sec.querySelector('.empty-state');
-    if (!existing) sec.insertAdjacentHTML('beforeend', empty);
+    sec.querySelectorAll('.empty-state').forEach(e => e.remove());
+    sec.insertAdjacentHTML('beforeend', empty);
   }
+}
+
+function startPracticeQuiz() {
+  const hint = document.getElementById('practice-hint');
+  if (!getWeakWords().length) {
+    if (hint) hint.textContent = 'Noch keine schwierigen Wörter – spiele zuerst und übe mit Bewusstsein.';
+    return;
+  }
+  if (hint) hint.textContent = '';
+  openTab('quiz', { practice: true });
+}
+
+function vocabSelectAll(active) {
+  if (active) {
+    saveDisabledSet(new Set());
+  } else {
+    saveDisabledSet(new Set(VOCAB.map(v => v._wqId)));
+  }
+  renderVocab(VOCAB_FILTER);
+  updatePracticePanel();
+  if (LAST_TAB !== 'vocab') rerunActiveSection();
 }
 
 /* ═══════════════════════════════════════════════
@@ -552,8 +801,14 @@ function showEmptyState(name) {
 let quizItems, quizIdx, quizScore;
 
 function startQuiz() {
-  if (!VOCAB.length) return;
-  const pool = VOCAB.slice();
+  const pool = PRACTICE_MODE ? getWeakWords() : getActiveVocab();
+  if (!pool.length) {
+    if (PRACTICE_MODE) {
+      const h = document.getElementById('practice-hint');
+      if (h) h.textContent = 'Keine schwachen Wörter im aktiven Lernset.';
+    }
+    return;
+  }
   quizItems = shuffle(pool).slice(0, Math.min(10, pool.length));
   quizIdx   = 0;
   quizScore = 0;
@@ -566,6 +821,8 @@ function startQuiz() {
 
 function showQuizQuestion() {
   const item = quizItems[quizIdx];
+  const qh = document.getElementById('quiz-heading');
+  if (qh) qh.textContent = PRACTICE_MODE ? '❓ Quiz · Üben' : '❓ Quiz';
   document.getElementById('quiz-counter').textContent   = `${quizIdx+1} / ${quizItems.length}`;
   document.getElementById('quiz-progress').style.width  = `${((quizIdx+1)/quizItems.length)*100}%`;
   document.getElementById('quiz-question').innerHTML    = visual(item, 'lg');
@@ -574,7 +831,7 @@ function showQuizQuestion() {
   document.getElementById('quiz-feedback').textContent  = '';
   setNextReady('quiz', false);
 
-  const others = VOCAB.filter(v => v !== item);
+  const others = getActiveVocab().filter(v => v !== item);
   const distractors = getRandom(others, Math.min(3, others.length));
   const choices = shuffle([item, ...distractors]);
   const rightAnswer = tgtText(item);
@@ -584,12 +841,12 @@ function showQuizQuestion() {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = tgtText(c);
-    btn.onclick = () => handleQuizAnswer(btn, c === item, rightAnswer);
+    btn.onclick = () => handleQuizAnswer(btn, c === item, rightAnswer, item);
     grid.appendChild(btn);
   });
 }
 
-function handleQuizAnswer(btn, correct, rightAnswer) {
+function handleQuizAnswer(btn, correct, rightAnswer, item) {
   document.querySelectorAll('.choice-btn').forEach(b => {
     b.disabled = true;
     if (b.textContent === rightAnswer) b.classList.add('correct-ans');
@@ -601,11 +858,14 @@ function handleQuizAnswer(btn, correct, rightAnswer) {
     fb.className   = 'feedback correct';
     addScore(10);
     quizScore++;
+    recordCorrect(item._wqId);
   } else {
     btn.classList.add('wrong-ans');
     fb.textContent = growthMsg(rightAnswer);
     fb.className   = 'feedback wrong';
+    recordWrong(item._wqId);
   }
+  updatePracticePanel();
   setNextReady('quiz', true);
 }
 
@@ -640,21 +900,22 @@ let memCards = [], memFlipped = [], memMatched = 0, memTries = 0;
 let memTimer, memSeconds = 0;
 
 function startMemory(pairCount) {
-  if (!VOCAB.length) return;
+  const vocab = getActiveVocab();
+  if (!vocab.length) return;
   clearInterval(memTimer);
   memSeconds = 0;
   memFlipped = [];
   memMatched = 0;
   memTries   = 0;
 
-  const maxPairs = VOCAB.length;
+  const maxPairs = vocab.length;
   pairCount = Math.min(pairCount, maxPairs);
 
   document.getElementById('memory-tries').textContent = '0';
   document.getElementById('memory-time').textContent  = '0:00';
   document.getElementById('memory-pairs').textContent = `0 / ${pairCount} Paare`;
 
-  const selected = getRandom(VOCAB, pairCount);
+  const selected = getRandom(vocab, pairCount);
   const tiles = [];
   selected.forEach((v, i) => {
     tiles.push({ id: i*2,   pairId: i, type:'visual', item: v });
@@ -713,6 +974,8 @@ function flipCard(idx) {
         const total = memCards.length / 2;
         document.getElementById('memory-pairs').textContent = `${memMatched} / ${total} Paare`;
         addScore(15);
+        recordCorrect(a.item._wqId);
+        updatePracticePanel();
         if (memMatched === total) {
           clearInterval(memTimer);
           celebrate();
@@ -720,6 +983,9 @@ function flipCard(idx) {
         }
       }, 500);
     } else {
+      recordWrong(a.item._wqId);
+      recordWrong(b.item._wqId);
+      updatePracticePanel();
       setTimeout(() => {
         memFlipped.forEach(i => {
           const e = document.querySelectorAll('.mem-card')[i];
@@ -751,8 +1017,9 @@ function isLetterChar(ch) {
 }
 
 function startScramble() {
-  if (!VOCAB.length) return;
-  scrambleItems = shuffle(VOCAB).slice(0, Math.min(10, VOCAB.length));
+  const vocab = getActiveVocab();
+  if (!vocab.length) return;
+  scrambleItems = shuffle(vocab).slice(0, Math.min(10, vocab.length));
   scrambleIdx   = 0;
   scrambleScore = 0;
   showScrambleQuestion();
@@ -874,6 +1141,8 @@ function checkScramble() {
     fb.className   = 'feedback correct';
     addScore(10); scrambleScore++;
     celebrate();
+    recordCorrect(item._wqId);
+    updatePracticePanel();
     setNextReady('scramble', true);
     document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
   } else if (answer.length < expected.length) {
@@ -882,6 +1151,8 @@ function checkScramble() {
   } else {
     fb.textContent = growthMsg(target);
     fb.className   = 'feedback wrong';
+    recordWrong(item._wqId);
+    updatePracticePanel();
     setNextReady('scramble', true);
     document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
   }
@@ -904,8 +1175,9 @@ function scrambleNext() {
 let spellingItems, spellingIdx, spellingScore;
 
 function startSpelling() {
-  if (!VOCAB.length) return;
-  spellingItems = shuffle(VOCAB).slice(0, Math.min(10, VOCAB.length));
+  const vocab = getActiveVocab();
+  if (!vocab.length) return;
+  spellingItems = shuffle(vocab).slice(0, Math.min(10, vocab.length));
   spellingIdx   = 0;
   spellingScore = 0;
   showSpellingQuestion();
@@ -971,16 +1243,22 @@ function checkSpelling() {
     fb.className   = 'feedback correct';
     addScore(10); spellingScore++;
     celebrate();
+    recordCorrect(item._wqId);
+    updatePracticePanel();
   } else if (tolerantMatch) {
     inp.className  = 'almost';
     fb.textContent = `⚠️ Fast perfekt! Schreibweise: ${target}`;
     fb.className   = 'feedback almost';
     addScore(10); spellingScore++;
     celebrate();
+    recordCorrect(item._wqId);
+    updatePracticePanel();
   } else {
     inp.className  = 'wrong';
     fb.textContent = growthMsg(`"${target}"`);
     fb.className   = 'feedback wrong';
+    recordWrong(item._wqId);
+    updatePracticePanel();
   }
   setNextReady('spelling', true);
 }
@@ -1019,27 +1297,41 @@ function categoryColor(cat) {
   return CAT_PALETTE[idx % CAT_PALETTE.length];
 }
 
+function renderVocabToolbar() {
+  const tb = document.getElementById('vocab-toolbar');
+  if (!tb) return;
+  if (!VOCAB.length) {
+    tb.innerHTML = '';
+    return;
+  }
+  tb.innerHTML = `<div class="vocab-toolbar-inner">
+    <span class="vocab-toolbar-label">Lernset</span>
+    <button type="button" class="btn btn-green vocab-tb-btn" onclick="vocabSelectAll(true)">Alle aktivieren</button>
+    <button type="button" class="btn btn-grey vocab-tb-btn" onclick="vocabSelectAll(false)">Alle deaktivieren</button>
+  </div>`;
+}
+
 function renderVocabFilters() {
   const wrap = document.getElementById('vocab-filter');
   const cats = getCategories();
   const total = VOCAB.length;
-  let html = `<button class="filter-btn active" data-cat="all">🌈 Alle (${total})</button>`;
-  // Filter nur anzeigen, wenn es mehr als eine Kategorie gibt
+  let html = `<button type="button" class="filter-btn active" data-cat="all">🌈 Alle (${total})</button>`;
   if (cats.length > 1) {
     cats.forEach(c => {
       const label = escapeHtml(categoryLabel(c));
       const count = VOCAB.filter(v => (v.cat || 'default') === c).length;
-      html += `<button class="filter-btn" data-cat="${escapeHtml(c)}">${label} (${count})</button>`;
+      html += `<button type="button" class="filter-btn" data-cat="${escapeHtml(c)}">${label} (${count})</button>`;
     });
   }
   wrap.innerHTML = html;
   wrap.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.onclick = () => filterVocab(btn.dataset.cat, btn);
+    btn.addEventListener('click', () => filterVocab(btn.dataset.cat, btn));
   });
 }
 
 function renderVocab(filter) {
   VOCAB_FILTER = filter || 'all';
+  renderVocabToolbar();
   renderVocabFilters();
   if (VOCAB_FILTER !== 'all') {
     const active = document.querySelector(`.filter-btn[data-cat="${CSS.escape(VOCAB_FILTER)}"]`);
@@ -1049,16 +1341,32 @@ function renderVocab(filter) {
     }
   }
   const grid = document.getElementById('vocab-grid');
+  const dis = getDisabledSet();
   const items = VOCAB_FILTER === 'all' ? VOCAB : VOCAB.filter(v => (v.cat || 'default') === VOCAB_FILTER);
-  grid.innerHTML = items.map(v => `
+  grid.innerHTML = items.map(v => {
+    const on = !dis.has(v._wqId);
+    return `
     <div class="vocab-card" style="--cat-color:${categoryColor(v.cat || 'default')}">
+      <label class="vocab-learn-toggle">
+        <input type="checkbox" ${on ? 'checked' : ''} data-wqid="${escapeHtml(v._wqId)}" aria-label="Für Spiele aktiv: ${escapeHtml(v.en)}" />
+        <span class="vocab-learn-label">Lernen</span>
+      </label>
       <div class="v-visual">${visual(v, 'sm')}</div>
       <div class="v-en">${escapeHtml(v.en)}</div>
       <div class="v-de">${escapeHtml(v.de)}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   if (!items.length) {
     grid.innerHTML = `<div class="empty-state">Keine Wörter in dieser Kategorie.</div>`;
   }
+  grid.querySelectorAll('.vocab-learn-toggle input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      setWordDisabled(inp.dataset.wqid, !inp.checked);
+      renderVocab(VOCAB_FILTER);
+      updatePracticePanel();
+      if (['quiz', 'memory', 'scramble', 'spelling'].includes(LAST_TAB)) rerunActiveSection();
+    });
+  });
 }
 
 function filterVocab(cat, btn) {
@@ -1070,9 +1378,6 @@ function filterVocab(cat, btn) {
 /* ═══════════════════════════════════════════════
    BOOTSTRAP
 ═══════════════════════════════════════════════ */
-document.getElementById('wordlist-select').addEventListener('change', (e) => {
-  loadWordlist(e.target.value);
-});
 
 /* Lernrichtungsschalter verdrahten + initialen Zustand anzeigen */
 document.querySelectorAll('#direction-bar .dir-btn').forEach(btn => {
@@ -1085,20 +1390,22 @@ updateSpellingPlaceholder();
   try {
     WORDLIST_INDEX = await discoverWordlists();
     if (!WORDLIST_INDEX.length) throw new Error('Keine Wortlisten im Ordner /wordlists/ gefunden.');
-    populateDropdown(WORDLIST_INDEX);
-
-    const lastFile = localStorage.getItem('wq.lastList');
-    const pick = WORDLIST_INDEX.find(x => x.file === lastFile) || WORDLIST_INDEX[0];
-    document.getElementById('wordlist-select').value = pick.file;
-    await loadWordlist(pick.file);
+    renderWordlistPicker();
+    await loadWordlists(getPickerSelectedFiles());
+    updatePracticePanel();
   } catch (err) {
     console.error(err);
-    const sel = document.getElementById('wordlist-select');
-    sel.innerHTML = '<option>– keine Listen –</option>';
-    sel.disabled = true;
+    const picker = document.getElementById('wordlist-picker');
+    if (picker) picker.innerHTML = '<span class="empty-state">Keine Listen gefunden.</span>';
     showError(err.message || 'Unbekannter Fehler beim Laden der Wortlisten.');
   }
 })();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

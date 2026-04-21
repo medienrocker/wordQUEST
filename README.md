@@ -1,7 +1,8 @@
 # wordQUEST
 
 Kleines Vokabel-Lernspiel (Quiz, Memory, Word Scramble, Spelling Bee) — komplett statisch, läuft in jedem Browser.
-Vokabelsätze werden zur Laufzeit aus dem Ordner `wordlists/` geladen und sind per Dropdown auswählbar.
+Vokabelsätze werden zur Laufzeit aus dem Ordner `wordlists/` geladen; **mehrere Listen** sind per Checkbox kombinierbar.
+In der **Vokabelansicht** kannst du einzelne Wörter für die Spiele aktivieren oder deaktivieren. Unter **Üben** werden falsch beantwortete Wörter lokal gespeichert und als **Übungs-Quiz** wiederholt (ohne Login).
 
 ---
 
@@ -20,16 +21,26 @@ Lade den gesamten Projektinhalt in `…/wordquest.bildungssprit.de/httpdocs/`:
 ```
 httpdocs/
 ├── index.html
+├── manifest.webmanifest  ← PWA-Manifest
+├── sw.js                 ← Service Worker (optional, für Offline-Shell)
 ├── .htaccess
 └── wordlists/
     ├── index.php        ← Auto-Discovery-Endpoint
     ├── index.json       ← Manifest-Fallback (optional)
     ├── food.json
-    └── animals-demo.json
+    └── …
 ```
 
 ### 3. Fertig
-`https://wordquest.bildungssprit.de/` aufrufen — Dropdown zeigt automatisch alle `*.json`-Dateien aus dem `wordlists/`-Ordner.
+`https://wordquest.bildungssprit.de/` aufrufen — die Checkboxen listen alle `*.json`-Dateien aus dem `wordlists/`-Ordner (über `index.php` oder `index.json`).
+
+---
+
+## Progressive Web App (PWA)
+
+- **Installation:** In Chromium-basierten Browsern erscheint „App installieren“, sobald `manifest.webmanifest` und `sw.js` mit ausgeliefert werden (HTTPS oder `localhost`).
+- **Aktualität der Wortlisten:** Der Service Worker cached die statische Shell (`index.html`, Styles, Icons). Inhalte unter `wordlists/` werden **nicht** dauerhaft gecacht, damit neue JSON-Dateien nach einem Upload sichtbar bleiben.
+- **MIME-Typ:** `.htaccess` setzt `application/manifest+json` für `.webmanifest`. Falls nötig, in Plesk unter Apache-Einstellungen prüfen.
 
 ---
 
@@ -37,7 +48,7 @@ httpdocs/
 
 1. JSON-Datei nach dem Schema unten erstellen (z. B. `schule.json`)
 2. Per FTP in `httpdocs/wordlists/` ablegen
-3. Seite neu laden — die neue Liste erscheint automatisch im Dropdown
+3. Seite neu laden — die neue Liste erscheint automatisch in der Auswahl
 
 **Kein Rebuild, kein Server-Restart nötig.**
 
