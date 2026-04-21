@@ -47,20 +47,22 @@
     <div id="wordlist-picker-summary" class="wl-picker-summary" aria-live="polite"></div>
   </div>
   <div id="wordlist-picker-panel" class="wl-panel" role="dialog" aria-modal="true" aria-label="Wortlisten auswählen" hidden>
-    <div class="wl-panel-head">
-      <div class="wl-panel-title">Wortlisten auswählen</div>
-      <button type="button" class="wl-panel-close" id="wordlist-picker-close" aria-label="Schließen">✕</button>
-    </div>
-    <div class="wl-panel-search">
-      <input type="search" id="wordlist-picker-search" placeholder="Suchen…" autocomplete="off" />
-      <div class="wl-panel-actions">
-        <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-all">Alle</button>
-        <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-none">Keine</button>
+    <div class="wl-panel-surface">
+      <div class="wl-panel-head">
+        <div class="wl-panel-title">Wortlisten auswählen</div>
+        <button type="button" class="wl-panel-close" id="wordlist-picker-close" aria-label="Schließen">✕</button>
       </div>
-    </div>
-    <div id="wordlist-picker-list" class="wl-panel-list" role="listbox" aria-multiselectable="true"></div>
-    <div class="wl-panel-foot">
-      <button type="button" class="btn btn-green" id="wl-apply">Fertig</button>
+      <div class="wl-panel-search">
+        <input type="search" id="wordlist-picker-search" placeholder="Suchen…" autocomplete="off" />
+        <div class="wl-panel-actions">
+          <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-all">Alle</button>
+          <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-none">Keine</button>
+        </div>
+      </div>
+      <div id="wordlist-picker-list" class="wl-panel-list" role="listbox" aria-multiselectable="true"></div>
+      <div class="wl-panel-foot">
+        <button type="button" class="btn btn-green" id="wl-apply">Fertig</button>
+      </div>
     </div>
   </div>
   <div id="wordlist-meta" aria-live="polite"></div>
@@ -163,6 +165,9 @@
   <div class="progress-wrap"><div class="progress-bar" id="quiz-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="quiz-question"></div>
+    <div id="quiz-visual-hint-wrap" style="text-align:center; margin:8px 0 0;" hidden>
+      <button type="button" class="btn btn-grey" id="quiz-show-visual" aria-controls="quiz-question">🖼️ Bild anzeigen</button>
+    </div>
     <div id="quiz-hint">Was ist das auf Englisch?</div>
     <div id="quiz-choices"></div>
   </div>
@@ -205,6 +210,9 @@
   <div class="progress-wrap"><div class="progress-bar" id="scramble-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="scramble-emoji"></div>
+    <div id="scramble-visual-hint-wrap" style="text-align:center; margin:6px 0 2px;" hidden>
+      <button type="button" class="btn btn-grey" id="scramble-show-visual" aria-controls="scramble-emoji">🖼️ Bild anzeigen</button>
+    </div>
     <div id="scramble-hint"></div>
     <div id="scramble-display"></div>
     <div id="answer-slots"></div>
@@ -227,6 +235,9 @@
   <div class="progress-wrap"><div class="progress-bar" id="spelling-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="spelling-emoji"></div>
+    <div id="spelling-visual-hint-wrap" style="text-align:center; margin:6px 0 2px;" hidden>
+      <button type="button" class="btn btn-grey" id="spelling-show-visual" aria-controls="spelling-emoji">🖼️ Bild anzeigen</button>
+    </div>
     <div id="spelling-german"></div>
     <input type="text" id="spelling-input" placeholder="Englisches Wort eingeben..." autocomplete="off" autocorrect="off" spellcheck="false" />
     <div style="text-align:center; margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
@@ -523,6 +534,23 @@ function visual(item, size) {
   // Fallback: erster Buchstabe in farbigem Kreis
   const letter = (item.en || item.de || '?').trim().charAt(0).toUpperCase();
   return `<span class="word-visual word-visual-${size} is-fallback">${escapeHtml(letter)}</span>`;
+}
+
+/* In EN→DE soll das Bild nicht vor der Entscheidung helfen.
+   Stattdessen: Platzhalter bis zur Antwort oder per „Bild anzeigen“. */
+function shouldHideVisualInitially() {
+  return LEARN_DIR === 'en2de';
+}
+function hasVisual(item) {
+  return !!(item && (item.img || item.emoji));
+}
+function visualPlaceholder(size) {
+  size = size || 'md';
+  return `<span class="word-visual word-visual-${size} is-fallback">?</span>`;
+}
+function visualForPrompt(item, size, revealed) {
+  if (!revealed && shouldHideVisualInitially() && hasVisual(item)) return visualPlaceholder(size);
+  return visual(item, size);
 }
 
 /* Aktiviert/deaktiviert den "Weiter →"-Button im Game-Header.
@@ -1038,6 +1066,7 @@ function vocabSelectAll(active) {
    QUIZ
 ═══════════════════════════════════════════════ */
 let quizItems, quizIdx, quizScore;
+let quizVisualRevealed = false;
 
 function startQuiz() {
   const pool = PRACTICE_MODE ? getPracticePool() : getActiveVocab();
@@ -1051,6 +1080,7 @@ function startQuiz() {
   quizItems = shuffle(pool).slice(0, Math.min(10, pool.length));
   quizIdx   = 0;
   quizScore = 0;
+  quizVisualRevealed = false;
   document.getElementById('result-screen').classList.remove('active');
   document.getElementById('result-screen').style.display = 'none';
   document.querySelector('#section-quiz .card').style.display = '';
@@ -1060,11 +1090,15 @@ function startQuiz() {
 
 function showQuizQuestion() {
   const item = quizItems[quizIdx];
+  quizVisualRevealed = false;
   const qh = document.getElementById('quiz-heading');
   if (qh) qh.textContent = PRACTICE_MODE ? '❓ Quiz · Üben' : '❓ Quiz';
   document.getElementById('quiz-counter').textContent   = `${quizIdx+1} / ${quizItems.length}`;
   document.getElementById('quiz-progress').style.width  = `${((quizIdx+1)/quizItems.length)*100}%`;
-  document.getElementById('quiz-question').innerHTML    = visual(item, 'lg');
+  document.getElementById('quiz-question').innerHTML    = visualForPrompt(item, 'lg', quizVisualRevealed);
+
+  const hintWrap = document.getElementById('quiz-visual-hint-wrap');
+  if (hintWrap) hintWrap.hidden = !(shouldHideVisualInitially() && hasVisual(item));
   document.getElementById('quiz-hint').innerHTML        =
     `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`;
   document.getElementById('quiz-feedback').textContent  = '';
@@ -1086,6 +1120,12 @@ function showQuizQuestion() {
 }
 
 function handleQuizAnswer(btn, correct, rightAnswer, item) {
+  // Nach der Entscheidung Bild zeigen (Feedback-Verankerung)
+  quizVisualRevealed = true;
+  document.getElementById('quiz-question').innerHTML = visualForPrompt(item, 'lg', quizVisualRevealed);
+  const hintWrap = document.getElementById('quiz-visual-hint-wrap');
+  if (hintWrap) hintWrap.hidden = true;
+
   document.querySelectorAll('.choice-btn').forEach(b => {
     b.disabled = true;
     if (b.textContent === rightAnswer) b.classList.add('correct-ans');
@@ -1243,6 +1283,7 @@ function flipCard(idx) {
 ═══════════════════════════════════════════════ */
 let scrambleItems, scrambleIdx, scrambleScore;
 let scrambleAnswer = [], scrambleShuffled = [];
+let scrambleVisualRevealed = false;
 /* Map: letterIdx (0..N-1) → dom-index des zugehörigen .answer-slot
    Nötig, weil das angezeigte Wort fixe Slots (Space, Apostroph) enthalten
    kann, die nicht editierbar sind. */
@@ -1267,9 +1308,12 @@ function startScramble() {
 function showScrambleQuestion() {
   const item = scrambleItems[scrambleIdx];
   const target = tgtText(item);
+  scrambleVisualRevealed = false;
   document.getElementById('scramble-counter').textContent  = `${scrambleIdx+1} / ${scrambleItems.length}`;
   document.getElementById('scramble-progress').style.width = `${((scrambleIdx+1)/scrambleItems.length)*100}%`;
-  document.getElementById('scramble-emoji').innerHTML      = visual(item, 'md');
+  document.getElementById('scramble-emoji').innerHTML      = visualForPrompt(item, 'md', scrambleVisualRevealed);
+  const sw = document.getElementById('scramble-visual-hint-wrap');
+  if (sw) sw.hidden = !(shouldHideVisualInitially() && hasVisual(item));
   document.getElementById('scramble-hint').textContent     = `${srcLangName()}: ${srcText(item)}`;
   document.getElementById('scramble-feedback').textContent = '';
   setNextReady('scramble', false);
@@ -1375,6 +1419,11 @@ function checkScramble() {
   const expected = Array.from(target.toUpperCase()).filter(isLetterChar).join('');
   const answer   = scrambleAnswer.map(r => r.letter).join('');
   const fb       = document.getElementById('scramble-feedback');
+  // Nach dem Prüfen: Bild zeigen (egal ob richtig oder falsch)
+  scrambleVisualRevealed = true;
+  document.getElementById('scramble-emoji').innerHTML = visualForPrompt(item, 'md', scrambleVisualRevealed);
+  const sw = document.getElementById('scramble-visual-hint-wrap');
+  if (sw) sw.hidden = true;
   if (answer === expected) {
     fb.textContent = praiseMsg();
     fb.className   = 'feedback correct';
@@ -1412,6 +1461,7 @@ function scrambleNext() {
    SPELLING BEE
 ═══════════════════════════════════════════════ */
 let spellingItems, spellingIdx, spellingScore;
+let spellingVisualRevealed = false;
 
 function startSpelling() {
   const vocab = getActiveVocab();
@@ -1424,9 +1474,12 @@ function startSpelling() {
 
 function showSpellingQuestion() {
   const item = spellingItems[spellingIdx];
+  spellingVisualRevealed = false;
   document.getElementById('spelling-counter').textContent  = `${spellingIdx+1} / ${spellingItems.length}`;
   document.getElementById('spelling-progress').style.width = `${((spellingIdx+1)/spellingItems.length)*100}%`;
-  document.getElementById('spelling-emoji').innerHTML      = visual(item, 'lg');
+  document.getElementById('spelling-emoji').innerHTML      = visualForPrompt(item, 'lg', spellingVisualRevealed);
+  const sh = document.getElementById('spelling-visual-hint-wrap');
+  if (sh) sh.hidden = !(shouldHideVisualInitially() && hasVisual(item));
   document.getElementById('spelling-german').textContent   = `${srcLangName()}: ${srcText(item)}`;
   const inp = document.getElementById('spelling-input');
   inp.value     = '';
@@ -1471,6 +1524,11 @@ function checkSpelling() {
 
   if (!typed) return;
   inp.disabled = true;
+  // Nach der Entscheidung: Bild zeigen (Feedback-Verankerung)
+  spellingVisualRevealed = true;
+  document.getElementById('spelling-emoji').innerHTML = visualForPrompt(item, 'lg', spellingVisualRevealed);
+  const sh = document.getElementById('spelling-visual-hint-wrap');
+  if (sh) sh.hidden = true;
 
   const target        = tgtText(item);
   const exactMatch    = typed.toLowerCase() === target.toLowerCase();
@@ -1624,6 +1682,32 @@ document.querySelectorAll('#direction-bar .dir-btn').forEach(btn => {
 });
 syncDirectionButtons();
 updateSpellingPlaceholder();
+
+// Visual-Hilfe-Buttons (Bild erst nach Entscheidung oder per Klick einblenden)
+document.getElementById('quiz-show-visual')?.addEventListener('click', () => {
+  const item = quizItems && quizItems[quizIdx];
+  if (!item) return;
+  quizVisualRevealed = true;
+  document.getElementById('quiz-question').innerHTML = visualForPrompt(item, 'lg', quizVisualRevealed);
+  const w = document.getElementById('quiz-visual-hint-wrap');
+  if (w) w.hidden = true;
+});
+document.getElementById('scramble-show-visual')?.addEventListener('click', () => {
+  const item = scrambleItems && scrambleItems[scrambleIdx];
+  if (!item) return;
+  scrambleVisualRevealed = true;
+  document.getElementById('scramble-emoji').innerHTML = visualForPrompt(item, 'md', scrambleVisualRevealed);
+  const w = document.getElementById('scramble-visual-hint-wrap');
+  if (w) w.hidden = true;
+});
+document.getElementById('spelling-show-visual')?.addEventListener('click', () => {
+  const item = spellingItems && spellingItems[spellingIdx];
+  if (!item) return;
+  spellingVisualRevealed = true;
+  document.getElementById('spelling-emoji').innerHTML = visualForPrompt(item, 'lg', spellingVisualRevealed);
+  const w = document.getElementById('spelling-visual-hint-wrap');
+  if (w) w.hidden = true;
+});
 
 (async function bootstrap() {
   try {
