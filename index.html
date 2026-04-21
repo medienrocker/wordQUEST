@@ -40,7 +40,29 @@
 
 <div id="wordlist-bar">
   <span class="wordlist-bar-label" id="wordlist-bar-label">📚 Wortlisten:</span>
-  <div id="wordlist-picker" class="wordlist-picker" role="group" aria-labelledby="wordlist-bar-label"></div>
+  <div class="wordlist-picker" role="group" aria-labelledby="wordlist-bar-label">
+    <button type="button" id="wordlist-picker-btn" class="wl-picker-btn" aria-haspopup="dialog" aria-expanded="false">
+      Listen auswählen…
+    </button>
+    <div id="wordlist-picker-summary" class="wl-picker-summary" aria-live="polite"></div>
+  </div>
+  <div id="wordlist-picker-panel" class="wl-panel" role="dialog" aria-modal="true" aria-label="Wortlisten auswählen" hidden>
+    <div class="wl-panel-head">
+      <div class="wl-panel-title">Wortlisten auswählen</div>
+      <button type="button" class="wl-panel-close" id="wordlist-picker-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="wl-panel-search">
+      <input type="search" id="wordlist-picker-search" placeholder="Suchen…" autocomplete="off" />
+      <div class="wl-panel-actions">
+        <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-all">Alle</button>
+        <button type="button" class="btn btn-grey wl-mini-btn" id="wl-select-none">Keine</button>
+      </div>
+    </div>
+    <div id="wordlist-picker-list" class="wl-panel-list" role="listbox" aria-multiselectable="true"></div>
+    <div class="wl-panel-foot">
+      <button type="button" class="btn btn-green" id="wl-apply">Fertig</button>
+    </div>
+  </div>
   <div id="wordlist-meta" aria-live="polite"></div>
 </div>
 
@@ -616,7 +638,7 @@ async function fetchOneWordlist(file) {
 }
 
 async function loadWordlists(files) {
-  const picker = document.getElementById('wordlist-picker');
+  const picker = document.getElementById('wordlist-picker-btn');
   if (picker) picker.classList.add('is-loading');
 
   try {
@@ -714,49 +736,174 @@ function updateWordlistMeta() {
   meta.textContent = parts.join(' · ');
 }
 
-function getPickerSelectedFiles() {
-  const picker = document.getElementById('wordlist-picker');
-  if (!picker) return [];
-  return [...picker.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
-}
-
-function scheduleLoadWordlists() {
-  clearTimeout(WORDLIST_LOAD_TIMER);
-  WORDLIST_LOAD_TIMER = setTimeout(() => {
-    loadWordlists(getPickerSelectedFiles());
-  }, 280);
-}
-
-function renderWordlistPicker() {
-  const picker = document.getElementById('wordlist-picker');
-  if (!picker || !WORDLIST_INDEX.length) return;
-
+function loadSelectedListsFromStorage() {
   let saved = [];
   try {
     saved = JSON.parse(localStorage.getItem('wq.selectedLists') || '[]');
   } catch {
     saved = [];
   }
+  if (!Array.isArray(saved)) saved = [];
   if (!saved.length) {
     const last = localStorage.getItem('wq.lastList');
     if (last) saved = [last];
   }
   if (!saved.length && WORDLIST_INDEX[0]) saved = [WORDLIST_INDEX[0].file];
+  // nur gültige Dateien behalten
+  const valid = new Set(WORDLIST_INDEX.map(x => x.file));
+  saved = saved.filter(f => valid.has(f));
+  if (!saved.length && WORDLIST_INDEX[0]) saved = [WORDLIST_INDEX[0].file];
+  return saved;
+}
 
-  picker.innerHTML = WORDLIST_INDEX.map(item => {
-    const id = 'wl-' + item.file.replace(/[^a-z0-9._-]/gi, '_');
-    const checked = saved.includes(item.file) ? ' checked' : '';
-    return `<label class="wl-opt" for="${id}">
+function getPickerSelectedFiles() {
+  // Quelle der Wahrheit: storage (nicht DOM) – skaliert besser
+  return loadSelectedListsFromStorage();
+}
+
+function saveSelectedListsToStorage(files) {
+  const unique = [...new Set(files)];
+  localStorage.setItem('wq.selectedLists', JSON.stringify(unique));
+  if (unique[0]) localStorage.setItem('wq.lastList', unique[0]);
+}
+
+function scheduleLoadWordlists(files) {
+  clearTimeout(WORDLIST_LOAD_TIMER);
+  WORDLIST_LOAD_TIMER = setTimeout(() => loadWordlists(files), 220);
+}
+
+function updateWordlistPickerSummary() {
+  const summary = document.getElementById('wordlist-picker-summary');
+  const btn = document.getElementById('wordlist-picker-btn');
+  if (!summary || !btn) return;
+  const sel = loadSelectedListsFromStorage();
+  const count = sel.length;
+  const total = WORDLIST_INDEX.length;
+  const titleByFile = new Map(WORDLIST_INDEX.map(x => [x.file, x.title]));
+  const names = sel.map(f => titleByFile.get(f) || f);
+  summary.textContent = count === 0
+    ? 'Keine Auswahl'
+    : (count <= 2 ? names.join(', ') : `${names.slice(0,2).join(', ')} +${count - 2}`);
+  btn.textContent = `Auswählen (${count}/${total})`;
+}
+
+function closeWordlistPanel() {
+  const panel = document.getElementById('wordlist-picker-panel');
+  const btn = document.getElementById('wordlist-picker-btn');
+  if (!panel || !btn) return;
+  panel.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('keydown', onWordlistPanelKeydown, true);
+}
+
+function openWordlistPanel() {
+  const panel = document.getElementById('wordlist-picker-panel');
+  const btn = document.getElementById('wordlist-picker-btn');
+  if (!panel || !btn) return;
+  panel.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  renderWordlistPanelList();
+  const search = document.getElementById('wordlist-picker-search');
+  if (search) search.focus();
+  document.addEventListener('keydown', onWordlistPanelKeydown, true);
+}
+
+function onWordlistPanelKeydown(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeWordlistPanel();
+  }
+}
+
+function renderWordlistPanelList() {
+  const list = document.getElementById('wordlist-picker-list');
+  const search = document.getElementById('wordlist-picker-search');
+  if (!list) return;
+  const q = String(search?.value || '').trim().toLowerCase();
+
+  const selected = new Set(loadSelectedListsFromStorage());
+  const filtered = WORDLIST_INDEX.filter(item => {
+    if (!q) return true;
+    return (item.title || '').toLowerCase().includes(q) || item.file.toLowerCase().includes(q);
+  });
+
+  list.innerHTML = filtered.map(item => {
+    const id = 'wlx-' + item.file.replace(/[^a-z0-9._-]/gi, '_');
+    const checked = selected.has(item.file) ? ' checked' : '';
+    const count = item.count ? ` <span class="wl-count">(${item.count})</span>` : '';
+    const sub = item.description ? `<div class="wl-desc">${escapeHtml(item.description)}</div>` : '';
+    return `<label class="wl-row" for="${id}" role="option" aria-selected="${selected.has(item.file) ? 'true' : 'false'}">
       <input type="checkbox" id="${id}" value="${escapeHtml(item.file)}"${checked} />
-      <span>${escapeHtml(item.title)}${item.count ? ` (${item.count})` : ''}</span>
+      <div class="wl-row-main">
+        <div class="wl-title">${escapeHtml(item.title)}${count}</div>
+        ${sub}
+      </div>
     </label>`;
   }).join('');
 
-  picker.querySelectorAll('input[type=checkbox]').forEach(cb => {
+  list.querySelectorAll('input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', () => {
-      localStorage.setItem('wq.selectedLists', JSON.stringify(getPickerSelectedFiles()));
-      scheduleLoadWordlists();
+      const current = new Set(loadSelectedListsFromStorage());
+      if (cb.checked) current.add(cb.value); else current.delete(cb.value);
+      const out = [...current];
+      if (!out.length && WORDLIST_INDEX[0]) out.push(WORDLIST_INDEX[0].file);
+      saveSelectedListsToStorage(out);
+      updateWordlistPickerSummary();
     });
+  });
+}
+
+function renderWordlistPicker() {
+  if (!WORDLIST_INDEX.length) return;
+
+  const btn = document.getElementById('wordlist-picker-btn');
+  const closeBtn = document.getElementById('wordlist-picker-close');
+  const applyBtn = document.getElementById('wl-apply');
+  const panel = document.getElementById('wordlist-picker-panel');
+  const search = document.getElementById('wordlist-picker-search');
+  const allBtn = document.getElementById('wl-select-all');
+  const noneBtn = document.getElementById('wl-select-none');
+
+  updateWordlistPickerSummary();
+
+  if (btn) btn.addEventListener('click', () => {
+    const open = panel && !panel.hidden;
+    if (open) closeWordlistPanel(); else openWordlistPanel();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', closeWordlistPanel);
+  if (applyBtn) applyBtn.addEventListener('click', () => {
+    closeWordlistPanel();
+    const sel = loadSelectedListsFromStorage();
+    scheduleLoadWordlists(sel);
+  });
+  if (search) search.addEventListener('input', () => renderWordlistPanelList());
+
+  if (allBtn) allBtn.addEventListener('click', () => {
+    // alle sichtbaren (gefilterten) auswählen
+    const q = String(search?.value || '').trim().toLowerCase();
+    const visible = WORDLIST_INDEX.filter(item => {
+      if (!q) return true;
+      return (item.title || '').toLowerCase().includes(q) || item.file.toLowerCase().includes(q);
+    }).map(x => x.file);
+    saveSelectedListsToStorage(visible.length ? visible : loadSelectedListsFromStorage());
+    updateWordlistPickerSummary();
+    renderWordlistPanelList();
+  });
+  if (noneBtn) noneBtn.addEventListener('click', () => {
+    // alles abwählen -> wir lassen 1 Liste stehen (keine leere Auswahl)
+    const fallback = WORDLIST_INDEX[0] ? [WORDLIST_INDEX[0].file] : [];
+    saveSelectedListsToStorage(fallback);
+    updateWordlistPickerSummary();
+    renderWordlistPanelList();
+  });
+
+  // Klick außerhalb schließt (nur wenn Panel offen)
+  document.addEventListener('click', (e) => {
+    if (!panel || panel.hidden) return;
+    const t = e.target;
+    if (!(t instanceof Node)) return;
+    const inside = panel.contains(t) || (btn && btn.contains(t));
+    if (!inside) closeWordlistPanel();
   });
 }
 
