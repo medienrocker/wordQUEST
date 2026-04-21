@@ -165,8 +165,8 @@
   <div class="progress-wrap"><div class="progress-bar" id="quiz-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="quiz-question"></div>
-    <div id="quiz-visual-hint-wrap" style="text-align:center; margin:8px 0 0;" hidden>
-      <button type="button" class="btn btn-grey" id="quiz-show-visual" aria-controls="quiz-question">🖼️ Bild anzeigen</button>
+    <div id="quiz-visual-hint-wrap" class="visual-hint-wrap" role="group" aria-label="Optionale Hilfe zur Vokabel" hidden>
+      <button type="button" class="btn btn-grey visual-hint-btn" id="quiz-show-visual" aria-controls="quiz-question"></button>
     </div>
     <div id="quiz-hint">Was ist das auf Englisch?</div>
     <div id="quiz-choices"></div>
@@ -210,8 +210,8 @@
   <div class="progress-wrap"><div class="progress-bar" id="scramble-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="scramble-emoji"></div>
-    <div id="scramble-visual-hint-wrap" style="text-align:center; margin:6px 0 2px;" hidden>
-      <button type="button" class="btn btn-grey" id="scramble-show-visual" aria-controls="scramble-emoji">🖼️ Bild anzeigen</button>
+    <div id="scramble-visual-hint-wrap" class="visual-hint-wrap" role="group" aria-label="Optionale Hilfe zur Vokabel" hidden>
+      <button type="button" class="btn btn-grey visual-hint-btn" id="scramble-show-visual" aria-controls="scramble-emoji"></button>
     </div>
     <div id="scramble-hint"></div>
     <div id="scramble-display"></div>
@@ -235,14 +235,14 @@
   <div class="progress-wrap"><div class="progress-bar" id="spelling-progress" style="width:10%"></div></div>
   <div class="card">
     <div id="spelling-emoji"></div>
-    <div id="spelling-visual-hint-wrap" style="text-align:center; margin:6px 0 2px;" hidden>
-      <button type="button" class="btn btn-grey" id="spelling-show-visual" aria-controls="spelling-emoji">🖼️ Bild anzeigen</button>
-    </div>
     <div id="spelling-german"></div>
     <input type="text" id="spelling-input" placeholder="Englisches Wort eingeben..." autocomplete="off" autocorrect="off" spellcheck="false" />
-    <div style="text-align:center; margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <button class="btn btn-grey" onclick="showHint()">💡 Tipp</button>
-      <button class="btn btn-red" onclick="checkSpelling()">✓ Prüfen</button>
+    <div class="spelling-controls" role="group" aria-label="Hilfen und Prüfen">
+      <button type="button" class="btn btn-grey" onclick="showHint()">💡 Tipp</button>
+      <div id="spelling-visual-hint-wrap" class="visual-hint-wrap spelling-visual-inline" role="group" aria-label="Optionale Hilfe zur Vokabel" hidden>
+        <button type="button" class="btn btn-grey visual-hint-btn" id="spelling-show-visual" aria-controls="spelling-emoji"></button>
+      </div>
+      <button type="button" class="btn btn-red" onclick="checkSpelling()">✓ Prüfen</button>
     </div>
     <div id="spelling-hint-text" style="text-align:center; color:#888; margin-top:10px; font-size:.95rem; min-height:22px;"></div>
   </div>
@@ -546,11 +546,47 @@ function hasVisual(item) {
 }
 function visualPlaceholder(size) {
   size = size || 'md';
-  return `<span class="word-visual word-visual-${size} is-fallback">?</span>`;
+  const tip = 'Hilfsbild oder Emoji kannst du nach der Antwort sehen – oder vorher über „Hilfe“ einblenden.';
+  return `<span class="word-visual word-visual-${size} is-fallback visual-placeholder-en2de" title="${escapeHtml(tip)}">?</span>`;
 }
 function visualForPrompt(item, size, revealed) {
   if (!revealed && shouldHideVisualInitially() && hasVisual(item)) return visualPlaceholder(size);
   return visual(item, size);
+}
+
+/** Text für Hilfe-Button: Bild vs. Emoji (EN→DE). */
+function visualHintLabel(item) {
+  if (item && item.img) {
+    return {
+      text: '🖼️ Bild anzeigen',
+      title: 'Optional: Bild anzeigen (Hilfe – die richtige Antwort bleibt dir überlassen).',
+      ariaLabel: 'Bild als optionale Hilfe anzeigen'
+    };
+  }
+  if (item && item.emoji) {
+    return {
+      text: '😊 Emoji anzeigen',
+      title: 'Optional: Emoji anzeigen (Hilfe – die richtige Antwort bleibt dir überlassen).',
+      ariaLabel: 'Emoji als optionale Hilfe anzeigen'
+    };
+  }
+  return { text: 'Hilfe', title: '', ariaLabel: 'Hilfe anzeigen' };
+}
+function syncVisualHintButton(btnId, item) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const lab = visualHintLabel(item);
+  btn.textContent = lab.text;
+  btn.title = lab.title;
+  btn.setAttribute('aria-label', lab.ariaLabel);
+  btn.disabled = false;
+}
+function syncVisualHintWrap(wrapId, btnId, item, revealed) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const show = shouldHideVisualInitially() && hasVisual(item) && !revealed;
+  wrap.hidden = !show;
+  if (show) syncVisualHintButton(btnId, item);
 }
 
 /* Aktiviert/deaktiviert den "Weiter →"-Button im Game-Header.
@@ -1096,9 +1132,7 @@ function showQuizQuestion() {
   document.getElementById('quiz-counter').textContent   = `${quizIdx+1} / ${quizItems.length}`;
   document.getElementById('quiz-progress').style.width  = `${((quizIdx+1)/quizItems.length)*100}%`;
   document.getElementById('quiz-question').innerHTML    = visualForPrompt(item, 'lg', quizVisualRevealed);
-
-  const hintWrap = document.getElementById('quiz-visual-hint-wrap');
-  if (hintWrap) hintWrap.hidden = !(shouldHideVisualInitially() && hasVisual(item));
+  syncVisualHintWrap('quiz-visual-hint-wrap', 'quiz-show-visual', item, quizVisualRevealed);
   document.getElementById('quiz-hint').innerHTML        =
     `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`;
   document.getElementById('quiz-feedback').textContent  = '';
@@ -1123,8 +1157,7 @@ function handleQuizAnswer(btn, correct, rightAnswer, item) {
   // Nach der Entscheidung Bild zeigen (Feedback-Verankerung)
   quizVisualRevealed = true;
   document.getElementById('quiz-question').innerHTML = visualForPrompt(item, 'lg', quizVisualRevealed);
-  const hintWrap = document.getElementById('quiz-visual-hint-wrap');
-  if (hintWrap) hintWrap.hidden = true;
+  syncVisualHintWrap('quiz-visual-hint-wrap', 'quiz-show-visual', item, true);
 
   document.querySelectorAll('.choice-btn').forEach(b => {
     b.disabled = true;
@@ -1312,8 +1345,7 @@ function showScrambleQuestion() {
   document.getElementById('scramble-counter').textContent  = `${scrambleIdx+1} / ${scrambleItems.length}`;
   document.getElementById('scramble-progress').style.width = `${((scrambleIdx+1)/scrambleItems.length)*100}%`;
   document.getElementById('scramble-emoji').innerHTML      = visualForPrompt(item, 'md', scrambleVisualRevealed);
-  const sw = document.getElementById('scramble-visual-hint-wrap');
-  if (sw) sw.hidden = !(shouldHideVisualInitially() && hasVisual(item));
+  syncVisualHintWrap('scramble-visual-hint-wrap', 'scramble-show-visual', item, scrambleVisualRevealed);
   document.getElementById('scramble-hint').textContent     = `${srcLangName()}: ${srcText(item)}`;
   document.getElementById('scramble-feedback').textContent = '';
   setNextReady('scramble', false);
@@ -1422,8 +1454,7 @@ function checkScramble() {
   // Nach dem Prüfen: Bild zeigen (egal ob richtig oder falsch)
   scrambleVisualRevealed = true;
   document.getElementById('scramble-emoji').innerHTML = visualForPrompt(item, 'md', scrambleVisualRevealed);
-  const sw = document.getElementById('scramble-visual-hint-wrap');
-  if (sw) sw.hidden = true;
+  syncVisualHintWrap('scramble-visual-hint-wrap', 'scramble-show-visual', item, true);
   if (answer === expected) {
     fb.textContent = praiseMsg();
     fb.className   = 'feedback correct';
@@ -1478,8 +1509,7 @@ function showSpellingQuestion() {
   document.getElementById('spelling-counter').textContent  = `${spellingIdx+1} / ${spellingItems.length}`;
   document.getElementById('spelling-progress').style.width = `${((spellingIdx+1)/spellingItems.length)*100}%`;
   document.getElementById('spelling-emoji').innerHTML      = visualForPrompt(item, 'lg', spellingVisualRevealed);
-  const sh = document.getElementById('spelling-visual-hint-wrap');
-  if (sh) sh.hidden = !(shouldHideVisualInitially() && hasVisual(item));
+  syncVisualHintWrap('spelling-visual-hint-wrap', 'spelling-show-visual', item, spellingVisualRevealed);
   document.getElementById('spelling-german').textContent   = `${srcLangName()}: ${srcText(item)}`;
   const inp = document.getElementById('spelling-input');
   inp.value     = '';
@@ -1527,8 +1557,7 @@ function checkSpelling() {
   // Nach der Entscheidung: Bild zeigen (Feedback-Verankerung)
   spellingVisualRevealed = true;
   document.getElementById('spelling-emoji').innerHTML = visualForPrompt(item, 'lg', spellingVisualRevealed);
-  const sh = document.getElementById('spelling-visual-hint-wrap');
-  if (sh) sh.hidden = true;
+  syncVisualHintWrap('spelling-visual-hint-wrap', 'spelling-show-visual', item, true);
 
   const target        = tgtText(item);
   const exactMatch    = typed.toLowerCase() === target.toLowerCase();
@@ -1689,24 +1718,21 @@ document.getElementById('quiz-show-visual')?.addEventListener('click', () => {
   if (!item) return;
   quizVisualRevealed = true;
   document.getElementById('quiz-question').innerHTML = visualForPrompt(item, 'lg', quizVisualRevealed);
-  const w = document.getElementById('quiz-visual-hint-wrap');
-  if (w) w.hidden = true;
+  syncVisualHintWrap('quiz-visual-hint-wrap', 'quiz-show-visual', item, true);
 });
 document.getElementById('scramble-show-visual')?.addEventListener('click', () => {
   const item = scrambleItems && scrambleItems[scrambleIdx];
   if (!item) return;
   scrambleVisualRevealed = true;
   document.getElementById('scramble-emoji').innerHTML = visualForPrompt(item, 'md', scrambleVisualRevealed);
-  const w = document.getElementById('scramble-visual-hint-wrap');
-  if (w) w.hidden = true;
+  syncVisualHintWrap('scramble-visual-hint-wrap', 'scramble-show-visual', item, true);
 });
 document.getElementById('spelling-show-visual')?.addEventListener('click', () => {
   const item = spellingItems && spellingItems[spellingIdx];
   if (!item) return;
   spellingVisualRevealed = true;
   document.getElementById('spelling-emoji').innerHTML = visualForPrompt(item, 'lg', spellingVisualRevealed);
-  const w = document.getElementById('spelling-visual-hint-wrap');
-  if (w) w.hidden = true;
+  syncVisualHintWrap('spelling-visual-hint-wrap', 'spelling-show-visual', item, true);
 });
 
 (async function bootstrap() {

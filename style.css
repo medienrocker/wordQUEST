@@ -977,6 +977,44 @@ img.word-visual {
     font-size: 2.6rem;
 }
 
+/* EN→DE: Platzhalter „?“ = Hilfe per Tooltip erklärt */
+.visual-placeholder-en2de {
+    cursor: help;
+}
+
+/* Optionale Hilfe: Bild vs. Emoji (Button-Text wird per JS gesetzt) */
+.visual-hint-wrap {
+    text-align: center;
+    margin: 6px 0 2px;
+}
+
+#section-quiz .visual-hint-wrap {
+    margin: 8px 0 4px;
+}
+
+.visual-hint-btn {
+    font-size: .92rem !important;
+    padding: 7px 14px !important;
+}
+
+/* Spelling: Tipp, Bild-Hilfe und Prüfen in einer Zeile */
+.spelling-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.spelling-controls .spelling-visual-inline {
+    margin: 0;
+}
+
+.spelling-controls .spelling-visual-inline[hidden] {
+    display: none !important;
+}
+
 /* ─── QUIZ ─── */
 #quiz-question {
     text-align: center;
