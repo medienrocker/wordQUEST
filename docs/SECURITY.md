@@ -26,6 +26,12 @@ Geprüft: `data:`-URLs, `javascript:`-URLs, fremde Hosts und unverschlüsselte V
 curl -I https://wordquest.bildungssprit.de/
 ```
 
+Unter Windows PowerShell 5.1 gibt es `-SkipHttpErrorCheck` nicht, dort:
+
+```powershell
+(Invoke-WebRequest https://wordquest.bildungssprit.de/ -UseBasicParsing).Headers
+```
+
 ### Subresource Integrity auf den CDN-Ressourcen
 
 canvas-confetti und animate.css werden von fremden CDNs geladen. Ohne Integritätsprüfung führt ein kompromittiertes CDN beliebigen Code in der App-Origin aus. Beide Einbindungen haben jetzt `integrity`, `crossorigin` und `referrerpolicy`. `celebrate()` prüft vor dem Aufruf, ob die Bibliothek überhaupt geladen wurde, damit ein fehlgeschlagener Integritätscheck das Spiel nicht bricht.

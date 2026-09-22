@@ -137,11 +137,24 @@ Deploy von außen gegenprüfen, siehe [SECURITY.md](SECURITY.md).
 ## Prüfung nach dem Deploy, von außen
 
 ```powershell
-Invoke-WebRequest https://wordquest.bildungssprit.de/ -SkipHttpErrorCheck | % Headers
-Invoke-WebRequest https://wordquest.bildungssprit.de/.git/HEAD -Method Head -SkipHttpErrorCheck
-Invoke-WebRequest https://wordquest.bildungssprit.de/docs/DEPLOY.md -Method Head -SkipHttpErrorCheck
-Invoke-WebRequest https://wordquest.bildungssprit.de/sw.js -Method Head -SkipHttpErrorCheck
+# Läuft auch unter Windows PowerShell 5.1. Dort gibt es kein
+# -SkipHttpErrorCheck, deshalb der try/catch: 403 und 404 kommen
+# als Ausnahme zurück, nicht als Statuscode.
+$b = "https://wordquest.bildungssprit.de"
+foreach ($p in @("/private/wordquest.sqlite","/api/lib/config.php","/api/lib/db.php","/docs/DEPLOY.md","/.git/HEAD","/sw.js","/")) {
+  try   { $c = (Invoke-WebRequest "$b$p" -Method Head -UseBasicParsing -ErrorAction Stop).StatusCode }
+  catch { $c = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { "Verbindungsfehler" } }
+  "{0,-30} {1}" -f $p, $c
+}
+$h = (Invoke-WebRequest $b -UseBasicParsing).Headers
+"CSP vorhanden: " + [bool]$h["Content-Security-Policy"]
+"nosniff:       " + $h["X-Content-Type-Options"]
 ```
 
-Erwartet: Startseite 200 mit CSP und `nosniff`, `.git/HEAD` und `docs/` jeweils 403 oder 404,
-`sw.js` 200.
+Erwartet: `private/`, `api/lib/`, `docs/` und `.git/HEAD` jeweils **403 oder 404**,
+`sw.js` und die Startseite **200**, `CSP vorhanden` **True**.
+
+Ist `CSP vorhanden` gleich `False`, liefert Plesk statische Dateien direkt über nginx
+aus und die `.htaccess`-Header greifen nicht. Dann entweder *Serve static files directly
+by nginx* abschalten oder die Header unter „Additional nginx directives" mit
+`add_header … always;` setzen.
