@@ -131,6 +131,12 @@
       </div>
     </div>
   </div>
+  <!-- Dauerhaft sichtbar, weil title-Tooltips auf dem Smartphone nicht
+       erscheinen und genau dort die Zielgruppe spielt. -->
+  <p class="prog-erklaerung">
+    <strong>Schon dran</strong> zeigt, wie viel der Liste du in diesem Durchlauf abgefragt hast.
+    <strong>Fast sicher</strong> heißt: mindestens einmal richtig. <strong>Sicher</strong> heißt: viermal richtig.
+  </p>
 </div>
 
 <nav>
@@ -195,11 +201,11 @@
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
   </div>
   <div class="card practice-card" style="margin-top:14px;">
-    <button type="button" class="btn btn-grey" onclick="resetRun()">🔄 Durchlauf neu starten</button>
+    <button type="button" class="btn btn-grey" onclick="resetRun()" title="Setzt nur zurück, welche Wörter schon dran waren. Lernstand und Fleißzähler bleiben.">🔄 Durchlauf neu starten</button>
     <p class="practice-privacy">Setzt nur zurück, welche Wörter schon dran waren. Dein Lernstand bleibt erhalten.</p>
   </div>
   <div class="card practice-card" style="margin-top:14px;">
-    <button type="button" class="btn btn-grey" onclick="clearDiagnosis()">🗑 Diagnose-Daten löschen</button>
+    <button type="button" class="btn btn-grey" onclick="clearDiagnosis()" title="Löscht den kompletten Lernstand dieses Geräts. Lässt sich nicht rückgängig machen.">🗑 Diagnose-Daten löschen</button>
     <p class="practice-privacy">Daten bleiben ausschließlich lokal auf deinem Gerät.</p>
   </div>
 </section>
@@ -226,9 +232,9 @@
     <div class="stars" id="result-stars"></div>
     <div id="result-title"></div>
     <div id="result-score"></div>
-    <button class="btn btn-green" onclick="startQuiz()">🔄 Nochmal spielen</button>
+    <button class="btn btn-green" onclick="startQuiz()" title="Neue Runde mit denselben Einstellungen starten.">🔄 Nochmal spielen</button>
     &nbsp;
-    <button class="btn btn-grey" onclick="openTab('menu')">🏠 Menü</button>
+    <button class="btn btn-grey" onclick="openTab('menu')" title="Zurück zur Spielauswahl.">🏠 Menü</button>
   </div>
 </section>
 
@@ -244,8 +250,8 @@
   </div>
   <div id="memory-grid"></div>
   <div style="text-align:center; margin-top:18px;">
-    <button class="btn btn-grey" onclick="startMemory(8)">🔄 Neu starten</button>
-    <button class="btn" style="background:var(--purple);color:white; margin-left:8px;" onclick="startMemory(12)">💪 12 Paare</button>
+    <button class="btn btn-grey" onclick="startMemory(8)" title="Memory mit 8 Paaren neu mischen.">🔄 Neu starten</button>
+    <button class="btn" style="background:var(--purple);color:white; margin-left:8px;" onclick="startMemory(12)" title="Schwerere Runde mit 12 Paaren.">💪 12 Paare</button>
   </div>
 </section>
 
@@ -268,8 +274,8 @@
     <div id="answer-slots"></div>
     <div id="letter-bank"></div>
     <div style="text-align:center; margin-top:10px;">
-      <button class="btn btn-grey" onclick="clearAnswer()">↩ Zurücksetzen</button>
-      <button class="btn btn-orange" onclick="checkScramble()" style="margin-left:8px;">✓ Prüfen</button>
+      <button class="btn btn-grey" onclick="clearAnswer()" title="Alle gesetzten Buchstaben zurück in die Auswahl legen.">↩ Zurücksetzen</button>
+      <button class="btn btn-orange" onclick="checkScramble()" style="margin-left:8px;" title="Antwort prüfen.">✓ Prüfen</button>
     </div>
   </div>
 </section>
@@ -288,11 +294,11 @@
     <div id="spelling-german"></div>
     <input type="text" id="spelling-input" placeholder="Englisches Wort eingeben..." autocomplete="off" autocorrect="off" spellcheck="false" />
     <div class="spelling-controls" role="group" aria-label="Hilfen und Prüfen">
-      <button type="button" class="btn btn-grey" onclick="showHint()">💡 Tipp</button>
+      <button type="button" class="btn btn-grey" onclick="showHint()" title="Zeigt die ersten zwei Buchstaben und die Wortlänge. Kostet die Hälfte der Punkte.">💡 Tipp</button>
       <div id="spelling-visual-hint-wrap" class="visual-hint-wrap spelling-visual-inline" role="group" aria-label="Optionale Hilfe zur Vokabel" hidden>
         <button type="button" class="btn btn-grey visual-hint-btn" id="spelling-show-visual" aria-controls="spelling-emoji"></button>
       </div>
-      <button type="button" class="btn btn-red" onclick="checkSpelling()">✓ Prüfen</button>
+      <button type="button" class="btn btn-red" onclick="checkSpelling()" title="Geschriebenes Wort prüfen.">✓ Prüfen</button>
     </div>
     <div id="spelling-hint-text" style="text-align:center; color:#888; margin-top:10px; font-size:.95rem; min-height:22px;"></div>
   </div>
@@ -691,7 +697,10 @@ function markWordSeen(wqId) {
 }
 
 function resetRun() {
-  const run = { seen: [], round: 0, done: false, startedAt: Date.now() };
+  // Der Fleißzähler überlebt den Neustart: Er misst die geleistete Arbeit,
+  // nicht den aktuellen Stand.
+  const bisher = getRun().durchlaeufe || 0;
+  const run = { seen: [], round: 0, done: false, durchlaeufe: bisher, startedAt: Date.now() };
   saveRun(run);
   updateProgressStrip();
   updatePracticePanel();
@@ -747,14 +756,22 @@ function buildRound(size) {
 /* Zwei bewusst getrennte Messgrößen (WQ-5.2):
    Abdeckung = schon drangewesen, Beherrschung = sicher gelernt.
 
-   Beherrschung wird zweistufig gezählt. Box 4 und 5 sind "sicher", Box 3 ist
-   "fast sicher". Der Grund ist nicht Kosmetik: Der Weg auf Box 4 braucht vier
-   richtige Antworten, und wer eine Liste einmal durchspielt, landet meist auf
-   Box 3. Ohne die Vorstufe stünde nach einer langen Übungseinheit "0 von 91",
-   und das Kind lernt daraus vor allem, nichts erreicht zu haben.
+   Beherrschung wird zweistufig gezählt:
 
-   Gelesen wird hier bewusst einmal aus dem Speicher statt je Wort, sonst
-   entstehen bei 500 Wörtern 500 JSON-Parsevorgänge pro Aktualisierung. */
+   - "sicher"      = Box 4 oder 5, also vier richtige Antworten. Bleibt streng,
+                     denn das soll heissen: sitzt auch nach Tagen Pause.
+   - "fast sicher" = mindestens einmal richtig beantwortet, aber noch nicht
+                     sicher, und kein Knackpunkt.
+
+   Die zweite Stufe hängt bewusst NICHT an der Leitner-Box. Ein kompletter
+   Durchlauf bedeutet, dass jedes Wort etwa einmal dran war, und eine einzelne
+   richtige Antwort lässt ein Wort wegen der Zwei-in-Folge-Regel in Box 1.
+   Eine boxbasierte Vorstufe wäre nach dem ersten Durchlauf also immer leer,
+   obwohl das Kind gerade die halbe Liste richtig beantwortet hat. Genau dieser
+   Fall ist im Betrieb aufgetreten: 12 von 14 Wörtern richtig, Anzeige 0.
+
+   Gelesen wird einmal aus dem Speicher statt je Wort, sonst entstehen bei
+   500 Wörtern 500 JSON-Parsevorgänge pro Aktualisierung. */
 function getRunProgress() {
   const active  = getActiveVocab();
   const run     = getRun();
@@ -767,9 +784,8 @@ function getRunProgress() {
     if (seenSet.has(v._wqId)) seenCount++;
     const entry = srs[v._wqId];
     if (!entry) return;
-    const box = clampBox(entry.box);
-    if (box >= MASTERY_BOX) mastered++;
-    else if (box === ALMOST_BOX) almost++;
+    if (clampBox(entry.box) >= MASTERY_BOX) mastered++;
+    else if ((entry.correct || 0) > 0 && !entry.leech) almost++;
   });
 
   return {
@@ -777,6 +793,7 @@ function getRunProgress() {
     seenCount,
     mastered,
     almost,
+    durchlaeufe: run.durchlaeufe || 0,
     round: (run.round || 0) + 1,
     totalRounds: Math.max(1, Math.ceil(total / ROUND_SIZE)),
     complete: total > 0 && seenCount >= total
@@ -792,6 +809,7 @@ function finishRound() {
   const progress = getRunProgress();
   if (progress.complete && !run.done) {
     run.done = true;
+    run.durchlaeufe = (run.durchlaeufe || 0) + 1;   // Fleißzähler
     runBonus = SCORE_RULES.runDone;
   }
   saveRun(run);
@@ -1535,11 +1553,9 @@ function updateProgressStrip() {
   const almBar = document.getElementById('prog-almost-fill');
 
   if (covVal) covVal.textContent = `${p.seenCount} von ${p.total}`;
-  if (masVal) {
-    masVal.textContent = p.almost
-      ? `${p.mastered} sicher · ${p.almost} fast sicher`
-      : `${p.mastered} von ${p.total} sicher`;
-  }
+  // Beide Zahlen immer zeigen, auch wenn eine noch null ist. Sonst wirkt die
+  // Vorstufe wie nicht vorhanden, statt wie noch nicht erreicht.
+  if (masVal) masVal.textContent = `${p.mastered} sicher · ${p.almost} fast sicher`;
   if (covBar) {
     covBar.style.width = `${pctCov}%`;
     covBar.parentElement.setAttribute('aria-valuenow', String(pctCov));
@@ -1556,9 +1572,14 @@ function updateProgressStrip() {
 
   const roundEl = document.getElementById('prog-round');
   if (roundEl) {
-    roundEl.textContent = p.complete
+    const stand = p.complete
       ? 'Durchlauf komplett 🎉'
       : `Runde ${Math.min(p.round, p.totalRounds)} von ${p.totalRounds}`;
+    // Fleißzähler: macht die geleistete Arbeit sichtbar, unabhängig vom
+    // Ergebnis. Er zählt nur hoch und wird auch beim Neustart nicht gelöscht.
+    roundEl.textContent = p.durchlaeufe
+      ? `${stand} · 💪 ${p.durchlaeufe}× komplett geschafft`
+      : stand;
   }
 }
 
@@ -2313,8 +2334,8 @@ function renderVocabToolbar() {
   }
   tb.innerHTML = `<div class="vocab-toolbar-inner">
     <span class="vocab-toolbar-label">Lernset</span>
-    <button type="button" class="btn btn-green vocab-tb-btn" onclick="vocabSelectAll(true)">Alle aktivieren</button>
-    <button type="button" class="btn btn-grey vocab-tb-btn" onclick="vocabSelectAll(false)">Alle deaktivieren</button>
+    <button type="button" class="btn btn-green vocab-tb-btn" onclick="vocabSelectAll(true)" title="Alle Wörter dieser Auswahl wieder für die Spiele aktivieren.">Alle aktivieren</button>
+    <button type="button" class="btn btn-grey vocab-tb-btn" onclick="vocabSelectAll(false)" title="Alle Wörter abwählen. Danach kommt keines mehr in den Spielen vor.">Alle deaktivieren</button>
   </div>`;
 }
 
@@ -2401,6 +2422,61 @@ function filterVocab(cat, btn) {
    BOOTSTRAP
 ═══════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════
+   TOOLTIPS
+
+   Erklärt jedes Bedienelement in einem Satz. Gesetzt werden title (Maus)
+   und aria-label beziehungsweise aria-describedby (Screenreader).
+
+   Wichtige Einschränkung: Ein title-Tooltip erscheint nur beim Überfahren
+   mit der Maus. Auf dem Smartphone, dem Hauptgerät der Zielgruppe, ist er
+   unsichtbar. Deshalb steht unter den Fortschrittsbalken zusätzlich eine
+   dauerhaft sichtbare Erklärzeile, und die Beschriftungen selbst bleiben
+   so eindeutig, dass der Tooltip nur Zusatz ist, nie die einzige Quelle.
+═══════════════════════════════════════════════ */
+const TOOLTIPS = {
+  '[data-tab="menu"]':     'Zurück zur Spielauswahl.',
+  '[data-tab="quiz"]':     'Quiz: Aus vier Antworten die richtige auswählen.',
+  '[data-tab="memory"]':   'Memory: Bild und Wort als Paar zusammenfinden.',
+  '[data-tab="scramble"]': 'Scramble: Aus durcheinandergewürfelten Buchstaben das Wort bauen.',
+  '[data-tab="spelling"]': 'Spelling: Das Wort selbst schreiben. Bringt die meisten Punkte.',
+  '[data-tab="practice"]': 'Üben: Nur die Wörter, die noch wackeln oder heute fällig sind.',
+  '[data-tab="vocab"]':    'Alle Vokabeln ansehen, einzeln an- und abwählen, Lernstand prüfen.',
+  '#wordlist-picker-btn':  'Wortlisten auswählen. Mehrere Listen lassen sich kombinieren.',
+  '#wl-select-all':        'Alle Listen auswählen.',
+  '#wl-select-none':       'Auswahl aufheben.',
+  '#wl-apply':             'Auswahl übernehmen und Fenster schließen.',
+  '#player-reroll':        'Neuen Spielernamen würfeln.',
+  '#quiz-next-top':        'Zur nächsten Frage.',
+  '#scramble-next-top':    'Zum nächsten Wort.',
+  '#spelling-next-top':    'Zum nächsten Wort.',
+  '#practice-start-btn':   'Übungsrunde nur mit den schwierigen Wörtern starten.'
+};
+
+const TOOLTIPS_TEXT = {
+  '#prog-coverage-value': 'Wie viele Wörter der Liste in diesem Durchlauf schon einmal abgefragt wurden.',
+  '#prog-mastery-value':  'Sicher heißt: viermal richtig beantwortet. Fast sicher heißt: mindestens einmal richtig.',
+  '#prog-round':          'Aktuelle Runde und wie oft du diese Liste schon komplett geschafft hast.'
+};
+
+function applyTooltips() {
+  Object.entries(TOOLTIPS).forEach(([sel, text]) => {
+    document.querySelectorAll(sel).forEach(el => {
+      el.title = text;
+      // Sichtbare Beschriftung bleibt der Name, der Tooltip beschreibt ihn.
+      if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', `${el.textContent.trim()}. ${text}`);
+    });
+  });
+  Object.entries(TOOLTIPS_TEXT).forEach(([sel, text]) => {
+    document.querySelectorAll(sel).forEach(el => { el.title = text; });
+  });
+  // Punkteanzeige
+  const punkte = document.querySelector('#total-score')?.closest('.score-item');
+  if (punkte) punkte.title = 'Gesammelte Punkte. Es gibt nie Abzüge, nur Zuschläge.';
+  const best = document.querySelector('#high-score')?.closest('.score-item');
+  if (best) best.title = 'Deine persönliche Bestleistung. Vergleich nur mit dir selbst.';
+}
+
 /* Lernrichtungsschalter verdrahten + initialen Zustand anzeigen */
 document.querySelectorAll('#direction-bar .dir-btn').forEach(btn => {
   btn.addEventListener('click', () => setDirection(btn.dataset.dir));
@@ -2413,6 +2489,7 @@ updateSpellingPlaceholder();
 migrateSrsIfNeeded();
 pruneOldRuns();
 renderPlayer();
+applyTooltips();
 document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer);
 
 // Visual-Hilfe-Buttons (Bild erst nach Entscheidung oder per Klick einblenden)
