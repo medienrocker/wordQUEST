@@ -98,20 +98,41 @@ Kommandozeile, nie über ein Formular:
 
 ```bash
 cd /var/www/vhosts/bildungssprit.de/wordquest.bildungssprit.de/httpdocs
-sudo -u bs_vps-user -H php scripts/admin-anlegen.php anlegen falk superadmin
+sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php scripts/admin-anlegen.php anlegen falk superadmin
 ```
 
-Das Passwort wird abgefragt, mindestens 12 Zeichen. Wichtig ist `sudo -u
-bs_vps-user`: Läuft der Befehl als root, gehört die neu angelegte
-Datenbankdatei anschließend root und PHP kann nicht mehr hineinschreiben.
+Das Passwort wird abgefragt, mindestens 12 Zeichen.
+
+**Zwei Dinge sind an diesem Befehl wichtig:**
+
+`sudo -u bs_vps-user`, weil PHP-FPM als dieser Benutzer läuft. Als root
+angelegte Dateien gehörten danach root, und der Webauftritt käme nicht mehr
+an die Datenbank.
+
+**Der volle Pfad zur Plesk-PHP.** Ein blankes `php` ist auf dieser Box
+`/usr/bin/php`, die System-PHP von Ubuntu. Ihr fehlt `pdo_sqlite`, und das
+Skript scheitert dann mit `could not find driver`. Dieselbe Falle wie bei
+`/usr/bin/node`. Verfügbar sind `/opt/plesk/php/8.3/bin/php` und
+`/opt/plesk/php/8.4/bin/php`. Prüfen lässt sich das mit:
+
+```bash
+/opt/plesk/php/8.4/bin/php -m | grep pdo_sqlite
+```
+
+Damit man den Pfad nicht jedes Mal tippt, lohnt sich eine Abkürzung:
+
+```bash
+alias wqphp='sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php'
+wqphp scripts/admin-anlegen.php liste
+```
 
 Weitere Befehle:
 
 ```bash
-php scripts/admin-anlegen.php liste
-php scripts/admin-anlegen.php anlegen <name> admin
-php scripts/admin-anlegen.php passwort <name>
-php scripts/admin-anlegen.php sperren <name>
+wqphp scripts/admin-anlegen.php liste
+wqphp scripts/admin-anlegen.php anlegen <name> admin
+wqphp scripts/admin-anlegen.php passwort <name>
+wqphp scripts/admin-anlegen.php sperren <name>
 ```
 
 ## Was nicht im Repo liegt
@@ -132,6 +153,11 @@ abrufbar. Die [`.htaccess`](../.htaccess) sperrt deshalb:
 zur Laufzeit per `fetch()`, ein pauschales JSON-Verbot würde sie zerlegen.
 
 ## Fallen
+
+**Ein blankes `php` ist die falsche PHP.** Auf dieser Box ist `php` die
+System-PHP von Ubuntu (8.1) ohne `pdo_sqlite`. Jeder Aufruf eines Skripts aus
+`scripts/` braucht deshalb den vollen Plesk-Pfad, siehe oben. Symptom sonst:
+`could not find driver`.
 
 **CRLF killt das Deploy-Skript.** Von Windows committete `.sh`-Dateien landen ohne
 `.gitattributes` mit CRLF im Repo, auf dem Server scheitert dann schon die Shebang
