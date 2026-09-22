@@ -6,9 +6,14 @@ Neue Ticketnummern starten bei Epic 5.
 
 ## Stand
 
-**Epic 5 ist vollständig umgesetzt** (Runden-Engine, Fortschrittsanzeige, SRS Version 2 mit Leech-Schutz, Distraktoren, Punktesystem, Spielername und Avatar). Dazu wurden die Sofortmaßnahmen aus dem Sicherheitsaudit eingebaut, siehe `SECURITY.md`.
+**Epic 5 und die Tonstufe aus Epic 6 (WQ-6.1, WQ-6.2) sind umgesetzt.**
 
-Offen: Epic 6 bis 10.
+Epic 5 vollständig (Runden-Engine, Fortschrittsanzeige, SRS Version 2 mit Leech-Schutz, Distraktoren, Punktesystem, Spielername und Avatar). Dazu wurden die Sofortmaßnahmen aus dem Sicherheitsaudit eingebaut, siehe `SECURITY.md`.
+
+Neu dazu: Aussprache über die Web Speech API an jedem englischen Wort, dazu der Hörmodus
+als fünftes Spiel mit den Stufen „Zuordnen" und „Diktat".
+
+Offen: WQ-6.3 und WQ-6.4, Epic 7 bis 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -201,11 +206,11 @@ Der Rundenabschluss-Bonus ist bewusst leistungsunabhängig, damit auch eine Rund
 
 **Akzeptanz:**
 
-- [ ] Hilfsfunktion `speak(text, lang)` mit `en-GB` für Englisch und `de-DE` für Deutsch.
-- [ ] Lautsprecher-Knopf an jedem englischen Wort in der Vokabelansicht, im Quiz-Ergebnis und im Spelling-Feedback.
-- [ ] Feature-Erkennung: fehlt eine englische Stimme, verschwinden die Knöpfe lautlos, keine Fehlermeldung.
-- [ ] Globaler Ton-Schalter, Einstellung bleibt gespeichert.
-- [ ] Knöpfe sind tastaturbedienbar und beschriftet ("Aussprache von apple anhören").
+- [x] Hilfsfunktion `speak(text, lang)` mit `en-GB` für Englisch und `de-DE` für Deutsch.
+- [x] Lautsprecher-Knopf an jedem englischen Wort in der Vokabelansicht, im Quiz-Ergebnis und im Spelling-Feedback.
+- [x] Feature-Erkennung: fehlt eine englische Stimme, verschwinden die Knöpfe lautlos, keine Fehlermeldung.
+- [x] Globaler Ton-Schalter, Einstellung bleibt gespeichert.
+- [x] Knöpfe sind tastaturbedienbar und beschriftet ("Aussprache von apple anhören").
 
 **Abhängigkeiten:** keine. **Blockiert:** WQ-6.2.
 
@@ -215,11 +220,11 @@ Der Rundenabschluss-Bonus ist bewusst leistungsunabhängig, damit auch eine Rund
 
 **Akzeptanz:**
 
-- [ ] Modus "Hören": Wort wird vorgelesen, das Kind wählt aus vier Bildern oder Übersetzungen.
-- [ ] Zweite Stufe "Diktat": Wort wird vorgelesen, das Kind tippt es, Auswertung wie bei Spelling.
-- [ ] Wiederholen-Knopf, beliebig oft, ohne Punktabzug.
-- [ ] Modus erscheint nur, wenn eine englische Stimme verfügbar ist.
-- [ ] Anbindung an Runden-Engine und SRS wie die übrigen Spiele.
+- [x] Modus "Hören": Wort wird vorgelesen, das Kind wählt aus vier Bildern oder Übersetzungen.
+- [x] Zweite Stufe "Diktat": Wort wird vorgelesen, das Kind tippt es, Auswertung wie bei Spelling.
+- [x] Wiederholen-Knopf, beliebig oft, ohne Punktabzug.
+- [x] Modus erscheint nur, wenn eine englische Stimme verfügbar ist.
+- [x] Anbindung an Runden-Engine und SRS wie die übrigen Spiele.
 
 **Abhängigkeiten:** WQ-6.1, WQ-5.1.
 

@@ -41,7 +41,12 @@
     <span>wordQUEST</span>
   </h1>
   <p>Vokabeln spielend lernen</p>
-  <button type="button" id="help-btn" class="help-btn"
+  <!-- Ton-Schalter. Bleibt verborgen, solange keine englische Stimme
+       verfügbar ist, damit kein toter Knopf herumsteht. -->
+  <button type="button" id="sound-btn" class="header-btn sound-btn" hidden
+          title="Aussprache an- und ausschalten"
+          aria-label="Aussprache ausschalten" aria-pressed="true">🔊</button>
+  <button type="button" id="help-btn" class="header-btn help-btn"
           title="Hilfe: Was bedeuten die Knöpfe und Balken?"
           aria-label="Hilfe öffnen: Erklärungen zu allen Knöpfen und Anzeigen">?</button>
 </header>
@@ -142,6 +147,7 @@
   <button class="tab-btn" data-tab="memory">🃏 Memory</button>
   <button class="tab-btn" data-tab="scramble">🔀 Scramble</button>
   <button class="tab-btn" data-tab="spelling">✍️ Spelling</button>
+  <button class="tab-btn" data-tab="listen" id="tab-listen" hidden>🎧 Hören</button>
   <button class="tab-btn" data-tab="practice">📈 Üben</button>
   <button class="tab-btn" data-tab="vocab">📚 Vokabeln</button>
 </nav>
@@ -169,6 +175,11 @@
       <span class="icon">✍️</span>
       <h3>Spelling Bee</h3>
       <p>Schreibe das Wort</p>
+    </div>
+    <div class="menu-card c-listen" id="menu-card-listen" onclick="openTab('listen')" hidden>
+      <span class="icon">🎧</span>
+      <h3>Hören</h3>
+      <p>Wort anhören und erkennen</p>
     </div>
     <div class="menu-card c-teal" onclick="openTab('practice')">
       <span class="icon">📈</span>
@@ -222,6 +233,7 @@
       <button type="button" class="btn btn-grey visual-hint-btn" id="quiz-show-visual" aria-controls="quiz-question"></button>
     </div>
     <div id="quiz-hint">Was ist das auf Englisch?</div>
+    <div id="quiz-pron" class="pron-row" hidden></div>
     <div id="quiz-choices"></div>
   </div>
   <div id="result-screen">
@@ -298,6 +310,44 @@
       <button type="button" class="btn btn-red" onclick="checkSpelling()" title="Geschriebenes Wort prüfen.">✓ Prüfen</button>
     </div>
     <div id="spelling-hint-text" style="text-align:center; color:#888; margin-top:10px; font-size:.95rem; min-height:22px;"></div>
+    <div id="spelling-pron" class="pron-row" hidden></div>
+  </div>
+</section>
+
+<!-- ══════════════ HÖREN ══════════════
+     Das englische Wort wird vorgelesen. Zuordnen trainiert Hörverstehen,
+     Diktat zusätzlich die Schreibung. Gesprochen wird immer Englisch,
+     unabhängig von der eingestellten Lernrichtung: Es geht um die
+     englische Aussprache. -->
+<section id="section-listen" class="section">
+  <div class="game-header">
+    <h2>🎧 Hören</h2>
+    <span class="game-badge badge-listen" id="listen-counter">1 / 10</span>
+    <button class="btn btn-listen next-btn-inline" id="listen-next-top" onclick="listenNext()" disabled>Weiter →</button>
+    <div class="feedback" id="listen-feedback" aria-live="polite"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="listen-progress" style="width:10%"></div></div>
+
+  <div class="listen-modes" role="group" aria-label="Übungsart wählen">
+    <button type="button" class="listen-mode-btn active" data-listen-mode="match" aria-pressed="true">👂 Zuordnen</button>
+    <button type="button" class="listen-mode-btn" data-listen-mode="dictation" aria-pressed="false">✍️ Diktat</button>
+  </div>
+
+  <div class="card">
+    <div class="listen-play-wrap">
+      <button type="button" class="listen-play" id="listen-play"
+              title="Wort noch einmal anhören. So oft du willst, es kostet keine Punkte."
+              aria-label="Wort anhören">🔊</button>
+      <p class="listen-hint" id="listen-hint">Tippe auf den Lautsprecher und hör genau hin.</p>
+    </div>
+    <div id="listen-choices"></div>
+    <div id="listen-input-wrap" hidden>
+      <input type="text" id="listen-input" placeholder="Gehörtes Wort schreiben…"
+             autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Gehörtes Wort eingeben" />
+      <div class="spelling-controls">
+        <button type="button" class="btn btn-listen" onclick="checkListenDictation()" title="Geschriebenes Wort prüfen.">✓ Prüfen</button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1017,6 +1067,107 @@ function updatePracticePanel() {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   AUSSPRACHE (WQ-6.1)
+
+   Nutzt die im Browser eingebaute Sprachausgabe. Das kostet nichts, braucht
+   keine Bandbreite und läuft offline. Ein Vokabeltrainer für Englisch, der
+   die Aussprache nicht vermittelt, liefert sonst das halbe Produkt.
+
+   Die Stimmen stehen nicht sofort bereit: Viele Browser liefern sie erst
+   nach dem Ereignis voiceschanged nach. Deshalb wird die Oberfläche nach
+   dem Laden noch einmal aktualisiert. Fehlt eine englische Stimme ganz,
+   verschwinden Knöpfe und Hörmodus lautlos, statt Fehler zu zeigen.
+═══════════════════════════════════════════════ */
+const TTS = {
+  verfuegbar: false,
+  stimmeEn: null,
+  stimmeDe: null,
+  an: localStorage.getItem('wq.ton') !== 'aus'
+};
+
+function ttsStimmenLaden() {
+  if (!('speechSynthesis' in window)) return false;
+  let stimmen = [];
+  try { stimmen = speechSynthesis.getVoices() || []; } catch { return false; }
+  if (!stimmen.length) return false;
+
+  // Britisches Englisch bevorzugt, weil die Lehrwerke darauf aufbauen.
+  TTS.stimmeEn = stimmen.find(v => /^en[-_]GB/i.test(v.lang))
+              || stimmen.find(v => /^en/i.test(v.lang))
+              || null;
+  TTS.stimmeDe = stimmen.find(v => /^de/i.test(v.lang)) || null;
+  TTS.verfuegbar = !!TTS.stimmeEn;
+  return true;
+}
+
+function speak(text, lang) {
+  if (!TTS.an || !TTS.verfuegbar) return false;
+  const inhalt = String(text || '').trim();
+  if (!inhalt) return false;
+  try {
+    speechSynthesis.cancel();   // laufende Ausgabe abbrechen, sonst staut es sich
+    const u = new SpeechSynthesisUtterance(inhalt);
+    const stimme = lang === 'de' ? TTS.stimmeDe : TTS.stimmeEn;
+    if (stimme) u.voice = stimme;
+    u.lang = lang === 'de' ? (TTS.stimmeDe?.lang || 'de-DE') : (TTS.stimmeEn?.lang || 'en-GB');
+    u.rate = 0.9;   // etwas langsamer als normal, für Lernende verständlicher
+    speechSynthesis.speak(u);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/* Lautsprecher-Knopf als HTML, damit er in die vorhandenen innerHTML-Stellen
+   passt. Geklickt wird über einen einzigen Zuhörer am Dokument. */
+function speakerBtnHtml(text, lang) {
+  if (!TTS.verfuegbar) return '';
+  const t = escapeHtml(String(text || ''));
+  if (!t) return '';
+  return `<button type="button" class="tts-btn" data-tts="${t}" data-tts-lang="${lang || 'en'}"`
+       + ` title="Aussprache von ${t} anhören" aria-label="Aussprache von ${t} anhören">🔊</button>`;
+}
+
+/* Zeigt nach einer Antwort das englische Wort mit Lautsprecher und spricht es
+   einmal vor. Die Zeile wird in den Container mit der übergebenen Kennung
+   gelegt und beim nächsten Aufruf ersetzt. */
+function zeigeAusspracheHilfe(containerId, item) {
+  const ziel = document.getElementById(containerId);
+  if (!ziel) return;
+  if (!TTS.verfuegbar || !item) { ziel.innerHTML = ''; ziel.hidden = true; return; }
+  ziel.hidden = false;
+  ziel.innerHTML = `<span class="pron-word">${escapeHtml(item.en)}</span>${speakerBtnHtml(item.en, 'en')}`;
+  speak(item.en, 'en');
+}
+
+function toggleTon() {
+  TTS.an = !TTS.an;
+  try { localStorage.setItem('wq.ton', TTS.an ? 'an' : 'aus'); } catch {}
+  if (!TTS.an) { try { speechSynthesis.cancel(); } catch {} }
+  syncTonKnopf();
+}
+
+function syncTonKnopf() {
+  const btn = document.getElementById('sound-btn');
+  if (!btn) return;
+  btn.hidden = !TTS.verfuegbar;
+  btn.textContent = TTS.an ? '🔊' : '🔇';
+  btn.setAttribute('aria-pressed', TTS.an ? 'true' : 'false');
+  btn.setAttribute('aria-label', TTS.an ? 'Aussprache ausschalten' : 'Aussprache einschalten');
+}
+
+/* Blendet alles ein oder aus, was von einer verfügbaren Stimme abhängt. */
+function syncTtsUi() {
+  syncTonKnopf();
+  const tab  = document.getElementById('tab-listen');
+  const card = document.getElementById('menu-card-listen');
+  if (tab)  tab.hidden  = !TTS.verfuegbar;
+  if (card) card.hidden = !TTS.verfuegbar;
+  if (!TTS.verfuegbar && LAST_TAB === 'listen') openTab('menu');
+  if (LAST_TAB === 'vocab') renderVocab(VOCAB_FILTER);
+}
+
 /* ─────────── Bild-URLs aus Wortlisten absichern ───────────
    Sobald Lehrkräfte eigene Listen einreichen, ist das img-Feld eine fremde
    Eingabe. Eine beliebige URL wäre ein Zählpixel: Sie liefert dem Betreiber
@@ -1544,6 +1695,7 @@ function hideError() {
 ═══════════════════════════════════════════════ */
 const SCORE_RULES = Object.freeze({
   quiz: 10, quizEasy: 6, memory: 8, scramble: 15, spelling: 20, spellingHint: 10,
+  listen: 15, dictation: 20,
   streakFrom: 3, streakStep: 2, streakMax: 10,
   firstTime: 5, comeback: 10,
   roundDone: 25, runDone: 100
@@ -1761,7 +1913,7 @@ function openTab(name, opts) {
   if (btn) btn.classList.add('active');
 
   const pool = getActiveVocab();
-  const needsPool = ['quiz', 'memory', 'scramble', 'spelling'].includes(name);
+  const needsPool = ['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(name);
 
   if (!VOCAB.length && name !== 'menu') {
     showEmptyState(name, 'no-data');
@@ -1775,6 +1927,7 @@ function openTab(name, opts) {
   clearEmptyStateInSection(name);
 
   if (name === 'quiz')    startQuiz();
+  if (name === 'listen')  startListening();
   if (name === 'scramble')startScramble();
   if (name === 'spelling')startSpelling();
   if (name === 'memory')  startMemory(8);
@@ -1787,12 +1940,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 function rerunActiveSection() {
   if (!VOCAB.length) return;
-  if (!getActiveVocab().length && ['quiz', 'memory', 'scramble', 'spelling'].includes(LAST_TAB)) {
+  if (!getActiveVocab().length && ['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(LAST_TAB)) {
     showEmptyState(LAST_TAB, 'no-active');
     return;
   }
   clearEmptyStateInSection(LAST_TAB);
   if (LAST_TAB === 'quiz')    startQuiz();
+  if (LAST_TAB === 'listen')  startListening();
   if (LAST_TAB === 'scramble')startScramble();
   if (LAST_TAB === 'spelling')startSpelling();
   if (LAST_TAB === 'memory')  startMemory(8);
@@ -1937,6 +2091,8 @@ function showQuizQuestion() {
     `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`
     + (quizEasyMode ? ' <span class="q-easy-note">(leichter, du übst dieses Wort gerade)</span>' : '');
   document.getElementById('quiz-feedback').textContent  = '';
+  const pron = document.getElementById('quiz-pron');
+  if (pron) { pron.innerHTML = ''; pron.hidden = true; }
   setNextReady('quiz', false);
 
   const wanted      = quizEasyMode ? 1 : 3;
@@ -1979,6 +2135,10 @@ function handleQuizAnswer(btn, correct, rightAnswer, item, before) {
     resetAnswerStreak();
     recordWrong(item._wqId);
   }
+  // Nach der Entscheidung das englische Wort vorsprechen: Der Moment, in dem
+  // die Aufmerksamkeit ohnehin auf der Vokabel liegt, ist der beste für die
+  // Aussprache. Der Knopf bleibt zum Nachhören stehen.
+  zeigeAusspracheHilfe('quiz-pron', item);
   updatePracticePanel();
   updateProgressStrip();
   setNextReady('quiz', true);
@@ -2374,6 +2534,8 @@ function showSpellingQuestion() {
   inp.focus();
   document.getElementById('spelling-feedback').textContent  = '';
   document.getElementById('spelling-hint-text').textContent = '';
+  const sp = document.getElementById('spelling-pron');
+  if (sp) { sp.innerHTML = ''; sp.hidden = true; }
   setNextReady('spelling', false);
 }
 
@@ -2447,6 +2609,7 @@ function checkSpelling() {
     recordWrong(item._wqId);
     updatePracticePanel();
   }
+  zeigeAusspracheHilfe('spelling-pron', item);
   updateProgressStrip();
   setNextReady('spelling', true);
 }
@@ -2465,6 +2628,159 @@ function spellingNext() {
     });
   } else {
     showSpellingQuestion();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   HÖREN (WQ-6.2)
+
+   Zwei Stufen derselben Sache:
+   - "Zuordnen": Wort anhören, die richtige Bedeutung auswählen.
+   - "Diktat":   Wort anhören, selbst schreiben.
+
+   Gesprochen wird immer das englische Wort, unabhängig von der Lernrichtung.
+   Der Wiederholen-Knopf darf beliebig oft gedrückt werden und kostet nichts:
+   Mehrfaches Hören ist beim Hörverstehen Teil des Lernens, keine Schummelei.
+═══════════════════════════════════════════════ */
+let listenItems, listenIdx, listenScore;
+let LISTEN_MODE = localStorage.getItem('wq.listenMode') === 'dictation' ? 'dictation' : 'match';
+
+function setListenMode(mode) {
+  if (mode !== 'match' && mode !== 'dictation') return;
+  LISTEN_MODE = mode;
+  try { localStorage.setItem('wq.listenMode', mode); } catch {}
+  document.querySelectorAll('.listen-mode-btn').forEach(b => {
+    const aktiv = b.dataset.listenMode === mode;
+    b.classList.toggle('active', aktiv);
+    b.setAttribute('aria-pressed', aktiv ? 'true' : 'false');
+  });
+  if (LAST_TAB === 'listen') startListening();
+}
+
+function startListening() {
+  if (!TTS.verfuegbar) return;
+  if (!getActiveVocab().length) return;
+  listenItems = buildRound(ROUND_SIZE);
+  if (!listenItems.length) return;
+  listenIdx = 0;
+  listenScore = 0;
+  resetAnswerStreak();
+  showListenQuestion();
+}
+
+function showListenQuestion() {
+  const item = listenItems[listenIdx];
+  const istDiktat = LISTEN_MODE === 'dictation';
+
+  document.getElementById('listen-counter').textContent  = `${listenIdx + 1} / ${listenItems.length}`;
+  document.getElementById('listen-progress').style.width = `${((listenIdx + 1) / listenItems.length) * 100}%`;
+  document.getElementById('listen-feedback').textContent = '';
+  document.getElementById('listen-hint').textContent = istDiktat
+    ? 'Hör zu und schreibe das englische Wort.'
+    : 'Hör zu und wähle die richtige Bedeutung.';
+  setNextReady('listen', false);
+
+  const choices = document.getElementById('listen-choices');
+  const inputWrap = document.getElementById('listen-input-wrap');
+  choices.innerHTML = '';
+  inputWrap.hidden = !istDiktat;
+  choices.hidden = istDiktat;
+
+  if (istDiktat) {
+    const inp = document.getElementById('listen-input');
+    inp.value = '';
+    inp.className = '';
+    inp.disabled = false;
+  } else {
+    // Gehört wird Englisch, gewählt wird die deutsche Bedeutung.
+    const distraktoren = pickDistractors(item, 3);
+    const alle = shuffle([item, ...distraktoren]);
+    alle.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.de;
+      btn.onclick = () => handleListenAnswer(btn, c === item, item);
+      choices.appendChild(btn);
+    });
+  }
+
+  speak(item.en, 'en');
+}
+
+function handleListenAnswer(btn, richtig, item) {
+  const before = getSrsEntry(item._wqId);
+  document.querySelectorAll('#listen-choices .choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === item.de) b.classList.add('correct-ans');
+  });
+  const fb = document.getElementById('listen-feedback');
+  if (richtig) {
+    btn.classList.add('correct-ans');
+    const award = awardAnswer('listen', before);
+    fb.textContent = praiseMsg(award);
+    fb.className = 'feedback correct';
+    listenScore++;
+    recordCorrect(item._wqId);
+  } else {
+    btn.classList.add('wrong-ans');
+    fb.textContent = growthMsg(`${item.en} = ${item.de}`);
+    fb.className = 'feedback wrong';
+    resetAnswerStreak();
+    recordWrong(item._wqId);
+  }
+  updatePracticePanel();
+  updateProgressStrip();
+  setNextReady('listen', true);
+}
+
+function checkListenDictation() {
+  const item = listenItems[listenIdx];
+  const inp = document.getElementById('listen-input');
+  const getippt = inp.value.trim();
+  if (!getippt) return;
+  inp.disabled = true;
+
+  const before = getSrsEntry(item._wqId);
+  const fb = document.getElementById('listen-feedback');
+  const genau    = getippt.toLowerCase() === item.en.toLowerCase();
+  const tolerant = normalizeSpelling(getippt) === normalizeSpelling(item.en);
+
+  if (genau || tolerant) {
+    inp.className = genau ? 'correct' : 'almost';
+    const award = awardAnswer('dictation', before);
+    fb.textContent = genau
+      ? praiseMsg(award)
+      : `⚠️ Fast perfekt! Schreibweise: ${item.en} · +${award.pts}`;
+    fb.className = genau ? 'feedback correct' : 'feedback almost';
+    listenScore++;
+    celebrate();
+    recordCorrect(item._wqId);
+  } else {
+    inp.className = 'wrong';
+    fb.textContent = growthMsg(`"${item.en}" (${item.de})`);
+    fb.className = 'feedback wrong';
+    resetAnswerStreak();
+    recordWrong(item._wqId);
+  }
+  updatePracticePanel();
+  updateProgressStrip();
+  setNextReady('listen', true);
+}
+
+function listenNext() {
+  listenIdx++;
+  if (listenIdx >= listenItems.length) {
+    const done = finishRound();
+    showRoundOverlay({
+      emoji: '🎧',
+      title: LISTEN_MODE === 'dictation' ? 'Diktat geschafft!' : 'Hören geschafft!',
+      correct: listenScore,
+      total: listenItems.length,
+      done,
+      onNochmal: startListening
+    });
+  } else {
+    showListenQuestion();
   }
 }
 
@@ -2553,7 +2869,7 @@ function renderVocab(filter) {
         <span class="vocab-learn-label">Lernen</span>
       </label>
       <div class="v-visual">${visual(v, 'sm')}</div>
-      <div class="v-en">${escapeHtml(v.en)}</div>
+      <div class="v-en">${escapeHtml(v.en)}${speakerBtnHtml(v.en, 'en')}</div>
       <div class="v-de">${escapeHtml(v.de)}</div>
       <div class="v-maturity ${mat.cls}">
         <span class="v-mat-icon" aria-hidden="true">${mat.icon}</span>
@@ -2571,7 +2887,7 @@ function renderVocab(filter) {
       renderVocab(VOCAB_FILTER);
       updatePracticePanel();
       updateProgressStrip();
-      if (['quiz', 'memory', 'scramble', 'spelling'].includes(LAST_TAB)) rerunActiveSection();
+      if (['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(LAST_TAB)) rerunActiveSection();
     });
   });
   grid.querySelectorAll('.vocab-leech-reset').forEach(btn => {
@@ -2635,12 +2951,21 @@ const HILFE = [
     ]
   },
   {
+    titel: '🔊 Aussprache',
+    eintraege: [
+      { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
+      { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz und beim Spelling.' },
+      { name: 'Keine Lautsprecher zu sehen?', text: 'Dann hat dein Gerät keine englische Stimme installiert. Die App funktioniert trotzdem vollständig, nur eben ohne Ton.' }
+    ]
+  },
+  {
     titel: '🎮 Die Spiele',
     eintraege: [
       { sel: '[data-tab="quiz"]',     name: 'Quiz',      text: 'Aus vier Antworten die richtige auswählen.' },
       { sel: '[data-tab="memory"]',   name: 'Memory',    text: 'Bild und Wort als Paar zusammenfinden.' },
       { sel: '[data-tab="scramble"]', name: 'Scramble',  text: 'Aus durcheinandergewürfelten Buchstaben das Wort bauen.' },
       { sel: '[data-tab="spelling"]', name: 'Spelling',  text: 'Das Wort selbst schreiben. Bringt die meisten Punkte, weil es am schwersten ist.' },
+      { sel: '[data-tab="listen"]',   name: 'Hören',     text: 'Das englische Wort wird vorgelesen. Bei „Zuordnen" wählst du die Bedeutung, bei „Diktat" schreibst du das Wort. Du darfst so oft nachhören, wie du willst, das kostet keine Punkte.' },
       { sel: '[data-tab="practice"]', name: 'Üben',      text: 'Übt nur die Wörter, die noch wackeln oder heute wieder fällig sind.' },
       { sel: '[data-tab="vocab"]',    name: 'Vokabeln',  text: 'Alle Wörter auf einen Blick. Hier siehst du deinen Lernstand und kannst einzelne Wörter für die Spiele abwählen.' },
       { sel: '[data-tab="menu"]',     name: 'Menü',      text: 'Zurück zur Spielauswahl.' }
@@ -2716,6 +3041,40 @@ pruneOldRuns();
 renderPlayer();
 applyTooltips();
 document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer);
+
+/* ─────────── Aussprache verdrahten ───────────
+   Ein einziger Zuhörer am Dokument bedient alle Lautsprecher-Knöpfe, auch
+   die, die erst später ins DOM kommen. */
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tts-btn');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  speak(btn.dataset.tts, btn.dataset.ttsLang);
+});
+document.getElementById('sound-btn')?.addEventListener('click', toggleTon);
+document.getElementById('listen-play')?.addEventListener('click', () => {
+  const item = listenItems && listenItems[listenIdx];
+  if (item) speak(item.en, 'en');
+});
+document.querySelectorAll('.listen-mode-btn').forEach(b => {
+  b.addEventListener('click', () => setListenMode(b.dataset.listenMode));
+});
+document.getElementById('listen-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkListenDictation();
+});
+
+/* Stimmen stehen oft erst verzögert bereit. Beim ersten Versuch kann die
+   Liste leer sein, deshalb zusätzlich auf voiceschanged hören. */
+if ('speechSynthesis' in window) {
+  if (ttsStimmenLaden()) syncTtsUi();
+  speechSynthesis.addEventListener?.('voiceschanged', () => {
+    if (ttsStimmenLaden()) syncTtsUi();
+  });
+  // Rückfallebene für Browser ohne voiceschanged-Ereignis.
+  setTimeout(() => { if (!TTS.verfuegbar && ttsStimmenLaden()) syncTtsUi(); }, 1200);
+}
+setListenMode(LISTEN_MODE);
 
 /* Runden-Overlay verdrahten: Knöpfe, Escape, Klick auf den Hintergrund.
    Der Fokus bleibt im Dialog, solange er offen ist. */
