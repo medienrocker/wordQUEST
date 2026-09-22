@@ -1737,3 +1737,87 @@ img.word-visual {
     margin-top: 6px;
     color: #4a5a4a;
 }
+
+/* ═══════════════════════════════════════════════
+   UPDATE-HINWEIS (PWA)
+   Unten quer, über allem, aber nicht modal: Wer weiterspielen will, kann.
+   Erscheint nur, wenn wirklich eine neue Fassung bereitliegt.
+═══════════════════════════════════════════════ */
+.update-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 24px);
+    padding: 10px 12px 10px 16px;
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--green);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
+    font-size: .95rem;
+}
+
+.update-bar-text {
+    font-weight: 700;
+}
+
+.update-bar-btn {
+    font-family: 'Nunito', sans-serif;
+    font-size: .95rem;
+    font-weight: 800;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+.update-bar-btn:disabled {
+    opacity: .65;
+    cursor: default;
+}
+
+.update-bar-btn:focus-visible,
+.update-bar-close:focus-visible {
+    outline: 3px solid var(--lime);
+    outline-offset: 2px;
+}
+
+.update-bar-close {
+    font: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    padding: 6px 8px;
+    border-radius: 10px;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.update-bar-close:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+@media (max-width: 480px) {
+    .update-bar {
+        flex-wrap: wrap;
+        left: 12px;
+        right: 12px;
+        transform: none;
+        max-width: none;
+    }
+
+    .update-bar-text {
+        flex-basis: 100%;
+    }
+}

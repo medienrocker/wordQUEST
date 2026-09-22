@@ -2453,9 +2453,95 @@ document.getElementById('spelling-show-visual')?.addEventListener('click', () =>
   }
 })();
 
+/* ═══════════════════════════════════════════════
+   UPDATE-HINWEIS (PWA)
+
+   Eine installierte PWA startet aus dem Cache. Ohne Hinweis bekäme ein Kind,
+   das die App tagelang offen oder installiert hat, nie mit, dass es eine neue
+   Fassung gibt. Der neue Service Worker wartet deshalb bewusst, bis im Hinweis
+   zugestimmt wird. So werden nie mitten im Spiel alte und neue Dateien gemischt.
+
+   Der eigentliche Kern ist der aktive Update-Check weiter unten: Von sich aus
+   sucht der Browser nur beim Navigieren nach einer neuen Fassung.
+═══════════════════════════════════════════════ */
+const UPDATE_TEXTE = {
+  hinweis: 'Es gibt eine neue Version von wordQUEST.',
+  aktion:  'Jetzt aktualisieren',
+  spaeter: 'Später',
+  laeuft:  'Wird aktualisiert …'
+};
+
+function zeigeUpdateHinweis(wartender) {
+  if (document.getElementById('update-bar')) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'update-bar';
+  bar.className = 'update-bar';
+  bar.setAttribute('role', 'status');
+
+  const text = document.createElement('span');
+  text.className = 'update-bar-text';
+  text.textContent = UPDATE_TEXTE.hinweis;
+
+  const jetzt = document.createElement('button');
+  jetzt.type = 'button';
+  jetzt.className = 'update-bar-btn';
+  jetzt.textContent = UPDATE_TEXTE.aktion;
+
+  const spaeter = document.createElement('button');
+  spaeter.type = 'button';
+  spaeter.className = 'update-bar-close';
+  spaeter.textContent = '✕';
+  spaeter.setAttribute('aria-label', UPDATE_TEXTE.spaeter);
+
+  spaeter.addEventListener('click', () => bar.remove());
+  jetzt.addEventListener('click', () => {
+    jetzt.disabled = true;
+    jetzt.textContent = UPDATE_TEXTE.laeuft;
+    // Der wartende Worker übernimmt. Das Neuladen löst anschliessend
+    // controllerchange aus, nicht dieser Knopf.
+    wartender.postMessage({ type: 'SKIP_WARTEN' });
+  });
+
+  bar.append(text, jetzt, spaeter);
+  document.body.appendChild(bar);
+  jetzt.focus();
+}
+
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.addEventListener('load', async () => {
+    let neuGeladen = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (neuGeladen) return;      // Endlosschleife verhindern
+      neuGeladen = true;
+      location.reload();
+    });
+    try {
+      const reg = await navigator.serviceWorker.register('sw.js');
+
+      // Beim Start schon ein Update in der Warteschlange?
+      if (reg.waiting && navigator.serviceWorker.controller) zeigeUpdateHinweis(reg.waiting);
+
+      reg.addEventListener('updatefound', () => {
+        const neu = reg.installing;
+        if (!neu) return;
+        neu.addEventListener('statechange', () => {
+          // "installed" plus vorhandener Controller = echtes Update,
+          // keine Erstinstallation.
+          if (neu.state === 'installed' && navigator.serviceWorker.controller) {
+            zeigeUpdateHinweis(neu);
+          }
+        });
+      });
+
+      const pruefen = () => reg.update().catch(() => {});
+      setInterval(pruefen, 15 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') pruefen();
+      });
+    } catch {
+      /* Ohne Service Worker läuft die App normal weiter. */
+    }
   });
 }
 </script>

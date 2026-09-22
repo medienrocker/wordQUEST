@@ -34,10 +34,36 @@ Mehr nicht. Das Skript prüft auf einen sauberen und vorspulbaren Stand, zieht m
 ## Pflicht vor jedem Push: Cache-Version hochzählen
 
 In [`sw.js`](../sw.js) steht oben `CACHE_VERSION`. **Diese Zahl bei jeder Änderung an
-`index.html`, `style.css` oder `sw.js` erhöhen.** Sonst behalten bereits installierte
-Geräte ihre alte Fassung, und selbst ein behobener Fehler erreicht sie nie.
+`index.html`, `style.css` oder `sw.js` erhöhen.** Nur wenn sich die Datei `sw.js`
+tatsächlich unterscheidet, bemerkt der Browser eine neue Fassung, und nur dann
+erscheint der Update-Hinweis.
 
-Nach dem Deploy auf dem Testgerät einmal Strg+F5.
+## Update-Hinweis in der App
+
+Der neue Service Worker übernimmt **nicht** von selbst. Er wartet, und die App blendet
+unten eine Leiste ein: „Es gibt eine neue Version von wordQUEST." Erst ein Klick auf
+„Jetzt aktualisieren" schaltet um, danach lädt die Seite über `controllerchange` neu.
+So werden nie alte und neue Dateien gemischt.
+
+Gesucht wird aktiv: alle 15 Minuten und immer dann, wenn der Tab wieder in den
+Vordergrund kommt. Ohne diesen aktiven Check würde eine installierte PWA, die tagelang
+offen bleibt, ein Update nie bemerken.
+
+**Lokal nicht testbar.** Auf `localhost`, `127.0.0.1` und `[::1]` ist der Cache
+komplett abgeschaltet und der Worker übernimmt sofort, sonst sucht man beim Entwickeln
+Fehler im Cache statt im Code. Die Leiste lässt sich lokal nur mit einem
+Platzhalter-Objekt prüfen:
+
+```js
+zeigeUpdateHinweis({ postMessage() {} })
+```
+
+Der echte Ablauf ist erst auf der Domain zu sehen: eine Fassung deployen, die Seite im
+Browser offen lassen, die nächste Fassung deployen, dann erscheint die Leiste.
+
+**Vorsicht bei Deploys, die gleichzeitig Pfade verschieben.** Solange ein Worker wartet,
+läuft die alte Fassung aus dem Cache weiter und liefe bei einem Cache-Miss auf 404.
+Solche Umzüge besser in zwei Deploys trennen.
 
 ## Was nicht im Repo liegt
 

@@ -30,13 +30,19 @@ curl -I https://wordquest.bildungssprit.de/
 
 canvas-confetti und animate.css werden von fremden CDNs geladen. Ohne Integritätsprüfung führt ein kompromittiertes CDN beliebigen Code in der App-Origin aus. Beide Einbindungen haben jetzt `integrity`, `crossorigin` und `referrerpolicy`. `celebrate()` prüft vor dem Aufruf, ob die Bibliothek überhaupt geladen wurde, damit ein fehlgeschlagener Integritätscheck das Spiel nicht bricht.
 
-### Service Worker
+### Service Worker und Update-Hinweis
 
 Vorher cache-first ohne Revalidierung und mit unverändertem Cache-Namen. Wer `index.html` änderte, ohne `sw.js` anzufassen, lieferte an alle installierten Geräte dauerhaft die alte Datei aus. Ein behobener Fehler hätte die Schulgeräte nie erreicht.
 
-Jetzt: `index.html` network-first mit Cache als Rückfallebene, Fremdursprünge werden gar nicht mehr abgefangen, und in den Cache kommen nur noch die Dateien der Shell. `CACHE_VERSION` steht oben in `sw.js`.
+Der erste Ansatz war, `index.html` auf network-first zu stellen. Das war falsch und ist zurückgenommen: Es hätte neues HTML mit altem, noch gecachtem CSS gemischt.
 
-**Regel für jedes Release: `CACHE_VERSION` in `sw.js` hochzählen.**
+Gelöst ist es jetzt über den **Update-Hinweis**. Der neue Service Worker übernimmt nicht von selbst, sondern wartet. Die App prüft alle 15 Minuten und bei jedem Tab-Fokus aktiv auf eine neue Fassung und blendet dann unten eine Leiste ein. Erst die Zustimmung schaltet geschlossen um, alte und neue Dateien werden nie gemischt. Die Shell bleibt deshalb bewusst cache-first.
+
+Damit erreichen Korrekturen installierte Geräte verlässlich, ohne dass jemand von Hand neu laden muss. Fremdursprünge fängt der Worker gar nicht mehr ab, und in den Cache kommen nur die Dateien der Shell.
+
+**Regel für jedes Release: `CACHE_VERSION` in `sw.js` hochzählen.** Ohne diese Änderung bemerkt der Browser keine neue Fassung, und der Hinweis erscheint nie.
+
+Eine Einschränkung bleibt: Wer die Leiste mit „Später" wegklickt, bleibt vorerst auf der alten Fassung. Die Leiste erscheint beim nächsten Seitenaufruf erneut, es gibt also kein dauerhaftes Wegdrücken.
 
 ### Obergrenzen beim Laden von Wortlisten
 
