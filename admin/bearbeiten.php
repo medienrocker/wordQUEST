@@ -21,6 +21,7 @@ require __DIR__ . '/../api/lib/bootstrap.php';
 require __DIR__ . '/../api/lib/db.php';
 require __DIR__ . '/../api/lib/auth.php';
 require __DIR__ . '/../api/lib/wortlisten.php';
+require __DIR__ . '/../api/lib/archiv.php';
 require __DIR__ . '/../api/lib/emoji.php';
 
 $admin = wq_verlange_login();
@@ -140,6 +141,17 @@ if ($datei !== '' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $meldungArt = 'fehler';
         }
 
+    } elseif ($aktion === 'fassung') {
+        $ergebnis = wq_version_zurueckholen($datei, (string) ($_POST['marke'] ?? ''));
+        if (!empty($ergebnis['ok'])) {
+            $meldung = 'Frühere Fassung zurückgeholt, jetzt ' . (int) $ergebnis['anzahl'] . ' Wörter. '
+                     . 'Der vorherige Stand liegt weiterhin als Fassung bereit, das lässt sich also wieder umkehren.';
+            $hinweise = $ergebnis['hinweise'] ?? [];
+        } else {
+            $meldung = implode(' ', $ergebnis['fehler'] ?? []);
+            $meldungArt = 'fehler';
+        }
+
     } elseif ($aktion === 'vorlagen') {
         $liste['categories'] = array_merge(WQ_KATEGORIE_VORLAGEN, (array) ($liste['categories'] ?? []));
         $ergebnis = wq_wortliste_speichern($datei, $liste);
@@ -242,6 +254,9 @@ foreach ($woerter as $w) {
     }
 }
 
+$fassungen = $datei !== '' ? wq_versionen($datei) : [];
+$istArchiviert = $datei !== '' && in_array($datei, wq_archivierte(), true);
+
 $csrf = wq_csrf_token();
 require __DIR__ . '/kopf.php';
 ?>
@@ -276,6 +291,14 @@ require __DIR__ . '/kopf.php';
 
 <?php if ($liste === null): ?>
   <?php require __DIR__ . '/fuss.php'; exit; ?>
+<?php endif; ?>
+
+<?php if ($istArchiviert): ?>
+  <p class="meldung hinweis-meldung">
+    Diese Liste liegt im Archiv und erscheint zurzeit nicht in der App.
+    Bearbeiten geht trotzdem. Zurückholen lässt sie sich unter
+    <a href="listen.php">Wortlisten</a>.
+  </p>
 <?php endif; ?>
 
 <section class="karte">
@@ -474,5 +497,41 @@ require __DIR__ . '/kopf.php';
       als gar keines.
     </p>
   </form>
+</section>
+
+<section class="karte">
+  <h2>Frühere Fassungen<?= $fassungen ? ' (' . count($fassungen) . ')' : '' ?></h2>
+  <p class="hinweis">
+    Vor jeder Änderung wird der bisherige Stand hier abgelegt. Ein
+    versehentlich entferntes Wort oder eine gelöschte Kategorie ist damit ein
+    Klick weit weg. Auch das Zurückholen legt vorher eine Fassung an, es lässt
+    sich also seinerseits umkehren. Aufbewahrt werden die letzten
+    <?= WQ_VERSIONEN_MAX ?> Fassungen.
+  </p>
+  <?php if (!$fassungen): ?>
+    <p class="leer">Noch keine früheren Fassungen. Die erste entsteht beim nächsten Speichern.</p>
+  <?php else: ?>
+    <table>
+      <thead><tr><th>Stand vom</th><th>Titel</th><th class="zahl">Wörter</th><th>Aktion</th></tr></thead>
+      <tbody>
+      <?php foreach ($fassungen as $f): ?>
+        <tr>
+          <td><?= wq_h($f['zeit']) ?> <small>(UTC)</small></td>
+          <td><?= wq_h($f['titel']) ?></td>
+          <td class="zahl"><?= (int) $f['anzahl'] ?></td>
+          <td>
+            <form method="post">
+              <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+              <input type="hidden" name="liste" value="<?= wq_h($datei) ?>" />
+              <input type="hidden" name="aktion" value="fassung" />
+              <input type="hidden" name="marke" value="<?= wq_h($f['marke']) ?>" />
+              <button type="submit" class="klein">diesen Stand zurückholen</button>
+            </form>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
 </section>
 <?php require __DIR__ . '/fuss.php'; ?>

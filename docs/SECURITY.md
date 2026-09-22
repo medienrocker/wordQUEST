@@ -393,10 +393,31 @@ in eine Datei, die Kinder im Unterricht laden. Drei Vorkehrungen dazu:
 `wq_wortliste_pruefen()` zurückgibt. Der Editor hängt damit an derselben
 Schranke wie jeder Upload: Längen, Anzahl, erlaubte Felder, Bildadressen.
 
-**Vor jedem Überschreiben entsteht eine Sicherungskopie** als `.json.bak`
-neben der Liste. Die `.htaccess` sperrt die Endung `.bak`, sie ist über HTTP
-also nicht abrufbar. Geschrieben wird über eine Nebendatei und `rename`, damit
-die App nie eine halb geschriebene Liste sieht.
+**Vor jedem Überschreiben entsteht eine frühere Fassung** unter
+`private/versionen/`, also ausserhalb des Docroots. Aufbewahrt werden die
+letzten zwölf. Damit ist ein versehentlich entferntes Wort oder eine gelöschte
+Kategorie kein Verlust mehr, sondern ein Klick im Editor. Auch das Zurückholen
+legt vorher eine Fassung an, ist also selbst umkehrbar.
+
+**Archivieren fasst die Datei nicht an.** Vermerkt wird nur der Dateiname in
+`private/archiv/archiv.json`, und `wordlists/index.php` überspringt diese
+Listen. Das ist mit Absicht so gebaut: Das Auslieferungsverzeichnis ist
+zugleich ein Git-Arbeitsverzeichnis, und je weniger der Server dort bewegt,
+desto ruhiger läuft der nächste Deploy.
+
+**Entfernen löscht nichts.** Eine archivierte Liste lässt sich aus
+`wordlists/` entfernen, wandert dabei aber als Kopie nach
+`private/archiv/dateien/`. Aufgeräumt wird dort nur von Hand. Eine Wortliste
+ist Arbeit von Menschen, die soll ein Fehlklick nicht vernichten können.
+Zusätzlich fragt die Seite vorher nach, in einem eigenen Schritt, weil es im
+Admincenter kein JavaScript und damit keinen Bestätigungsdialog gibt.
+
+**Geschrieben wird über eine Nebendatei und `rename`**, damit die App nie eine
+halb geschriebene Liste sieht. Scheitert das Umbenennen, wird kurz erneut
+versucht und zuletzt geradeheraus geschrieben. Unter Linux tritt der Fall
+nicht auf, unter Windows schon, wenn ein Virenscanner oder ein Ordnerabgleich
+die Datei offen hält. Ein Speichern, das stillschweigend nichts tut, ist die
+unangenehmere Variante.
 
 **Abgeschnittene Formulare werden erkannt.** PHP nimmt je Anfrage nur
 `max_input_vars` Felder entgegen, standardmässig 1000, und verwirft den Rest

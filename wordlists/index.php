@@ -12,6 +12,22 @@
  *   ]
  */
 
+/* Archivierte Listen sollen in der App nicht mehr erscheinen. Vermerkt sind
+   sie ausserhalb des Docroots, die Dateien selbst bleiben unangetastet. Ist
+   die Serverseite nicht eingerichtet, etwa auf einem rein statischen Host,
+   bleibt es bei allen Listen. */
+$wqArchiviert = [];
+$wqLib = __DIR__ . '/../api/lib/';
+if (is_file($wqLib . 'bootstrap.php') && is_file($wqLib . 'archiv.php')) {
+    try {
+        require_once $wqLib . 'bootstrap.php';
+        require_once $wqLib . 'archiv.php';
+        $wqArchiviert = wq_archivierte();
+    } catch (Throwable $e) {
+        $wqArchiviert = [];
+    }
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -33,6 +49,9 @@ if ($files !== false) {
 
         // index.json (manueller Fallback-Manifest) nicht anzeigen
         if ($name === 'index.json') continue;
+
+        // Archivierte Listen gehören nicht mehr in die App.
+        if (in_array($name, $wqArchiviert, true)) continue;
 
         $size = @filesize($path);
         if ($size === false || $size > WQ_MAX_FILE_BYTES) continue;

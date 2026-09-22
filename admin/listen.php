@@ -17,6 +17,7 @@ require __DIR__ . '/../api/lib/auth.php';
 require __DIR__ . '/../api/lib/wortlisten.php';
 require __DIR__ . '/../api/lib/import.php';
 require __DIR__ . '/../api/lib/einreichung.php';
+require __DIR__ . '/../api/lib/archiv.php';
 
 $admin = wq_verlange_login();
 $pdo = wq_db();
@@ -30,6 +31,7 @@ function wq_h(?string $s): string
 $meldung = '';
 $meldungArt = 'ok';
 $pruefung = null;
+$zuEntfernen = '';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     wq_verlange_csrf();
@@ -100,6 +102,35 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         wq_einreichung_ablehnen($pdo, (int) ($_POST['id'] ?? 0), $admin['name']);
         $meldung = 'Einreichung abgelehnt. Sie bleibt erhalten und lässt sich weiter unten zurückholen.';
 
+    } elseif ($aktion === 'archivieren') {
+        $ergebnis = wq_liste_archivieren((string) ($_POST['datei'] ?? ''));
+        $meldung = !empty($ergebnis['ok'])
+            ? 'Die Liste liegt jetzt im Archiv und erscheint nicht mehr in der App. Die Datei bleibt unangetastet.'
+            : (string) $ergebnis['fehler'];
+        $meldungArt = !empty($ergebnis['ok']) ? 'ok' : 'fehler';
+
+    } elseif ($aktion === 'entarchivieren') {
+        $ergebnis = wq_liste_entarchivieren((string) ($_POST['datei'] ?? ''));
+        $meldung = !empty($ergebnis['ok'])
+            ? 'Die Liste ist zurück und erscheint wieder in der App.'
+            : (string) $ergebnis['fehler'];
+        $meldungArt = !empty($ergebnis['ok']) ? 'ok' : 'fehler';
+
+    } elseif ($aktion === 'entfernen') {
+        /* Zweistufig mit Absicht. Ohne JavaScript gibt es keinen
+           Bestätigungsdialog, also fragt die Seite selbst nach. */
+        $zuEntfernen = basename((string) ($_POST['datei'] ?? ''));
+
+    } elseif ($aktion === 'entfernen-bestaetigt') {
+        $ergebnis = wq_liste_endgueltig_entfernen((string) ($_POST['datei'] ?? ''));
+        if (!empty($ergebnis['ok'])) {
+            $meldung = 'Die Liste ist aus dem Auslieferungsverzeichnis entfernt. '
+                     . 'Eine Kopie liegt weiterhin unter private/archiv/dateien/, gelöscht wird dort nur von Hand.';
+        } else {
+            $meldung = (string) $ergebnis['fehler'];
+            $meldungArt = 'fehler';
+        }
+
     } elseif ($aktion === 'zurueckholen') {
         $ergebnis = wq_einreichung_zurueckholen($pdo, (int) ($_POST['id'] ?? 0));
         if (!empty($ergebnis['ok'])) {
@@ -126,7 +157,10 @@ $offen = $pdo->query('SELECT * FROM einreichungen WHERE status = "neu" ORDER BY 
    vielleicht zurückholen, und dann dürfen sie nicht hinten abgeschnitten sein. */
 $abgelehnt = $pdo->query('SELECT * FROM einreichungen WHERE status = "abgelehnt" ORDER BY id DESC')->fetchAll();
 $erledigt = $pdo->query('SELECT * FROM einreichungen WHERE status = "veroeffentlicht" ORDER BY id DESC LIMIT 20')->fetchAll();
-$listen = wq_vorhandene_listen();
+$alleListen = wq_vorhandene_listen();
+$listen = array_values(array_filter($alleListen, static fn($l) => empty($l['archiviert'])));
+$archivListen = array_values(array_filter($alleListen, static fn($l) => !empty($l['archiviert'])));
+$archivDateien = wq_archiv_dateien();
 $csrf = wq_csrf_token();
 
 require __DIR__ . '/kopf.php';
@@ -135,6 +169,33 @@ require __DIR__ . '/kopf.php';
 
 <?php if ($meldung !== ''): ?>
   <p class="meldung <?= $meldungArt === 'fehler' ? 'fehler' : '' ?>" role="status"><?= wq_h($meldung) ?></p>
+<?php endif; ?>
+
+<?php if ($zuEntfernen !== ''): ?>
+  <section class="karte warnung">
+    <h2>Wirklich aus dem Auslieferungsverzeichnis entfernen?</h2>
+    <p>
+      Die Datei <code><?= wq_h($zuEntfernen) ?></code> verschwindet aus
+      <code>wordlists/</code>. Eine Kopie bleibt unter
+      <code>private/archiv/dateien/</code> liegen, dort wird nur von Hand
+      aufgeräumt. Auch die früheren Fassungen bleiben erhalten.
+    </p>
+    <p class="hinweis">
+      Falls diese Liste aus dem Repository stammt, fehlt sie danach im
+      Arbeitsverzeichnis des Servers. Zurückholen liesse sie sich dann über das
+      Repository. Zum reinen Ausblenden genügt das Archiv, dafür muss nichts
+      entfernt werden.
+    </p>
+    <p class="aktionen">
+      <form method="post">
+        <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+        <input type="hidden" name="aktion" value="entfernen-bestaetigt" />
+        <input type="hidden" name="datei" value="<?= wq_h($zuEntfernen) ?>" />
+        <button type="submit" class="klein gefaehrlich">Ja, entfernen</button>
+      </form>
+      <a class="klein-link" href="listen.php">Abbrechen</a>
+    </p>
+  </section>
 <?php endif; ?>
 
 <?php if ($pruefung && (!$pruefung['ok'] || $pruefung['hinweise'])): ?>
@@ -294,11 +355,77 @@ require __DIR__ . '/kopf.php';
         <td class="aktionen">
           <a class="klein-link" href="bearbeiten.php?liste=<?= urlencode($l['datei']) ?>">bearbeiten</a>
           <a class="klein-link" href="bilder.php?liste=<?= urlencode($l['datei']) ?>">Bilder</a>
+          <form method="post">
+            <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+            <input type="hidden" name="aktion" value="archivieren" />
+            <input type="hidden" name="datei" value="<?= wq_h($l['datei']) ?>" />
+            <button type="submit" class="klein">archivieren</button>
+          </form>
         </td>
       </tr>
     <?php endforeach; ?>
     </tbody>
   </table>
+</section>
+
+<section class="karte">
+  <h2>Archiv<?= $archivListen ? ' (' . count($archivListen) . ')' : '' ?></h2>
+  <p class="hinweis">
+    Archivierte Listen erscheinen nicht mehr in der App. Die Dateien bleiben
+    dabei unberührt, vermerkt wird nur der Name. Zurückholen geht jederzeit
+    und ohne Datenverlust.
+  </p>
+  <?php if (!$archivListen): ?>
+    <p class="leer">Nichts archiviert.</p>
+  <?php else: ?>
+    <table>
+      <thead><tr><th>Titel</th><th>Datei</th><th class="zahl">Wörter</th><th>Aktion</th></tr></thead>
+      <tbody>
+      <?php foreach ($archivListen as $l): ?>
+        <tr>
+          <td><strong><?= wq_h($l['titel']) ?></strong></td>
+          <td><?= wq_h($l['datei']) ?></td>
+          <td class="zahl"><?= (int) $l['anzahl'] ?></td>
+          <td class="aktionen">
+            <form method="post">
+              <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+              <input type="hidden" name="aktion" value="entarchivieren" />
+              <input type="hidden" name="datei" value="<?= wq_h($l['datei']) ?>" />
+              <button type="submit" class="klein">zurückholen</button>
+            </form>
+            <form method="post">
+              <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+              <input type="hidden" name="aktion" value="entfernen" />
+              <input type="hidden" name="datei" value="<?= wq_h($l['datei']) ?>" />
+              <button type="submit" class="klein">entfernen …</button>
+            </form>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
+
+  <?php if ($archivDateien): ?>
+    <h3>Abgelegte Dateien (<?= count($archivDateien) ?>)</h3>
+    <p class="hinweis">
+      Entfernte Listen liegen als Kopie unter <code>private/archiv/dateien/</code>,
+      also ausserhalb des Docroots und in der Sicherung. Gelöscht wird dort nur
+      von Hand.
+    </p>
+    <table>
+      <thead><tr><th>Datei</th><th>Titel</th><th class="zahl">Wörter</th></tr></thead>
+      <tbody>
+      <?php foreach ($archivDateien as $a): ?>
+        <tr>
+          <td><?= wq_h($a['datei']) ?></td>
+          <td><?= wq_h($a['titel']) ?></td>
+          <td class="zahl"><?= (int) $a['anzahl'] ?></td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
 </section>
 
 <?php if ($abgelehnt): ?>

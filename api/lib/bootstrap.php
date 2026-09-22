@@ -78,6 +78,44 @@ function wq_body_json(): array
     return is_array($daten) ? $daten : [];
 }
 
+/**
+ * Ersetzt eine Datei möglichst unteilbar.
+ *
+ * Geschrieben wird in eine Nebendatei, dann wird umbenannt. Unter Linux ist
+ * das unteilbar: Wer gleichzeitig liest, sieht entweder den alten oder den
+ * neuen Stand, nie etwas Halbes.
+ *
+ * Unter Windows kann genau dieses Umbenennen fehlschlagen, wenn ein anderer
+ * Vorgang die Zieldatei gerade geöffnet hat, etwa ein Virenscanner oder ein
+ * Ordnerabgleich. Im Betrieb auf dem Server passiert das nicht, beim
+ * Entwickeln schon, und dort ist es genauso störend: Ein Speichern, das
+ * stillschweigend nichts tut, sucht man lange. Deshalb wird kurz erneut
+ * versucht und am Ende geradeheraus geschrieben.
+ */
+function wq_datei_ersetzen(string $ziel, string $inhalt): bool
+{
+    $temp = $ziel . '.' . bin2hex(random_bytes(4)) . '.tmp';
+    if (@file_put_contents($temp, $inhalt, LOCK_EX) === false) {
+        @unlink($temp);
+        return false;
+    }
+    for ($versuch = 0; $versuch < 5; $versuch++) {
+        if (@rename($temp, $ziel)) {
+            @chmod($ziel, 0644);
+            return true;
+        }
+        usleep(60000);
+    }
+    @unlink($temp);
+
+    // Letzter Ausweg ohne Unteilbarkeit. Besser als ein verlorener Text.
+    if (@file_put_contents($ziel, $inhalt, LOCK_EX) !== false) {
+        @chmod($ziel, 0644);
+        return true;
+    }
+    return false;
+}
+
 function wq_verlange_methode(string $methode): void
 {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== $methode) {

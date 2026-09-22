@@ -1,14 +1,18 @@
-# Shell-Skripte müssen LF behalten. Von Windows committete .sh-Dateien landen
-# sonst mit CRLF im Repo, und auf dem Linux-Server scheitert schon die Shebang
-# mit "bash\r: not found".
-*.sh text eol=lf
-
-# Der Service Worker und die Wortlisten sollen byte-genau bleiben.
-sw.js text eol=lf
-
-# PHP der Serverseite ebenfalls mit LF, konsistent zum Linux-Server.
-*.php text eol=lf
-*.json text eol=lf
-
-# .htaccess wird von Apache gelesen, LF ist dort das sichere Format.
-.htaccess text eol=lf
+# Zeilenenden festlegen.
+#
+# Der Server schreibt Wortlisten mit LF, sobald im Admincenter bearbeitet,
+# freigegeben oder ein Bild zugeordnet wird. Ohne diese Festlegung liegt im
+# Arbeitsverzeichnis CRLF, und git meldet nach jeder noch so kleinen Änderung
+# die komplette Datei als geändert. Ein sinnvolles git diff ist dann nicht
+# mehr möglich, und ein Deploy, dessen Commit dieselbe Datei berührt, läuft
+# unnötig in einen Konflikt.
+*           text=auto eol=lf
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.webp      binary
+*.gif       binary
+*.ico       binary
+*.woff      binary
+*.woff2     binary
+*.sqlite    binary

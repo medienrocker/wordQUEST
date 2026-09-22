@@ -88,11 +88,40 @@ ls -l "$D/private"
 
 Erwartet: `{"ok":true,"uebernommen":1}` und danach eine Datei `wordquest.sqlite`.
 
-**Sicherung:** Die Datenbank ist eine einzelne Datei. `cp` genügt, am besten im
-selben Lauf wie die übrigen Sicherungen. In `private/` liegt ausserdem
-`secret.key`, der Schlüssel für die signierten Formularmarken. Geht er
-verloren, ist das kein Drama: Es wird ein neuer erzeugt, und offene Formulare
-müssen einmal neu geladen werden.
+**Sicherung:** Am einfachsten `private/` komplett sichern. Darin liegen:
+
+| Was | Wofür |
+|-----|-------|
+| `wordquest.sqlite` | Einreichungen, Admins, Statistik |
+| `versionen/` | frühere Fassungen der Wortlisten, das Rückgängig im Editor |
+| `archiv/archiv.json` | welche Listen archiviert sind |
+| `archiv/dateien/` | Kopien entfernter Wortlisten |
+| `secret.key` | Schlüssel für die signierten Formularmarken |
+| `php-error.log` | Fehlerprotokoll |
+
+`secret.key` ist der einzige Eintrag, dessen Verlust folgenlos bleibt: Es wird
+ein neuer erzeugt, und offene Formulare müssen einmal neu geladen werden.
+
+## Wortlisten sind Serverdaten, nicht Repoinhalt
+
+Sobald im Admincenter bearbeitet, freigegeben oder ein Bild zugeordnet wird,
+weicht `wordlists/` vom Repository ab. **Das ist der Normalfall und kein
+Fehler.** `scripts/deploy.sh` prüft deshalb auf einen sauberen Arbeitsbaum
+überall ausser in `wordlists/` und meldet abweichende Listen nur als Hinweis.
+
+Zwei Folgerungen für den Alltag:
+
+- **Listen, die auf dem Server entstanden sind, liegen nur dort.** Sie gehören
+  in die Sicherung, ebenso wie `img/auto/`.
+- **Ändere eine mitgelieferte Liste nicht gleichzeitig im Repo und im
+  Admincenter.** Berührt ein neuer Commit dieselbe Datei, die auf dem Server
+  bearbeitet wurde, verweigert `git pull` die Übernahme. Dann von Hand
+  entscheiden, welche Fassung gilt. Die Fassungen im Editor helfen dabei.
+
+Damit ein solcher Vergleich überhaupt lesbar bleibt, legt `.gitattributes`
+Zeilenenden auf LF fest. Ohne das schreibt der Server mit LF, im
+Arbeitsverzeichnis steht CRLF, und jede Bearbeitung erscheint als komplett
+geänderte Datei.
 
 ## Optional: Benachrichtigung bei neuen Einreichungen
 

@@ -28,10 +28,21 @@ fi
 
 # Sauberer, vorspulbarer Stand. Ein Hotfix, der nur auf der Box existiert,
 # darf nicht stillschweigend verloren gehen, deshalb hier kein reset --hard.
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo "FEHLER: Working Tree ist dirty."
+# wordlists/ ist ab dem Admincenter Serverdaten, kein Repoinhalt: Dort wird
+# bearbeitet, freigegeben und archiviert. Diese Aenderungen duerfen den Deploy
+# nicht blockieren. Alles andere schon, denn ein Hotfix, der nur auf der Box
+# existiert, darf nicht stillschweigend verloren gehen.
+if ! git diff --quiet -- . ':(exclude)wordlists'    || ! git diff --cached --quiet -- . ':(exclude)wordlists'; then
+  echo "FEHLER: Working Tree ist dirty (ausserhalb von wordlists/)."
   echo "Erst ansehen: git status  /  git diff"
   exit 1
+fi
+
+if ! git diff --quiet -- wordlists; then
+  echo "Hinweis: Wortlisten weichen vom Repository ab, das ist im Betrieb normal:"
+  git diff --name-only -- wordlists | sed 's/^/  /'
+  echo "  Der Deploy laeuft trotzdem. Nur wenn ein neuer Commit dieselbe Datei"
+  echo "  aendert, meldet sich git, und dann wird von Hand entschieden."
 fi
 
 git fetch origin

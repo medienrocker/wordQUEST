@@ -269,12 +269,9 @@ function wq_einreichung_veroeffentlichen(PDO $pdo, int $id, string $von): array
     // Erst in eine Nebendatei schreiben, dann umbenennen: So sieht die App
     // nie eine halb geschriebene Liste.
     $ziel = $verzeichnis . '/' . $name;
-    $temp = $ziel . '.tmp';
-    if (file_put_contents($temp, $json, LOCK_EX) === false || !rename($temp, $ziel)) {
-        @unlink($temp);
+    if (!wq_datei_ersetzen($ziel, $json)) {
         return ['ok' => false, 'fehler' => 'Das Schreiben ist fehlgeschlagen.'];
     }
-    @chmod($ziel, 0644);
 
     $pdo->prepare('UPDATE einreichungen SET status = "veroeffentlicht", bearbeitet_am = :d, bearbeitet_von = :v, zieldatei = :z WHERE id = :id')
         ->execute([':d' => gmdate('Y-m-d H:i:s'), ':v' => $von, ':z' => $name, ':id' => $id]);
@@ -341,8 +338,9 @@ function wq_wortliste_lesen(string $datei): ?array
  * hereinkam, sondern was die Prüfung als sauber zurückgibt. Der Editor im
  * Admincenter ist damit an dieselbe Schranke gebunden wie jeder Upload.
  *
- * Vor dem Überschreiben entsteht eine Sicherungskopie. Eine Liste, die Kinder
- * im Unterricht nutzen, soll ein Versehen im Editor überleben.
+ * Vor dem Überschreiben entsteht eine frühere Fassung. Eine Liste, die Kinder
+ * im Unterricht nutzen, soll ein Versehen im Editor überleben, und zwar auch
+ * dann, wenn es erst Tage später auffällt.
  *
  * @return array{ok: bool, fehler?: string[], hinweise?: string[], anzahl?: int}
  */
@@ -369,15 +367,15 @@ function wq_wortliste_speichern(string $datei, array $daten): array
         return ['ok' => false, 'fehler' => ['Die Datei liess sich nicht erzeugen.']];
     }
 
-    // Sicherungskopie der bisherigen Fassung, eine Generation zurück.
-    @copy($pfad, $pfad . '.bak');
+    // Bisherigen Stand als frühere Fassung wegschreiben, bevor er
+    // überschrieben wird. Liegt ausserhalb des Docroots.
+    if (function_exists('wq_version_sichern')) {
+        wq_version_sichern(basename($datei));
+    }
 
-    $temp = $pfad . '.tmp';
-    if (file_put_contents($temp, $json, LOCK_EX) === false || !rename($temp, $pfad)) {
-        @unlink($temp);
+    if (!wq_datei_ersetzen($pfad, $json)) {
         return ['ok' => false, 'fehler' => ['Das Schreiben ist fehlgeschlagen.']];
     }
-    @chmod($pfad, 0644);
 
     return [
         'ok'       => true,
@@ -392,6 +390,7 @@ function wq_vorhandene_listen(): array
     $config = wq_config();
     $verzeichnis = rtrim((string) $config['wordlists_dir'], '/');
     $treffer = glob($verzeichnis . '/*.json') ?: [];
+    $archiviert = function_exists('wq_archivierte') ? wq_archivierte() : [];
     $listen = [];
     foreach ($treffer as $pfad) {
         $name = basename($pfad);
@@ -401,6 +400,7 @@ function wq_vorhandene_listen(): array
         $daten = json_decode((string) @file_get_contents($pfad), true);
         $listen[] = [
             'datei'  => $name,
+            'archiviert' => in_array($name, $archiviert, true),
             'titel'  => is_array($daten) && isset($daten['title']) && is_string($daten['title'])
                         ? $daten['title'] : pathinfo($name, PATHINFO_FILENAME),
             'anzahl' => is_array($daten) && isset($daten['words']) && is_array($daten['words'])

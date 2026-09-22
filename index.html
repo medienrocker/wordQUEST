@@ -1502,10 +1502,12 @@ async function discoverWordlists() {
         count: Array.isArray(d.words) ? d.words.length : 0
       };
     } catch {
-      return { file: n, title: n, description: '', count: 0 };
+      // Nicht erreichbar, etwa weil die Liste archiviert wurde. Lieber gar
+      // nicht anzeigen als einen Eintrag, der beim Antippen leer bleibt.
+      return null;
     }
   }));
-  return metas;
+  return metas.filter(Boolean);
 }
 
 /* Nimmt nur bekannte Felder auf. Alles andere aus einer eingereichten Datei

@@ -159,7 +159,7 @@ ein. Vier Bereiche:
 |---------|-------|
 | **Übersicht** | Anonyme Nutzungszahlen, dazu die Wörter mit den meisten Fehlern |
 | **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben. Abgelehntes bleibt erhalten und lässt sich zurückholen |
-| **Bearbeiten** | Veröffentlichte Listen ändern: Wörter, Emoji, Kategorien, Beispielsätze |
+| **Bearbeiten** | Veröffentlichte Listen ändern: Wörter, Emoji, Kategorien, Beispielsätze. Jede Änderung ist über „Frühere Fassungen" umkehrbar |
 | **Foto** | Foto einer Wortschatzseite im Browser erkennen und als Einreichung übernehmen |
 | **Bilder** | Bilder zu Vokabeln hochladen und zuordnen, mit Arbeitsliste "ohne Visualisierung" |
 
@@ -175,6 +175,11 @@ die Sicherung, siehe [docs/DEPLOY.md](docs/DEPLOY.md).
 
 Einreichungen von der öffentlichen Seite landen in derselben Warteschlange. Ein
 Zähler neben **Wortlisten** zeigt, wie viele offen sind.
+
+**Nichts geht verloren.** Eine abgelehnte Einreichung bleibt erhalten und lässt
+sich zurückholen. Eine Liste lässt sich archivieren, womit sie aus der App
+verschwindet, ohne dass die Datei angefasst wird. Und jede Änderung im Editor
+legt vorher eine Fassung an, die letzten zwölf stehen zum Zurückholen bereit.
 
 **Wichtig dabei:** Eingereichte Dateien dürfen *nicht* direkt in `wordlists/` landen.
 Der Ordner liegt im Docroot, wird von `index.php` per `glob()` gelesen und wäre damit

@@ -446,3 +446,19 @@ input[type="checkbox"] {
 /* Beim Bearbeiten wird viel gescrollt. Der Rahmen bekommt deshalb mehr
    Höhe als die schmale Vorschau auf der Fotoseite. */
 .rahmen-gross { max-height: 72vh; }
+
+/* Warnkarte vor dem endgültigen Entfernen. */
+.karte.warnung {
+    border: 2px solid var(--rot);
+    background: #fff8f7;
+}
+.karte.warnung h2 { color: var(--rot); }
+
+button.klein.gefaehrlich {
+    border-color: var(--rot);
+    color: var(--rot);
+    font-weight: 700;
+}
+button.klein.gefaehrlich:hover { background: var(--rot); color: #fff; }
+
+.karte h3 { font-size: 1rem; margin: 22px 0 8px; }

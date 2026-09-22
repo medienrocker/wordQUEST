@@ -172,9 +172,7 @@ function wq_bild_zuordnen(string $datei, string $wortEn, ?string $url): array
     if ($json === false) {
         return ['ok' => false, 'fehler' => 'Die Liste ließ sich nicht schreiben.'];
     }
-    $temp = $pfad . '.tmp';
-    if (file_put_contents($temp, $json, LOCK_EX) === false || !rename($temp, $pfad)) {
-        @unlink($temp);
+    if (!wq_datei_ersetzen($pfad, $json)) {
         return ['ok' => false, 'fehler' => 'Das Schreiben ist fehlgeschlagen.'];
     }
     return ['ok' => true];
