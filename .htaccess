@@ -26,8 +26,14 @@ RedirectMatch 404 (?i)^/api/lib/
   #               Ebene gegen Zählpixel aus eingereichten Wortlisten.
   #   connect-src 'self': Alle fetch-Aufrufe sind gleichursprünglich. Ein
   #               eingeschleuster Abfluss von Daten scheitert damit hier.
+  #   form-action 'self' statt 'none': Die Lernapp hat keine Formulare, das
+  #               Admincenter aber schon. Mit 'none' blockt der Browser jedes
+  #               Absenden STILL, ohne Serverfehler und ohne sichtbare Meldung.
+  #               Genau das hat die Anmeldung lange blockiert. Zwei CSP-Header
+  #               werden immer als Schnittmenge ausgewertet, die strengere
+  #               gewinnt. Deshalb muss schon diese hier Formulare erlauben.
   #   frame-ancestors wirkt nur als HTTP-Header, nicht als meta-Tag.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.bildungssprit.de; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.bildungssprit.de; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"

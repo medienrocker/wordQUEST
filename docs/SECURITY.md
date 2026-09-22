@@ -171,6 +171,30 @@ setzt deshalb `script-src 'none'`, gesendet aus PHP heraus, weil
 greifen. Teilvorlagen (`kopf.php`, `fuss.php`) antworten bei direktem Aufruf
 mit 403.
 
+### Zwei CSP-Header werden als Schnittmenge ausgewertet
+
+Real passiert und hat lange gekostet: Die Anmeldung im Admincenter tat
+nichts. Kein Fehler, keine Meldung, kein Protokolleintrag, in zwei Browsern
+und auch im privaten Fenster. Mit `curl` funktionierte dieselbe Anmeldung
+einwandfrei.
+
+Ursache: Die `.htaccess` im Wurzelverzeichnis setzte `form-action 'none'`.
+Das `kopf.php` des Admincenters setzte zwar `form-action 'self'`, aber **bei
+mehreren CSP-Headern gilt immer die Schnittmenge**, und die strengere Angabe
+gewinnt. Der Browser hat das Formular deshalb gar nicht erst abgeschickt.
+
+Zwei Lehren daraus:
+
+1. **`form-action 'none'` blockt still.** Es gibt keinen Serverfehler, keinen
+   Eintrag im Zugriffsprotokoll und keine sichtbare Meldung. Nur die
+   Browserkonsole verrät es. Wer serverseitig sucht, findet nichts.
+2. **Eine Richtlinie kann eine andere nicht lockern, nur verschärfen.** Wer
+   sie pro Verzeichnis überschreiben will, muss die Wurzelfassung passend
+   halten. Hier steht deshalb auch dort `form-action 'self'`.
+
+Beim nächsten unerklärlichen Verhalten im Browser zuerst die Konsole
+öffnen, bevor serverseitig gesucht wird.
+
 ### Keine Serverinterna auf ausgelieferten Seiten
 
 Real passiert: Die Anmeldeseite des Admincenters trug als Hilfestellung die
