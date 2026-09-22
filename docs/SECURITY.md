@@ -242,6 +242,30 @@ Zugriff ohne Anmeldung. Alle wurden abgewiesen oder still bereinigt.
 Server, nicht im Repository. Sie gehören deshalb in die Sicherung, sonst gehen
 sie bei einer Neueinrichtung verloren.
 
+## Foto zu Liste, Stand nach WQ-9.5
+
+**Die Texterkennung läuft im Browser, das Foto wird nie hochgeladen.** Das ist
+hier nicht nur die sparsamere, sondern auch die richtige Lösung: Fotos aus
+Lehrwerken sind urheberrechtlich heikel, und was das Geraet nie verlässt, kann
+auch nicht auf dem Server liegen bleiben. Abgeschickt wird ausschließlich die
+vom Menschen bestätigte Tabelle als Text.
+
+**Es gibt keinen zweiten Weg in den Server.** Der bestätigte Text läuft durch
+genau dieselbe Import- und Prüfkette wie eine von Hand eingefügte Tabelle und
+landet als Einreichung, nicht als veröffentlichte Liste.
+
+**Die Fotoseite ist die einzige Seite des Admincenters mit JavaScript.** Sie
+bringt deshalb eine eigene, enger begründete Richtlinie mit: Skript nur von
+sich selbst und dem CDN, WebAssembly erlaubt, Worker nur aus Blob. Alle anderen
+Seiten bleiben bei `script-src 'none'`. Damit die beiden sich nicht
+gegenseitig aufheben, entfernt `admin/.htaccess` für diese eine Datei den
+geerbten Header, denn mehrere CSP-Header gelten immer als Schnittmenge.
+
+**Keine KI auf dem Server.** Ein Vision-Modell, das Fotos zuverlässig liest,
+braucht mehrere Gigabyte und eine Grafikkarte. Auf einer geteilten Plesk-Box
+mit weiteren Auftritten ist das keine Option. Gebraucht wird ohnehin nur OCR,
+und die ist klein genug für den Browser.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.

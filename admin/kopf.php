@@ -10,9 +10,15 @@ declare(strict_types=1);
 if (!defined('WQ_ADMIN')) { http_response_code(403); exit('Nicht erlaubt.'); }
 
 if (!headers_sent()) {
-    // img-src erlaubt zusätzlich den Bildhost, weil die Fußzeile das
-    // bildungssprit-Logo von dort lädt. Sonst blockt der Browser es still.
-    header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.bildungssprit.de; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
+    /* Seiten dürfen eine eigene Richtlinie mitbringen, indem sie vor dem
+       Einbinden $wqCsp setzen. Gebraucht wird das nur von der Fotoseite, die
+       als einzige JavaScript und WebAssembly benötigt. Alle anderen Seiten
+       bleiben bei script-src 'none'.
+       img-src erlaubt den Bildhost, weil die Fußzeile das Logo von dort lädt. */
+    $wqStandardCsp = "default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; "
+        . "img-src 'self' https://img.bildungssprit.de; form-action 'self'; "
+        . "base-uri 'none'; frame-ancestors 'none'";
+    header('Content-Security-Policy: ' . (isset($wqCsp) ? $wqCsp : $wqStandardCsp));
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
     header('Referrer-Policy: no-referrer');
@@ -39,6 +45,7 @@ $wqAdmin = function_exists('wq_aktueller_admin') ? wq_aktueller_admin() : null;
   <nav>
     <a href="dashboard.php">Übersicht</a>
     <a href="listen.php">Wortlisten</a>
+    <a href="foto.php">Foto</a>
     <?php if ($wqAdmin['rolle'] === 'superadmin'): ?>
       <a href="admins.php">Admins</a>
     <?php endif; ?>

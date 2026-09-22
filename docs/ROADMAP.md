@@ -454,9 +454,9 @@ Das ist der größte Hebel, um den Bestand an Listen wachsen zu lassen, ohne das
 
 **Akzeptanz:**
 
-- [ ] Foto-Upload über das Einreichungsformular (WQ-8.2).
-- [ ] Extraktion in einen Listenentwurf, immer mit Durchsicht, nie automatisch veröffentlicht.
-- [ ] Unsichere Stellen werden markiert statt geraten.
+- [x] Foto-Upload über das Einreichungsformular (WQ-8.2).
+- [x] Extraktion in einen Listenentwurf, immer mit Durchsicht, nie automatisch veröffentlicht.
+- [x] Unsichere Stellen werden markiert statt geraten.
 - [ ] Hinweis auf das Urheberrecht: eingereichte Wortlisten dienen dem eigenen Unterricht, Lehrwerksinhalte werden nicht öffentlich nachgedruckt.
 
 **Abhängigkeiten:** WQ-8.2, WQ-9.3.

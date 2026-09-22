@@ -11,3 +11,12 @@
   Header always set X-Robots-Tag "noindex, nofollow"
   Header always set Cache-Control "no-store"
 </IfModule>
+
+# Die Fotoseite ist die einzige mit JavaScript und WebAssembly. Sie bringt
+# ihre Richtlinie aus PHP mit, deshalb darf die hier gesetzte sie nicht
+# überstimmen: Bei mehreren CSP-Headern gilt die Schnittmenge.
+<IfModule mod_headers.c>
+  <Files "foto.php">
+    Header always unset Content-Security-Policy
+  </Files>
+</IfModule>

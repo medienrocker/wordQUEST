@@ -229,3 +229,64 @@ a.klein-link:focus-visible {
     outline: 3px solid var(--gruen);
     outline-offset: 1px;
 }
+
+/* ─── Fotoseite ─── */
+.foto-leinwand {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 14px;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+}
+
+.tabellen-rahmen {
+    max-height: 460px;
+    overflow: auto;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+}
+
+.foto-tabelle input[type="text"] {
+    width: 100%;
+    font: inherit;
+    font-size: .92rem;
+    padding: 7px 9px;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    background: #fff;
+}
+
+.foto-tabelle input[type="text"]:focus-visible {
+    outline: 3px solid var(--gruen);
+    outline-offset: 1px;
+}
+
+.foto-tabelle th {
+    position: sticky;
+    top: 0;
+    background: var(--karte);
+    z-index: 1;
+}
+
+.foto-tabelle td { padding: 5px 8px; }
+.foto-tabelle td:last-child { width: 1%; white-space: nowrap; }
+
+label { display: block; font-weight: 600; margin: 14px 0 5px; font-size: .92rem; }
+
+input[type="text"], textarea {
+    width: 100%;
+    max-width: 520px;
+    font: inherit;
+    padding: 10px 12px;
+    border: 2px solid var(--linie);
+    border-radius: var(--radius);
+}
+
+textarea { max-width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; }
+
+input[type="text"]:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--gruen);
+    outline-offset: 1px;
+}
