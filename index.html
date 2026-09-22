@@ -151,6 +151,7 @@
   <button class="tab-btn" data-tab="cloze" id="tab-cloze" hidden>📝 Lückensatz</button>
   <button class="tab-btn" data-tab="practice">📈 Üben</button>
   <button class="tab-btn" data-tab="vocab">📚 Vokabeln</button>
+  <button class="tab-btn" data-tab="tafel" id="tab-tafel" hidden>🏅 Ehrentafel</button>
 </nav>
 
 <!-- ══════════════ MENU ══════════════ -->
@@ -196,6 +197,11 @@
       <span class="icon">📚</span>
       <h3>Vokabelliste</h3>
       <p>Alle Wörter auf einen Blick</p>
+    </div>
+    <div class="menu-card c-tafel" id="menu-card-tafel" onclick="openTab('tafel')" hidden>
+      <span class="icon">🏅</span>
+      <h3>Ehrentafel</h3>
+      <p>Wer hat eine Liste komplett geschafft?</p>
     </div>
   </div>
 </section>
@@ -396,6 +402,33 @@
   <div class="vocab-toolbar" id="vocab-toolbar"></div>
   <div class="vocab-filter" id="vocab-filter"></div>
   <div id="vocab-grid" class="vocab-grid"></div>
+</section>
+
+<!-- ══════════════ EHRENTAFEL (WQ-8.3) ══════════════
+     Bewusst ohne Rangfolge. Auf die Tafel kommt, wer eine Liste komplett
+     durchgespielt hat, nicht wer schnell war. Damit ist sie für jedes Kind
+     erreichbar, und niemand steht unten. -->
+<section id="section-tafel" class="section">
+  <h2 style="font-size:1.7rem; margin-bottom:6px;">🏅 Ehrentafel</h2>
+  <p class="tafel-intro">
+    Hier stehen alle, die eine Liste einmal ganz durchgespielt haben.
+    Es geht nicht darum, schnell zu sein. Nur darum, durchzukommen.
+  </p>
+  <div class="card tafel-gemeinschaft" id="tafel-gemeinschaft" hidden>
+    <span class="tafel-zahl" id="tafel-geuebt">0</span>
+    <span class="tafel-text">Vokabeln haben hier diese Woche alle zusammen geübt</span>
+  </div>
+  <div class="card">
+    <ul class="tafel-liste" id="tafel-liste"></ul>
+    <p class="tafel-hinweis" id="tafel-hinweis" role="status"></p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <label class="stats-toggle-label">
+      <input type="checkbox" id="tafel-toggle" />
+      <span>Auf der Ehrentafel mitmachen</span>
+    </label>
+    <p class="practice-privacy" id="tafel-toggle-hinweis"></p>
+  </div>
 </section>
 
 <!-- ══════════════ RUNDEN-ABSCHLUSS ══════════════
@@ -972,6 +1005,7 @@ function finishRound() {
     run.done = true;
     run.durchlaeufe = (run.durchlaeufe || 0) + 1;   // Fleißzähler
     runBonus = SCORE_RULES.runDone;
+    tafelMelden();   // genau hier, denn nur ein ganzer Durchlauf zählt
   }
   saveRun(run);
   const roundBonus = SCORE_RULES.roundDone;
@@ -2000,6 +2034,148 @@ function rerollPlayer() {
 }
 
 /* ═══════════════════════════════════════════════
+   EHRENTAFEL (WQ-8.3)
+
+   Der soziale Reiz einer Bestenliste, ohne den Rangvergleich. Auf die Tafel
+   kommt, wer eine Liste komplett durchgespielt hat. Nicht wer schnell war,
+   nicht wer viele Punkte hat. Damit ist der Eintrag für jedes Kind
+   erreichbar, und niemand steht unten.
+
+   Übertragen wird nur der gewürfelte Name, das Tier-Emoji und welche Listen
+   es waren. Keine Punktzahl, keine Dauer, keine Gerätekennung. Den Zeitpunkt
+   setzt der Server.
+═══════════════════════════════════════════════ */
+const TAFEL_ENDPUNKT = 'api/tafel.php';
+let TAFEL_AKTIV = false;          // sagt der Server
+let TAFEL_GELADEN = false;
+
+function tafelErlaubt() {
+  try { return localStorage.getItem('wq.tafel') !== 'aus'; } catch { return true; }
+}
+function tafelErlaubnisSetzen(an) {
+  try { localStorage.setItem('wq.tafel', an ? 'an' : 'aus'); } catch {}
+  syncTafelKnopf();
+  if (an) ladeTafel(true);
+}
+
+/** "vor 5 Minuten" statt einer Uhrzeit: Es geht um Frische, nicht um Kontrolle. */
+function tafelVor(sekunden) {
+  const m = Math.floor(sekunden / 60);
+  if (m < 1) return 'gerade eben';
+  if (m < 60) return `vor ${m} ${m === 1 ? 'Minute' : 'Minuten'}`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `vor ${h} ${h === 1 ? 'Stunde' : 'Stunden'}`;
+  const t = Math.floor(h / 24);
+  return t === 1 ? 'gestern' : `vor ${t} Tagen`;
+}
+
+/* Menükarte und Reiter erscheinen erst, wenn der Server die Tafel bestätigt.
+   Ohne Serverseite, etwa auf einem rein statischen Host, bleibt die App
+   vollständig bedienbar, nur ohne Tafel. */
+function zeigeTafelZugaenge(an) {
+  const karte = document.getElementById('menu-card-tafel');
+  const reiter = document.getElementById('tab-tafel');
+  if (karte) karte.hidden = !an;
+  if (reiter) reiter.hidden = !an;
+}
+
+async function ladeTafel(erzwingen) {
+  if (TAFEL_GELADEN && !erzwingen) return;
+  const liste = document.getElementById('tafel-liste');
+  const hinweis = document.getElementById('tafel-hinweis');
+  if (!liste) return;
+
+  try {
+    const r = await fetch(TAFEL_ENDPUNKT, { cache: 'no-store' });
+    if (!r.ok) throw new Error('nicht erreichbar');
+    const d = await r.json();
+    TAFEL_AKTIV = !!d.aktiv;
+    TAFEL_GELADEN = true;
+
+    zeigeTafelZugaenge(TAFEL_AKTIV);
+    if (!TAFEL_AKTIV) {
+      liste.innerHTML = '';
+      if (hinweis) hinweis.textContent = 'Die Ehrentafel ist zurzeit ausgeschaltet.';
+      return;
+    }
+
+    const zaehler = document.getElementById('tafel-gemeinschaft');
+    const geuebt = document.getElementById('tafel-geuebt');
+    if (zaehler && geuebt) {
+      const n = Number(d.geuebt) || 0;
+      zaehler.hidden = n <= 0;
+      geuebt.textContent = n.toLocaleString('de-DE');
+    }
+
+    liste.innerHTML = '';
+    const eintraege = Array.isArray(d.eintraege) ? d.eintraege : [];
+    eintraege.forEach(e => {
+      const li = document.createElement('li');
+      li.className = 'tafel-zeile';
+      const emoji = document.createElement('span');
+      emoji.className = 'tafel-avatar';
+      emoji.setAttribute('aria-hidden', 'true');
+      emoji.textContent = String(e.avatar || '🏅');
+      const text = document.createElement('span');
+      text.className = 'tafel-satz';
+      const name = document.createElement('b');
+      name.textContent = String(e.name || '');
+      text.appendChild(name);
+      text.appendChild(document.createTextNode(' hat '));
+      const titel = document.createElement('i');
+      titel.textContent = String(e.titel || '');
+      text.appendChild(titel);
+      text.appendChild(document.createTextNode(' komplett geschafft'));
+      const wann = document.createElement('span');
+      wann.className = 'tafel-wann';
+      wann.textContent = tafelVor(Number(e.vor) || 0);
+      li.append(emoji, text, wann);
+      liste.appendChild(li);
+    });
+
+    if (hinweis) {
+      hinweis.textContent = eintraege.length
+        ? ''
+        : 'Noch niemand hier. Spiel eine Liste einmal ganz durch, dann stehst du als Erste oder Erster hier.';
+    }
+  } catch {
+    // Kein Server, kein Drama: Die App funktioniert auch ohne Tafel.
+    TAFEL_AKTIV = false;
+    zeigeTafelZugaenge(false);
+    if (hinweis) hinweis.textContent = 'Die Ehrentafel ist gerade nicht erreichbar.';
+  }
+}
+
+/** Meldet einen abgeschlossenen Durchlauf. Still: Fehler bleiben unsichtbar. */
+function tafelMelden() {
+  if (!TAFEL_AKTIV || !tafelErlaubt() || !CURRENT_WORDLIST) return;
+  const spieler = getPlayer();
+  const listen = Array.isArray(CURRENT_WORDLIST.files) ? CURRENT_WORDLIST.files.slice(0, 5) : [];
+  if (!listen.length) return;
+  try {
+    fetch(TAFEL_ENDPUNKT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: spieler.name, avatar: spieler.emoji, listen }),
+      keepalive: true
+    }).then(() => { TAFEL_GELADEN = false; }).catch(() => {});
+  } catch { /* Beiwerk */ }
+}
+
+function syncTafelKnopf() {
+  const box = document.getElementById('tafel-toggle');
+  if (!box) return;
+  const an = tafelErlaubt();
+  box.checked = an;
+  const zeile = document.getElementById('tafel-toggle-hinweis');
+  if (zeile) {
+    zeile.textContent = an
+      ? 'Dein gewürfelter Name und dein Tier erscheinen auf der Tafel, wenn du eine Liste ganz durchspielst. Sonst nichts.'
+      : 'Du siehst die Tafel weiterhin, erscheinst aber selbst nicht darauf.';
+  }
+}
+
+/* ═══════════════════════════════════════════════
    FORTSCHRITTSANZEIGE (WQ-5.2)
    Zwei bewusst getrennte Balken: "war schon dran" und "sitzt sicher".
 ═══════════════════════════════════════════════ */
@@ -2105,7 +2281,9 @@ function openTab(name, opts) {
   const pool = getActiveVocab();
   const needsPool = ['quiz', 'memory', 'scramble', 'spelling', 'listen', 'cloze'].includes(name);
 
-  if (!VOCAB.length && name !== 'menu') {
+  // Die Ehrentafel lebt nicht vom geladenen Wortschatz, sie zeigt, was andere
+  // geschafft haben. Sie darf deshalb auch ohne gewählte Liste auf.
+  if (!VOCAB.length && name !== 'menu' && name !== 'tafel') {
     showEmptyState(name, 'no-data');
     return;
   }
@@ -2124,6 +2302,7 @@ function openTab(name, opts) {
   if (name === 'memory')  startMemory(8);
   if (name === 'vocab')   renderVocab('all');
   if (name === 'practice') updatePracticePanel();
+  if (name === 'tafel')   { syncTafelKnopf(); ladeTafel(true); }
 }
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => openTab(btn.dataset.tab));
@@ -3338,6 +3517,7 @@ const HILFE = [
       { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
       { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
       { sel: '#stats-toggle', name: 'Anonyme Nutzungsstatistik', text: 'Zählt mit, welche Listen und Spiele genutzt werden. Kein Name, keine Punkte, keine Adresse. Lässt sich unter Üben abschalten.' },
+      { sel: '#tafel-toggle', name: 'Ehrentafel', text: 'Wer eine Liste einmal ganz durchspielt, erscheint mit Würfelname und Tier auf der Tafel. Es zählt nur das Durchkommen, nicht die Geschwindigkeit. Übertragen werden Name und Tier, sonst nichts.' },
       { name: 'Keine Lautsprecher zu sehen?', text: 'Dann hat dein Gerät keine englische Stimme installiert. Die App funktioniert trotzdem vollständig, nur eben ohne Ton.' }
     ]
   },
@@ -3429,6 +3609,12 @@ document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer
 /* Statistik-Schalter und Versand beim Verlassen der Seite. */
 syncStatsKnopf();
 document.getElementById('stats-toggle')?.addEventListener('change', e => statsSchalten(e.target.checked));
+
+/* Ehrentafel: einmal beim Start abfragen. Erst die Antwort des Servers
+   entscheidet, ob die Menükarte überhaupt erscheint. */
+syncTafelKnopf();
+document.getElementById('tafel-toggle')?.addEventListener('change', e => tafelErlaubnisSetzen(e.target.checked));
+ladeTafel();
 window.addEventListener('pagehide', statsSenden);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') statsSenden();

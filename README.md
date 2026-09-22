@@ -157,7 +157,7 @@ ein. Vier Bereiche:
 
 | Bereich | Wofür |
 |---------|-------|
-| **Übersicht** | Anonyme Nutzungszahlen, dazu die Wörter mit den meisten Fehlern |
+| **Übersicht** | Anonyme Nutzungszahlen, die Wörter mit den meisten Fehlern, Schalter und Einträge der Ehrentafel |
 | **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben. Abgelehntes bleibt erhalten und lässt sich zurückholen |
 | **Bearbeiten** | Veröffentlichte Listen ändern: Wörter, Emoji, Kategorien, Beispielsätze. Jede Änderung ist über „Frühere Fassungen" umkehrbar |
 | **Foto** | Foto einer Wortschatzseite im Browser erkennen und als Einreichung übernehmen |

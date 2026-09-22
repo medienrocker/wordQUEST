@@ -29,7 +29,9 @@ Dazu WQ-7.5: Bilderverwaltung im Admincenter.
 Dazu WQ-8.1 und WQ-8.2: öffentliche Seite "Wortliste einreichen" mit
 Spamschutz und Warteschlange im Admincenter.
 
-Offen: WQ-6.4, WQ-8.3, Epic 9 ohne WQ-9.5, Epic 10.
+Dazu WQ-8.3: Ehrentafel ohne Rangfolge und Gemeinschaftszähler.
+
+Offen: WQ-6.4, Epic 9 ohne WQ-9.5, Epic 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -461,13 +463,33 @@ Aus dem Ticket übernommen und erledigt:
 
 **Ziel:** Der soziale Reiz der Highscore-Idee, ohne den Rangvergleich. Begründung siehe Abschnitt "Zur Highscore-Frage" unten.
 
+**Umgesetzt.** `api/tafel.php` mit `api/lib/tafel.php`, Bereich "Ehrentafel"
+in der App, Verwaltung in der Übersicht des Admincenters.
+
 **Akzeptanz:**
 
-- [ ] **Ehrentafel ohne Rang:** Wer einen Listendurchlauf abschließt, erscheint mit Avatar und generiertem Namen auf einer Tafel der letzten Abschlüsse ("Flinker Fuchs hat NHG 1 Welcome komplett geschafft"). Kriterium ist Abschluss, nicht Geschwindigkeit, also für alle erreichbar.
-- [ ] **Gemeinschaftszähler:** "Diese Woche wurden hier zusammen 3.200 Vokabeln geübt." Alle zahlen ein, niemand verliert.
-- [ ] Übertragen werden ausschließlich generierter Name, Avatar-Emoji, Listenkennung und Zeitstempel. Keine Punktzahl, keine Dauer, keine Kennung des Geräts.
-- [ ] Serverseitige Plausibilitätsprüfung gegen offensichtlichen Missbrauch, plus Möglichkeit, einen Eintrag im Admincenter zu entfernen.
-- [ ] Die Tafel ist abschaltbar, falls sie sich im Betrieb als störend erweist.
+- [x] **Ehrentafel ohne Rang:** Wer einen Listendurchlauf abschließt, erscheint mit Avatar und generiertem Namen auf einer Tafel der letzten Abschlüsse. Kriterium ist Abschluss, nicht Geschwindigkeit, also für alle erreichbar.
+- [x] **Gemeinschaftszähler:** "Diese Woche wurden hier zusammen 3.200 Vokabeln geübt." Alle zahlen ein, niemand verliert.
+- [x] Übertragen werden ausschließlich generierter Name, Avatar-Emoji, Listenkennung und Zeitstempel. Keine Punktzahl, keine Dauer, keine Kennung des Geräts.
+- [x] Serverseitige Plausibilitätsprüfung gegen offensichtlichen Missbrauch, plus Möglichkeit, einen Eintrag im Admincenter zu entfernen.
+- [x] Die Tafel ist abschaltbar, falls sie sich im Betrieb als störend erweist.
+
+**Wichtige Entscheidungen:**
+
+- **Der Server prüft den Namen gegen dieselben Wortlisten, aus denen die App
+  ihn würfelt.** Nur eine Kombination, die die App wirklich erzeugen kann,
+  kommt auf die Tafel, und das Emoji muss zum Tier passen. Ohne diese Schranke
+  liesse sich beliebiger Text auf eine Seite schreiben, die Kinder lesen.
+  Geprüft mit allen 1320 möglichen Namen: Alle gehen durch, Freitext nicht.
+- **Ein Durchlauf kann mehrere Listen umfassen**, weil sich in der App mehrere
+  zugleich auswählen lassen. Der Eintrag nennt deshalb alle.
+- **Der Gemeinschaftszähler braucht keine neuen Daten.** Er summiert die
+  Tageszähler der Statistik über sieben Tage.
+- **Doppelte Meldungen binnen sechs Stunden zählen einmal.** Ein neu geladener
+  Browser ist kein zweiter Erfolg, würde die Tafel aber füllen und andere
+  Kinder verdrängen.
+- **Der Zeitpunkt kommt vom Server, und die App zeigt nur "vor zwei Stunden".**
+  Eine Uhrzeit verriete, wann ein bestimmtes Kind gelernt hat.
 
 **Abhängigkeiten:** WQ-7.1, WQ-5.6, WQ-5.1.
 

@@ -431,6 +431,36 @@ Liste blieb unverändert.
 **Kategorie-Kennungen werden auf Buchstaben, Ziffern, Strich und Unterstrich
 beschränkt.** Sie landen in den Wörtern und in der Filterleiste der App.
 
+## Ehrentafel, Stand nach WQ-8.3
+
+Die Tafel ist der erste Ort, an dem etwas von einem Gerät auf eine Seite
+gelangt, die andere Kinder lesen. Entsprechend eng ist sie gefasst.
+
+**Es gibt kein Freitextfeld.** Der Server prüft den gemeldeten Namen gegen
+dieselben Wortlisten, aus denen die App ihn würfelt, und verlangt, dass das
+Emoji zum Tier passt. Nur eine Kombination, die die App wirklich erzeugen
+kann, wird angenommen. Geprüft mit allen 1320 möglichen Namen, die alle
+durchgehen, und mit `<script>alert(1)</script>`, falscher Adjektivendung und
+unpassendem Emoji, die alle abgewiesen werden.
+
+**Gespeichert wird nur, was auf der Tafel steht:** Name, Tier, welche Listen
+und der Zeitpunkt vom Server. Keine Punktzahl, keine Dauer, keine
+Gerätekennung, keine Adresse. Die App zeigt "vor zwei Stunden" statt einer
+Uhrzeit, denn eine Uhrzeit verriete, wann ein bestimmtes Kind gelernt hat.
+
+**Zwei Bremsen gegen das Vollschreiben:** Dieselbe Meldung binnen sechs
+Stunden zählt einmal, und je Anschluss sind zwanzig Einträge am Tag möglich.
+Genutzt wird dieselbe Kennung wie bei den Einreichungen, ein HMAC mit
+tageweise wechselndem Schlüssel, aus dem sich keine Adresse zurückrechnen
+lässt. Die Tafel behält die letzten 200 Einträge.
+
+**Abschaltbar ohne Dateizugriff.** Ein Schalter in der Übersicht des
+Admincenters legt die Tafel still, die App blendet den Bereich dann aus. Die
+Einträge bleiben erhalten, und einzelne lassen sich dort entfernen.
+
+**Mitmachen ist freiwillig.** In der App lässt sich die Teilnahme abschalten,
+ohne die Tafel selbst auszublenden.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.

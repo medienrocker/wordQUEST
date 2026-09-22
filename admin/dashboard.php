@@ -12,9 +12,38 @@ define('WQ_ADMIN', true);
 require __DIR__ . '/../api/lib/bootstrap.php';
 require __DIR__ . '/../api/lib/db.php';
 require __DIR__ . '/../api/lib/auth.php';
+require __DIR__ . '/../api/lib/wortlisten.php';
+require __DIR__ . '/../api/lib/archiv.php';
+require __DIR__ . '/../api/lib/einreichung.php';
+require __DIR__ . '/../api/lib/einstellungen.php';
+require __DIR__ . '/../api/lib/tafel.php';
 
 $admin = wq_verlange_login();
 $pdo = wq_db();
+
+$tafelMeldung = '';
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    wq_verlange_csrf();
+    $aktion = (string) ($_POST['aktion'] ?? '');
+
+    if ($aktion === 'tafel-schalten') {
+        $an = !empty($_POST['an']);
+        wq_einstellung_setzen('tafel_aktiv', $an ? '1' : '0');
+        $tafelMeldung = $an
+            ? 'Die Ehrentafel ist eingeschaltet und erscheint wieder in der App.'
+            : 'Die Ehrentafel ist ausgeschaltet. Die App blendet sie aus, die Einträge bleiben erhalten.';
+
+    } elseif ($aktion === 'tafel-loeschen') {
+        wq_tafel_loeschen($pdo, (int) ($_POST['id'] ?? 0));
+        $tafelMeldung = 'Eintrag entfernt.';
+    }
+}
+
+$tafelAn = wq_schalter('tafel_aktiv', true);
+$tafelEintraege = wq_tafel_eintraege($pdo, 25);
+$tafelGeuebt = wq_tafel_gemeinschaft($pdo);
+$csrf = wq_csrf_token();
 
 function wq_h(?string $s): string
 {
@@ -141,6 +170,58 @@ require __DIR__ . '/kopf.php';
           <td class="zahl"><?= (int) $z['richtig'] ?></td>
           <td class="zahl"><?= (int) $z['falsch'] ?></td>
           <td class="zahl <?= $quote >= 50 ? 'warnung' : '' ?>"><?= $quote ?> %</td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
+</section>
+
+<section class="karte">
+  <h2>Ehrentafel</h2>
+  <?php if ($tafelMeldung !== ''): ?>
+    <p class="meldung" role="status"><?= wq_h($tafelMeldung) ?></p>
+  <?php endif; ?>
+  <p class="hinweis">
+    Auf die Tafel kommt, wer eine Liste komplett durchgespielt hat. Bewusst
+    ohne Rangfolge und ohne Punkte, damit der Eintrag für jedes Kind
+    erreichbar bleibt. Gespeichert werden nur der gewürfelte Name, das Tier und
+    welche Listen es waren. Diese Woche wurden zusammen
+    <strong><?= number_format($tafelGeuebt, 0, ',', '.') ?></strong> Vokabeln geübt.
+  </p>
+
+  <form method="post" class="reihe">
+    <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+    <input type="hidden" name="aktion" value="tafel-schalten" />
+    <?php if ($tafelAn): ?>
+      <button type="submit" class="klein">Ehrentafel ausschalten</button>
+      <span class="hinweis">Zurzeit eingeschaltet.</span>
+    <?php else: ?>
+      <input type="hidden" name="an" value="1" />
+      <button type="submit" class="klein">Ehrentafel einschalten</button>
+      <span class="hinweis">Zurzeit ausgeschaltet, die App blendet sie aus.</span>
+    <?php endif; ?>
+  </form>
+
+  <?php if (!$tafelEintraege): ?>
+    <p class="leer">Noch keine Einträge.</p>
+  <?php else: ?>
+    <table>
+      <thead><tr><th>Wer</th><th>Was</th><th>Wann</th><th>Aktion</th></tr></thead>
+      <tbody>
+      <?php foreach ($tafelEintraege as $e): ?>
+        <tr>
+          <td><?= wq_h($e['avatar']) ?> <?= wq_h($e['name']) ?></td>
+          <td><?= wq_h($e['titel']) ?></td>
+          <td><?= wq_h(gmdate('d.m.Y, H:i', (int) $e['zeitpunkt'])) ?> <small>(UTC)</small></td>
+          <td>
+            <form method="post">
+              <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+              <input type="hidden" name="aktion" value="tafel-loeschen" />
+              <input type="hidden" name="id" value="<?= (int) $e['id'] ?>" />
+              <button type="submit" class="klein">entfernen</button>
+            </form>
+          </td>
         </tr>
       <?php endforeach; ?>
       </tbody>

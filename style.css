@@ -32,6 +32,18 @@
     /* Dunkler, sobald weiße Schrift daraufliegt: Weiß auf #009688 erreicht
        nur 3,7:1 und verfehlt damit die AA-Schwelle von 4,5:1. */
     --teal-dark: #00796b;
+
+    /* Dunkle Varianten für Flächen, auf denen weisse Schrift liegt.
+       Die hellen Farben oben sind für Rahmen und Akzente gedacht. Weiss
+       darauf erreicht nur 1,6:1 bis 3,7:1 und ist damit deutlich unter der
+       AA-Schwelle von 4,5:1. Gemessen an der Reiterleiste: Von neun aktiven
+       Reitern lagen acht darunter, Gelb mit 1,63:1 war praktisch unlesbar. */
+    --green-dark: #2e7d32;
+    --blue-dark: #1565c0;
+    --purple-dark: #7b1fa2;
+    --orange-dark: #b45309;
+    --red-dark: #c62828;
+    --yellow-dark: #8a6100;
     --bg: #f0faf0;
     --card: #ffffff;
     --text: #2e2e2e;
@@ -606,7 +618,13 @@ nav {
     padding: 18px 16px 10px;
 }
 
+/* Grundfarbe für die Schrift. Ohne sie erbt ein neu hinzugefügter Reiter
+   irgendeine Farbe, und wenn das Weiss ist, steht er unsichtbar auf weissem
+   Grund. Genau das ist zweimal passiert, erst bei "Hören", dann bei
+   "Ehrentafel". Ein Reiter ohne eigene Regel sieht jetzt schlicht aus, aber
+   er ist lesbar. */
 .tab-btn {
+    color: #555;
     background: white;
     border: 3px solid transparent;
     border-radius: var(--r-pill);
@@ -665,28 +683,49 @@ nav {
     color: #555;
 }
 
+.tab-btn[data-tab="cloze"] {
+    border-color: var(--purple);
+    color: #555;
+}
+
+.tab-btn[data-tab="tafel"] {
+    border-color: var(--orange);
+    color: #555;
+}
+
+/* Der aktive Reiter bekommt weisse Schrift, also braucht er zwingend einen
+   farbigen Grund. Diese Regel fängt jeden Reiter ab, für den unten keine
+   eigene Hintergrundfarbe steht. */
+.tab-btn.active {
+    background: var(--teal-dark);
+}
+
+.tab-btn.active[data-tab="tafel"] {
+    background: var(--orange-dark);
+}
+
 .tab-btn.active[data-tab="menu"] {
-    background: var(--green);
+    background: var(--green-dark);
 }
 
 .tab-btn.active[data-tab="quiz"] {
-    background: var(--blue);
+    background: var(--blue-dark);
 }
 
 .tab-btn.active[data-tab="memory"] {
-    background: var(--purple);
+    background: var(--purple-dark);
 }
 
 .tab-btn.active[data-tab="scramble"] {
-    background: var(--orange);
+    background: var(--orange-dark);
 }
 
 .tab-btn.active[data-tab="spelling"] {
-    background: var(--red);
+    background: var(--red-dark);
 }
 
 .tab-btn.active[data-tab="vocab"] {
-    background: var(--yellow);
+    background: var(--yellow-dark);
     color: #333;
 }
 
@@ -2470,7 +2509,7 @@ body.overlay-offen {
 }
 
 .tab-btn.active[data-tab="cloze"] {
-    background: var(--purple);
+    background: var(--purple-dark);
     color: #fff;
 }
 
@@ -2510,4 +2549,88 @@ body.overlay-offen {
     height: 1.25rem;
     accent-color: var(--green);
     cursor: pointer;
+}
+
+/* ═══════════════ EHRENTAFEL (WQ-8.3) ═══════════════
+   Bewusst ohne Rangnummern, ohne Podest, ohne Punkte. Wer durchgekommen ist,
+   steht hier, fertig. Die Reihenfolge ist zeitlich, nicht wertend. */
+.menu-card.c-tafel {
+    border-color: var(--orange);
+}
+
+.tafel-intro {
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+    color: #5b6b5b;
+}
+
+.tafel-gemeinschaft {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    border-left: 6px solid var(--teal-dark);
+}
+
+.tafel-zahl {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--teal-dark);
+    line-height: 1.1;
+}
+
+.tafel-text {
+    font-size: 0.95rem;
+}
+
+.tafel-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tafel-zeile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 2px;
+    border-bottom: 1px solid #eef3ee;
+    flex-wrap: wrap;
+}
+
+.tafel-zeile:last-child {
+    border-bottom: none;
+}
+
+.tafel-avatar {
+    font-size: 1.7rem;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.tafel-satz {
+    flex: 1 1 200px;
+    font-size: 0.98rem;
+}
+
+.tafel-satz i {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--teal-dark);
+}
+
+.tafel-wann {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    color: #7c8a7c;
+}
+
+.tafel-hinweis {
+    font-size: 0.9rem;
+    color: #5b6b5b;
+}
+
+.tafel-hinweis:empty {
+    display: none;
 }
