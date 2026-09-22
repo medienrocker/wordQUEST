@@ -2189,6 +2189,7 @@ body.overlay-offen {
     gap: 10px;
     min-height: 44px;
     padding: 8px 16px;
+    margin-bottom: 10px;
     border: 2px solid var(--teal-dark);
     border-radius: var(--r-pill);
     background: var(--bg);
@@ -2482,4 +2483,21 @@ body.overlay-offen {
 
 .v-example-de {
     color: #8a9a8a;
+}
+
+/* Schalter für die anonyme Nutzungsstatistik. */
+.stats-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.stats-toggle-label input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--green);
+    cursor: pointer;
 }

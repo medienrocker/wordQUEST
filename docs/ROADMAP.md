@@ -15,7 +15,9 @@ als fünftes Spiel mit den Stufen „Zuordnen" und „Diktat".
 
 Dazu WQ-6.3: Beispielsätze im Schema und der Modus Lückensatz.
 
-Offen: WQ-6.4, Epic 7 bis 10.
+Dazu WQ-7.1 und WQ-7.2: Serverfundament mit PHP und SQLite, anonyme Nutzungsstatistik.
+
+Offen: WQ-6.4, WQ-7.3 bis WQ-7.5, Epic 8 bis 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -265,11 +267,11 @@ Der Rundenabschluss-Bonus ist bewusst leistungsunabhängig, damit auch eine Rund
 
 **Akzeptanz:**
 
-- [ ] Verzeichnis `api/` mit schlanken Endpunkten, `admin/` für die Oberfläche.
-- [ ] Datenbankdatei und Einreichungen liegen **außerhalb** von `httpdocs` oder sind per `.htaccess` gesperrt.
-- [ ] Schema-Migrationen als nummerierte SQL-Dateien, damit ein Deploy reproduzierbar bleibt.
-- [ ] Alle Endpunkte antworten auch im Fehlerfall mit sauberem JSON, nie mit einem PHP-Stacktrace.
-- [ ] Der Client behandelt jeden API-Ausfall als "nicht vorhanden" und läuft normal weiter.
+- [x] Verzeichnis `api/` mit schlanken Endpunkten, `admin/` für die Oberfläche.
+- [x] Datenbankdatei und Einreichungen liegen **außerhalb** von `httpdocs` oder sind per `.htaccess` gesperrt.
+- [x] Schema-Migrationen als nummerierte SQL-Dateien, damit ein Deploy reproduzierbar bleibt.
+- [x] Alle Endpunkte antworten auch im Fehlerfall mit sauberem JSON, nie mit einem PHP-Stacktrace.
+- [x] Der Client behandelt jeden API-Ausfall als "nicht vorhanden" und läuft normal weiter.
 
 **Abhängigkeiten:** keine. **Blockiert:** WQ-7.2 bis WQ-7.5, Epic 8.
 
@@ -288,10 +290,10 @@ Der letzte Punkt ist der wertvollste: Er zeigt dir, welche Vokabeln durchgängig
 
 **Akzeptanz:**
 
-- [ ] Client sendet Ereignisse als "fire and forget", ohne auf die Antwort zu warten, ohne Blockade der Oberfläche.
-- [ ] Server speichert **keine IP-Adresse, keine Sitzungskennung, keine Uhrzeit feiner als der Tag**. Nur Zähler.
-- [ ] Damit entsteht kein Personenbezug, es ist keine Einwilligung nötig. Trotzdem: Abschnitt in der Datenschutzerklärung und ein Schalter "Nutzungsstatistik aus" in den Einstellungen.
-- [ ] Keine Statistik von `localhost` und aus dem Admincenter.
+- [x] Client sendet Ereignisse als "fire and forget", ohne auf die Antwort zu warten, ohne Blockade der Oberfläche.
+- [x] Server speichert **keine IP-Adresse, keine Sitzungskennung, keine Uhrzeit feiner als der Tag**. Nur Zähler.
+- [x] Damit entsteht kein Personenbezug, es ist keine Einwilligung nötig. Trotzdem: Abschnitt in der Datenschutzerklärung und ein Schalter "Nutzungsstatistik aus" in den Einstellungen.
+- [x] Keine Statistik von `localhost` und aus dem Admincenter.
 
 **Abhängigkeiten:** WQ-7.1.
 

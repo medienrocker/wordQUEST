@@ -1,3 +1,9 @@
 img/
 index2.html
 _RAW/
+
+# Serverspezifische Einstellungen, nie ins Repo
+api/lib/config.local.php
+
+# Lokale Testdatenbank
+.localdata/

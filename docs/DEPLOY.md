@@ -65,6 +65,32 @@ Browser offen lassen, die nächste Fassung deployen, dann erscheint die Leiste.
 läuft die alte Fassung aus dem Cache weiter und liefe bei einem Cache-Miss auf 404.
 Solche Umzüge besser in zwei Deploys trennen.
 
+## Einmalig: Datenverzeichnis anlegen
+
+Die Serverseite schreibt nach `private/` **neben** `httpdocs`, nie hinein.
+Das Verzeichnis gehört nicht ins Repo und muss einmal von Hand angelegt werden:
+
+```bash
+D=/var/www/vhosts/bildungssprit.de/wordquest.bildungssprit.de
+mkdir -p "$D/private"
+chown bs_vps-user:psaserv "$D/private"
+chmod 770 "$D/private"
+```
+
+PHP läuft als `bs_vps-user` und legt die SQLite-Datei beim ersten Aufruf selbst
+an. Prüfen lässt sich das so:
+
+```bash
+curl -s -X POST https://wordquest.bildungssprit.de/api/stat.php \
+  -H 'Content-Type: application/json' -d '{"events":[{"typ":"modus","wert":"quiz"}]}'
+ls -l "$D/private"
+```
+
+Erwartet: `{"ok":true,"uebernommen":1}` und danach eine Datei `wordquest.sqlite`.
+
+**Sicherung:** Die Datenbank ist eine einzelne Datei. `cp` genügt, am besten im
+selben Lauf wie die übrigen Sicherungen.
+
 ## Was nicht im Repo liegt
 
 `img/` (lokales Bildmaterial, die ausgelieferten Bilder liegen auf `img.bildungssprit.de`),

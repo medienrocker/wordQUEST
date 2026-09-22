@@ -5,6 +5,9 @@
 
 # Der Service Worker und die Wortlisten sollen byte-genau bleiben.
 sw.js text eol=lf
+
+# PHP der Serverseite ebenfalls mit LF, konsistent zum Linux-Server.
+*.php text eol=lf
 *.json text eol=lf
 
 # .htaccess wird von Apache gelesen, LF ist dort das sichere Format.

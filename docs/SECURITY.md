@@ -69,6 +69,42 @@ Damit klar ist, wo nicht nachgebessert werden muss:
 
 ---
 
+## Serverseite, Stand nach WQ-7.1 und WQ-7.2
+
+Die erste Serverschicht steht: PHP 8 mit SQLite, ein einziger Endpunkt
+`api/stat.php` für die anonyme Statistik. Bewusst gewählt als Einstieg, weil
+er ohne Login, ohne Upload und ohne ein einziges personenbeziehbares Datum
+auskommt und trotzdem den gesamten Serverweg beweist.
+
+**Wo die Daten liegen.** Die SQLite-Datei liegt unter `private/` als
+Geschwister von `httpdocs` und ist über HTTP nicht erreichbar. Das ist die
+wichtigste Einzelmaßnahme dieser Schicht. Der Pfad wird aus `__DIR__`
+berechnet, nicht aus `DOCUMENT_ROOT`, und lässt sich über eine
+`api/lib/config.local.php` überschreiben, die nie ins Repo kommt.
+
+**Was gespeichert wird.** Ausschließlich Zähler: Tag, Bereich, Schlüssel,
+Anzahl. Dazu je Vokabel die Summe richtiger und falscher Antworten über alle
+Spielenden. Keine IP-Adresse, auch nicht gehasht. Keine Sitzungs- oder
+Gerätekennung. Keine Uhrzeit feiner als der Kalendertag. Kein Spielername,
+kein Punktestand. Damit entsteht kein Personenbezug.
+
+**Warum es ohne Rate Limiting auskommt.** Ein offener Schreibendpunkt wäre
+sonst ein Weg, die Platte vollzuschreiben. Hier ist stattdessen der
+Schlüsselraum begrenzt: Listennamen müssen einer tatsächlich vorhandenen
+Datei entsprechen, Modi und Bereiche kommen aus festen Positivlisten,
+Wortlängen sind gedeckelt. Es lassen sich also keine erfundenen Zeilen
+anlegen, nur vorhandene Zähler erhöhen. Die Zahlen sind damit als Hinweis zu
+lesen, nicht als Beweis. Für den Zweck, schwierige Vokabeln zu finden,
+genügt das.
+
+Geprüft wurde gegen: erfundene Listennamen, Path Traversal im Listennamen,
+falsche HTTP-Methode, kaputtes JSON, überlange Anfragen und zu viele
+Ereignisse. Alle wurden abgewiesen oder still verworfen, ohne PHP-Fehler
+nach außen.
+
+**Weiterhin offen:** Sobald Uploads oder ein Login dazukommen, gelten die
+Punkte im nächsten Abschnitt unverändert.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.

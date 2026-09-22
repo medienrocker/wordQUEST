@@ -222,6 +222,18 @@
     <button type="button" class="btn btn-grey" onclick="clearDiagnosis()" title="Löscht den kompletten Lernstand dieses Geräts. Lässt sich nicht rückgängig machen.">🗑 Diagnose-Daten löschen</button>
     <p class="practice-privacy">Daten bleiben ausschließlich lokal auf deinem Gerät.</p>
   </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <label class="stats-toggle-label">
+      <input type="checkbox" id="stats-toggle" />
+      <span>Anonyme Nutzungsstatistik</span>
+    </label>
+    <p class="practice-privacy" id="stats-hinweis"></p>
+    <p class="practice-privacy">
+      Gezählt wird nur, welche Liste und welcher Spielmodus genutzt werden und wie viele
+      Antworten richtig waren. <strong>Kein Name, keine Punkte, keine Uhrzeit, keine Adresse.</strong>
+      Die Zahlen helfen dabei, zu schwierige Wörter zu finden.
+    </p>
+  </div>
 </section>
 
 <!-- ══════════════ QUIZ ══════════════ -->
@@ -961,6 +973,7 @@ function finishRound() {
   saveRun(run);
   const roundBonus = SCORE_RULES.roundDone;
   addScore(roundBonus + runBonus);
+  statsSenden();
   updateProgressStrip();
   return { roundBonus, runBonus, progress: getRunProgress() };
 }
@@ -1098,6 +1111,94 @@ function updatePracticePanel() {
     runLine.textContent = p.total
       ? `Durchlauf: ${p.seenCount} von ${p.total} Wörtern waren schon dran, ${p.mastered} sitzen sicher.`
       : 'Noch keine Vokabeln im aktiven Lernset.';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ANONYME NUTZUNGSSTATISTIK (WQ-7.2)
+
+   Meldet am Rundenende ein kleines Bündel Zähler an den eigenen Server.
+   Übertragen werden ausschließlich: welche Liste, welcher Spielmodus, wie
+   viele Fragen und wie viele davon richtig, und je Vokabel richtig oder
+   falsch.
+
+   Nicht übertragen werden: Spielername, Punktestand, Uhrzeit, irgendeine
+   Kennung. Der Server speichert keine Adresse. Damit entsteht kein
+   Personenbezug.
+
+   Alles hier ist "fire and forget": Fällt der Server aus oder gibt es gar
+   keinen (lokaler Dateiaufruf, Entwicklungsserver ohne PHP), läuft die App
+   unverändert weiter. Die Statistik darf nie etwas blockieren.
+═══════════════════════════════════════════════ */
+const STATS_ENDPUNKT = 'api/stat.php';
+const STATS_MAX = 50;
+let statsPuffer = [];
+
+function statsErlaubt() {
+  // Lokale Entwicklung verfälscht die Zahlen, deshalb dort aus.
+  if (['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname)) return false;
+  if (location.protocol === 'file:') return false;
+  try { return localStorage.getItem('wq.stats') !== 'aus'; } catch { return true; }
+}
+
+function statsSchalten(an) {
+  try { localStorage.setItem('wq.stats', an ? 'an' : 'aus'); } catch {}
+  if (!an) statsPuffer = [];
+  syncStatsKnopf();
+}
+
+function statsMerken(ereignis) {
+  if (!statsErlaubt()) return;
+  if (statsPuffer.length >= STATS_MAX) return;
+  statsPuffer.push(ereignis);
+}
+
+function statsWortMerken(item, richtig) {
+  if (!item || !item._srcFile) return;
+  statsMerken({ typ: 'wort', liste: item._srcFile, wort: item.en, richtig: !!richtig });
+}
+
+/* Sendet den Puffer und leert ihn. Wird am Rundenende und beim Verlassen
+   der Seite aufgerufen. */
+function statsRundeMerken(modus, richtig, gesamt) {
+  statsMerken({ typ: 'modus', wert: modus });
+  statsMerken({ typ: 'runde', wert: modus, richtig: Number(richtig) || 0, gesamt: Number(gesamt) || 0 });
+}
+
+/* Memory zählt Paare statt Antworten, deshalb eine eigene kleine Umrechnung. */
+function paare_gefunden_stats(gesamt) { return Number(gesamt) || 0; }
+
+function statsSenden() {
+  if (!statsErlaubt() || !statsPuffer.length) return;
+  const nutzlast = JSON.stringify({ events: statsPuffer.slice(0, STATS_MAX) });
+  statsPuffer = [];
+  try {
+    // sendBeacon überlebt auch das Schließen des Tabs.
+    if (navigator.sendBeacon) {
+      const blob = new Blob([nutzlast], { type: 'application/json' });
+      if (navigator.sendBeacon(STATS_ENDPUNKT, blob)) return;
+    }
+    fetch(STATS_ENDPUNKT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: nutzlast,
+      keepalive: true
+    }).catch(() => {});
+  } catch {
+    /* Statistik ist Beiwerk, ein Fehler hier darf nichts beeinflussen. */
+  }
+}
+
+function syncStatsKnopf() {
+  const box = document.getElementById('stats-toggle');
+  if (!box) return;
+  const an = statsErlaubt();
+  box.checked = an;
+  const zeile = document.getElementById('stats-hinweis');
+  if (zeile) {
+    zeile.textContent = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
+      ? 'Lokal ausgeschaltet, damit Testläufe die Zahlen nicht verfälschen.'
+      : (an ? 'Zählt mit, ohne irgendetwas über dich zu speichern.' : 'Es wird nichts gezählt.');
   }
 }
 
@@ -1534,6 +1635,8 @@ async function loadWordlists(files) {
     updatePracticePanel();
     updateProgressStrip();
     syncClozeUi();
+    files.forEach(f => statsMerken({ typ: 'liste', wert: f }));
+    statsSenden();
     rerunActiveSection();
   } catch (err) {
     showError(err.message || String(err));
@@ -2208,12 +2311,14 @@ function handleQuizAnswer(btn, correct, rightAnswer, item, before) {
     fb.className   = 'feedback correct';
     quizScore++;
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
   } else {
     btn.classList.add('wrong-ans');
     fb.textContent = growthMsg(rightAnswer);
     fb.className   = 'feedback wrong';
     resetAnswerStreak();
     recordWrong(item._wqId);
+    statsWortMerken(item, false);
   }
   // Nach der Entscheidung steht das englische Wort zum Anhören bereit. Der
   // Moment, in dem die Aufmerksamkeit ohnehin auf der Vokabel liegt, ist der
@@ -2240,6 +2345,7 @@ function showQuizResult() {
   const pct = quizScore / quizItems.length;
   // Der Rundenbonus ist leistungsunabhängig: Auch eine schwache Runde
   // bringt sichtbar etwas ein.
+  statsRundeMerken(PRACTICE_MODE ? 'practice' : 'quiz', quizScore, quizItems.length);
   const done = PRACTICE_MODE ? null : finishRound();
   const rs = document.getElementById('result-screen');
   rs.style.display = 'block';
@@ -2356,6 +2462,7 @@ function flipCard(idx) {
         if (memMatched === total) {
           clearInterval(memTimer);
           celebrate();
+          statsRundeMerken('memory', paare_gefunden_stats(total), total);
           const done = finishRound();
           const zeit = document.getElementById('memory-time').textContent;
           const versuche = memTries;
@@ -2543,6 +2650,7 @@ function checkScramble() {
     scrambleScore++;
     celebrate();
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
     updatePracticePanel();
     updateProgressStrip();
     setNextReady('scramble', true);
@@ -2555,6 +2663,7 @@ function checkScramble() {
     fb.className   = 'feedback wrong';
     resetAnswerStreak();
     recordWrong(item._wqId);
+    statsWortMerken(item, false);
     updatePracticePanel();
     updateProgressStrip();
     setNextReady('scramble', true);
@@ -2566,6 +2675,7 @@ function scrambleNext() {
   scrambleIdx++;
   document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='');
   if (scrambleIdx >= scrambleItems.length) {
+    statsRundeMerken('scramble', scrambleScore, scrambleItems.length);
     const done = finishRound();
     showRoundOverlay({
       title: 'Scramble geschafft!',
@@ -2671,6 +2781,7 @@ function checkSpelling() {
     spellingScore++;
     celebrate();
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
     updatePracticePanel();
   } else if (tolerantMatch) {
     inp.className  = 'almost';
@@ -2680,6 +2791,7 @@ function checkSpelling() {
     spellingScore++;
     celebrate();
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
     updatePracticePanel();
   } else {
     inp.className  = 'wrong';
@@ -2687,6 +2799,7 @@ function checkSpelling() {
     fb.className   = 'feedback wrong';
     resetAnswerStreak();
     recordWrong(item._wqId);
+    statsWortMerken(item, false);
     updatePracticePanel();
   }
   zeigeAusspracheHilfe('spelling-pron', item.en);
@@ -2697,6 +2810,7 @@ function checkSpelling() {
 function spellingNext() {
   spellingIdx++;
   if (spellingIdx >= spellingItems.length) {
+    statsRundeMerken('spelling', spellingScore, spellingItems.length);
     const done = finishRound();
     showRoundOverlay({
       emoji: '🐝',
@@ -2801,12 +2915,14 @@ function handleListenAnswer(btn, richtig, item) {
     fb.className = 'feedback correct';
     listenScore++;
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
   } else {
     btn.classList.add('wrong-ans');
     fb.textContent = growthMsg(`${item.en} = ${item.de}`);
     fb.className = 'feedback wrong';
     resetAnswerStreak();
     recordWrong(item._wqId);
+    statsWortMerken(item, false);
   }
   updatePracticePanel();
   updateProgressStrip();
@@ -2835,6 +2951,7 @@ function checkListenDictation() {
     listenScore++;
     celebrate();
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
   } else {
     inp.className = 'wrong';
     fb.textContent = growthMsg(`"${item.en}" (${item.de})`);
@@ -2850,6 +2967,7 @@ function checkListenDictation() {
 function listenNext() {
   listenIdx++;
   if (listenIdx >= listenItems.length) {
+    statsRundeMerken(LISTEN_MODE === 'dictation' ? 'dictation' : 'listen', listenScore, listenItems.length);
     const done = finishRound();
     showRoundOverlay({
       emoji: '🎧',
@@ -2999,12 +3117,14 @@ function handleClozeAnswer(btn, richtig, item, luecke) {
     fb.className = 'feedback correct';
     clozeScore++;
     recordCorrect(item._wqId);
+    statsWortMerken(item, true);
   } else {
     btn.classList.add('wrong-ans');
     fb.textContent = growthMsg(luecke.loesung);
     fb.className = 'feedback wrong';
     resetAnswerStreak();
     recordWrong(item._wqId);
+    statsWortMerken(item, false);
   }
   // Vollständigen Satz zum Anhören bereitstellen.
   zeigeAusspracheHilfe('cloze-solution', item.example);
@@ -3017,6 +3137,7 @@ function handleClozeAnswer(btn, richtig, item, luecke) {
 function clozeNext() {
   clozeIdx++;
   if (clozeIdx >= clozeItems.length) {
+    statsRundeMerken('cloze', clozeScore, clozeItems.length);
     const done = finishRound();
     showRoundOverlay({
       emoji: '📝',
@@ -3207,6 +3328,7 @@ const HILFE = [
     eintraege: [
       { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
       { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
+      { sel: '#stats-toggle', name: 'Anonyme Nutzungsstatistik', text: 'Zählt mit, welche Listen und Spiele genutzt werden. Kein Name, keine Punkte, keine Adresse. Lässt sich unter Üben abschalten.' },
       { name: 'Keine Lautsprecher zu sehen?', text: 'Dann hat dein Gerät keine englische Stimme installiert. Die App funktioniert trotzdem vollständig, nur eben ohne Ton.' }
     ]
   },
@@ -3294,6 +3416,14 @@ pruneOldRuns();
 renderPlayer();
 applyTooltips();
 document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer);
+
+/* Statistik-Schalter und Versand beim Verlassen der Seite. */
+syncStatsKnopf();
+document.getElementById('stats-toggle')?.addEventListener('change', e => statsSchalten(e.target.checked));
+window.addEventListener('pagehide', statsSenden);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') statsSenden();
+});
 
 /* ─────────── Aussprache verdrahten ───────────
    Ein einziger Zuhörer am Dokument bedient alle Lautsprecher-Knöpfe, auch

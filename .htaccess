@@ -10,6 +10,8 @@ Options -Indexes
 # Interne Dateien und Entwicklungsartefakte nicht ausliefern.
 RedirectMatch 404 (?i)/\.(git|env|ht)
 RedirectMatch 404 (?i)^/(docs|scripts|_RAW)/
+# Die Bibliothek der API wird nur eingebunden, nie direkt aufgerufen.
+RedirectMatch 404 (?i)^/api/lib/
 <FilesMatch "(?i)\.(ps1|md|bak|orig|log|sql|db|sqlite)$">
   Require all denied
 </FilesMatch>
