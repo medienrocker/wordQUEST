@@ -7,13 +7,42 @@ AddType application/manifest+json .webmanifest
 # Kein Directory-Listing für Root
 Options -Indexes
 
-# Kurzes Caching für die HTML-Shell, lange Cache für Fonts/Libs
+# Interne Dateien und Entwicklungsartefakte nicht ausliefern.
+RedirectMatch 404 (?i)/\.(git|env|ht)
+RedirectMatch 404 (?i)^/(docs|scripts|_RAW)/
+<FilesMatch "(?i)\.(ps1|md|bak|orig|log|sql|db|sqlite)$">
+  Require all denied
+</FilesMatch>
+
 <IfModule mod_headers.c>
+  # Content-Security-Policy
+  # Begründung der Direktiven:
+  #   script-src  'unsafe-inline' ist noch nötig, solange das Anwendungsskript
+  #               inline in index.html steht und onclick-Attribute genutzt werden.
+  #               Entfällt, sobald das Skript ausgelagert ist (siehe ROADMAP).
+  #   img-src     bewusst ohne Wildcard und ohne data:. Das ist die zweite
+  #               Ebene gegen Zählpixel aus eingereichten Wortlisten.
+  #   connect-src 'self': Alle fetch-Aufrufe sind gleichursprünglich. Ein
+  #               eingeschleuster Abfluss von Daten scheitert damit hier.
+  #   frame-ancestors wirkt nur als HTTP-Header, nicht als meta-Tag.
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.bildungssprit.de; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()"
+
+  # Kurzes Caching für die HTML-Shell, kein Caching für Wortlisten
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
   <FilesMatch "\.json$">
     Header set Cache-Control "no-store"
+  </FilesMatch>
+  # Der Service Worker darf nie aus dem Cache kommen, sonst erreichen
+  # Aktualisierungen installierte Geräte nicht.
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>
 

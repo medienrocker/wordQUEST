@@ -21,10 +21,15 @@
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
-  <!-- Animate.css -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <!-- Animate.css – mit Subresource Integrity: Ein manipuliertes CDN kann
+       so keinen fremden Code in die App-Origin einschleusen. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+        integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- canvas-confetti via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
+          integrity="sha384-sPwMflxqfAN+Q5mvlkLmHiX3PORGbZSXHiSGPTXT9VHCD/AB+b+r+vJWsqprv+7k"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="style.css">
 
 </head>
@@ -85,8 +90,47 @@
 <div id="load-status" role="alert" hidden></div>
 
 <div id="score-bar">
+  <div class="score-item player-badge">
+    <span class="player-emoji" id="player-emoji" aria-hidden="true">🦊</span>
+    <span class="player-name" id="player-name">…</span>
+    <button type="button" class="player-reroll" id="player-reroll"
+            title="Neuen Spielernamen würfeln" aria-label="Neuen Spielernamen würfeln">🎲</button>
+  </div>
   <div class="score-item">⭐ Punkte: <span id="total-score">0</span></div>
   <div class="score-item">🏆 Bestleistung: <span id="high-score">0</span></div>
+</div>
+
+<!-- Fortschritt: zwei bewusst getrennte Messgrößen.
+     „Schon dran“ zeigt die Abdeckung der Liste, „Sitzt sicher“ die
+     tatsächliche Beherrschung. Beides wird nie vermischt. -->
+<div id="progress-strip" aria-live="polite" hidden>
+  <div class="prog-round" id="prog-round"></div>
+  <div class="prog-items">
+    <div class="prog-item">
+      <div class="prog-head">
+        <span class="prog-label">📍 Schon dran</span>
+        <span class="prog-value" id="prog-coverage-value">0 von 0</span>
+      </div>
+      <div class="prog-track" role="progressbar" aria-label="Abdeckung der Wortliste"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill prog-fill-cov" id="prog-coverage-fill"></div>
+      </div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-head">
+        <span class="prog-label">✅ Gelernt</span>
+        <span class="prog-value" id="prog-mastery-value">0 sicher</span>
+      </div>
+      <!-- Zwei Abschnitte im selben Balken: kräftig = sicher (Box 4/5),
+           hell = fast sicher (Box 3). So bewegt sich die Anzeige schon
+           lange bevor ein Wort wirklich sitzt. -->
+      <div class="prog-track" id="prog-mastery-track" role="progressbar" aria-label="Sicher gelernte Wörter"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill prog-fill-mas" id="prog-mastery-fill"></div>
+        <div class="prog-fill prog-fill-almost" id="prog-almost-fill"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <nav>
@@ -143,10 +187,16 @@
   <div class="card practice-card">
     <p class="practice-count-line">Fällige Wörter (heute): <strong id="practice-due-count">0</strong></p>
     <p class="practice-count-line">Schwierige Wörter (aktives Lernset): <strong id="practice-weak-count">0</strong></p>
+    <p class="practice-count-line">Knackpunkte: <strong id="practice-leech-count">0</strong></p>
+    <p class="practice-count-line practice-run-line" id="practice-run-line"></p>
     <div class="practice-actions">
       <button type="button" class="btn btn-green" id="practice-start-btn" onclick="startPracticeQuiz()">❓ Übungs-Quiz starten</button>
     </div>
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <button type="button" class="btn btn-grey" onclick="resetRun()">🔄 Durchlauf neu starten</button>
+    <p class="practice-privacy">Setzt nur zurück, welche Wörter schon dran waren. Dein Lernstand bleibt erhalten.</p>
   </div>
   <div class="card practice-card" style="margin-top:14px;">
     <button type="button" class="btn btn-grey" onclick="clearDiagnosis()">🗑 Diagnose-Daten löschen</button>
@@ -306,12 +356,12 @@ const CAT_PALETTE = ['#ff9800', '#4caf50', '#2196f3', '#9c27b0', '#f44336', '#ff
    Lernmotivation: Fehler als Lernchance, nicht als Urteil.
    (Dweck, C.S. – Mindset; "the power of yet") */
 const PRAISE_PHRASES = [
-  '✨ Stark! +10',
-  '🎯 Genau! +10',
-  '💪 Klasse! +10',
-  '🌟 Top! +10',
-  '👏 Sauber! +10',
-  '🚀 Weiter so! +10'
+  '✨ Stark!',
+  '🎯 Genau!',
+  '💪 Klasse!',
+  '🌟 Top!',
+  '👏 Sauber!',
+  '🚀 Weiter so!'
 ];
 const GROWTH_PHRASES = [
   'Fast! Merk dir: ',
@@ -321,8 +371,13 @@ const GROWTH_PHRASES = [
   'Nochmal merken: ',
   'Gut mitgedacht – richtig: '
 ];
-function praiseMsg() {
-  return PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+/* Ohne Argument nur die Lobphrase, mit Award-Objekt zusätzlich die Punkte
+   samt Begründung ("Comeback +10"), damit das System nachvollziehbar ist. */
+function praiseMsg(award) {
+  const base = PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+  if (!award) return base;
+  const extra = award.reasons.length ? ` · ${award.reasons.join(' · ')}` : '';
+  return `${base} +${award.pts}${extra}`;
 }
 function growthMsg(answer) {
   const tpl = GROWTH_PHRASES[Math.floor(Math.random() * GROWTH_PHRASES.length)];
@@ -348,7 +403,15 @@ function shuffle(arr) {
   return a;
 }
 function getRandom(arr, n) { return shuffle(arr).slice(0, n); }
-function celebrate() { confetti({ particleCount:120, spread:80, origin:{y:.6} }); }
+/* Konfetti ist Beiwerk: Fehlt die CDN-Bibliothek oder respektiert das Gerät
+   reduzierte Bewegung, läuft das Spiel unverändert weiter. */
+function celebrate() {
+  if (typeof confetti !== 'function') return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    confetti({ particleCount: 120, spread: 80, origin: { y: .6 } });
+  } catch {}
+}
 
 /* Stabile Wort-ID: Dateiname + en + de (Duplikate in verschiedenen Dateien bleiben unterscheidbar). */
 function makeWqId(file, en, de) {
@@ -389,49 +452,80 @@ function getActiveVocab() {
   return VOCAB.filter(v => !dis.has(v._wqId));
 }
 
-/* ─────────── Diagnose + Leitner-SRS (ohne Login, nur localStorage) ───────────
-   - DIAG_KEY bleibt als "legacy" Fehlerzähler erhalten (Migration / einfache Anzeige).
-   - SRS_KEY ist Leitner-light: box (1..5), due (ms since epoch).
-   - Üben priorisiert fällige Karten; wenn keine fällig sind → "schwache" (Fehlerhistorie).
-*/
-const DIAG_KEY = 'wq.diag.v1';
-const SRS_KEY  = 'wq.srs.leitner.v1';
-const LEITNER_INTERVAL_DAYS = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
+/* ─────────── Diagnose + Leitner-SRS v2 (ohne Login, nur localStorage) ───────────
+   Ein Eintrag je Vokabel:
+     { box: 1..5, due: ms, seen, correct, wrong, streak, lastSeen, leech }
 
-function loadDiag() {
-  try {
-    const d = JSON.parse(localStorage.getItem(DIAG_KEY) || '{}');
-    return (d && typeof d === 'object') ? d : {};
-  } catch {
-    return {};
-  }
-}
-function saveDiag(d) {
-  localStorage.setItem(DIAG_KEY, JSON.stringify(d));
+   Regeln (WQ-5.3):
+   - Aufstieg aus Box 1 erst nach zwei richtigen Antworten in Folge.
+     Eine einzelne Zufallstreffer-Antwort soll kein Können vortäuschen.
+   - Bei einem Fehler fällt ein Wort ab Box 4 nur eine Box zurück statt
+     komplett auf Box 1. Wer ein Wort lange konnte, verliert nicht alles.
+   - Ab LEECH_THRESHOLD Fehlern gilt ein Wort als "Knackpunkt": Es wird in
+     der Auswahl gedeckelt und leichter angeboten, damit niemand daran
+     hängen bleibt.
+*/
+const DIAG_KEY    = 'wq.diag.v1';          // Altbestand, nur noch für die Migration
+const SRS_KEY_V1  = 'wq.srs.leitner.v1';   // Altbestand, nur noch für die Migration
+const SRS_KEY     = 'wq.srs.v2';
+const LEITNER_INTERVAL_DAYS = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
+const BOX_WEIGHT  = { 1: 8, 2: 5, 3: 3, 4: 2, 5: 1 };
+const LEECH_THRESHOLD = 6;
+const MASTERY_BOX = 4;   // ab dieser Box gilt ein Wort als "sicher"
+const ALMOST_BOX  = 3;   // Vorstufe, wird als "fast sicher" mitgezählt
+
+const EMPTY_SRS = Object.freeze({
+  box: 1, due: 0, seen: 0, correct: 0, wrong: 0, streak: 0, lastSeen: 0, leech: false
+});
+
+function clampBox(b) {
+  const n = Number(b);
+  return Number.isFinite(n) ? Math.min(5, Math.max(1, Math.round(n))) : 1;
 }
 
 function loadSrs() {
   try {
     const d = JSON.parse(localStorage.getItem(SRS_KEY) || '{}');
-    return (d && typeof d === 'object') ? d : {};
+    return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {};
   } catch {
     return {};
   }
 }
 function saveSrs(d) {
-  localStorage.setItem(SRS_KEY, JSON.stringify(d));
+  try { localStorage.setItem(SRS_KEY, JSON.stringify(d)); } catch {}
 }
 
-function migrateDiagToSrsIfNeeded() {
-  const srs = loadSrs();
-  if (Object.keys(srs).length) return;
-  const diag = loadDiag();
-  const now = Date.now();
+/* Übernimmt vorhandene Lernstände aus v1 (Box/Fälligkeit) und dem noch
+   älteren reinen Fehlerzähler. Läuft genau einmal. */
+function migrateSrsIfNeeded() {
+  if (localStorage.getItem(SRS_KEY)) return;
   const out = {};
-  Object.entries(diag).forEach(([wqId, wrongCount]) => {
-    if ((wrongCount || 0) > 0) out[wqId] = { box: 1, due: now };
-  });
-  if (Object.keys(out).length) saveSrs(out);
+  try {
+    const v1 = JSON.parse(localStorage.getItem(SRS_KEY_V1) || '{}');
+    Object.entries(v1).forEach(([id, e]) => {
+      if (!e || typeof e !== 'object') return;
+      out[id] = { ...EMPTY_SRS, box: clampBox(e.box), due: Number(e.due) || 0, seen: 1 };
+    });
+  } catch {}
+  try {
+    const diag = JSON.parse(localStorage.getItem(DIAG_KEY) || '{}');
+    Object.entries(diag).forEach(([id, n]) => {
+      const wrong = Number(n) || 0;
+      if (wrong <= 0) return;
+      if (!out[id]) out[id] = { ...EMPTY_SRS, due: Date.now(), seen: wrong };
+      out[id].wrong = Math.max(out[id].wrong, wrong);
+      out[id].leech = out[id].wrong >= LEECH_THRESHOLD;
+    });
+  } catch {}
+  saveSrs(out);
+}
+
+function getSrsEntry(wqId) {
+  const e = loadSrs()[wqId];
+  return (e && typeof e === 'object') ? { ...EMPTY_SRS, ...e, box: clampBox(e.box) } : { ...EMPTY_SRS };
+}
+function getSrsInfoFor(v) {
+  return v ? getSrsEntry(v._wqId) : { ...EMPTY_SRS };
 }
 
 function nextDueMsForBox(box) {
@@ -439,62 +533,102 @@ function nextDueMsForBox(box) {
   return Date.now() + days * 24 * 60 * 60 * 1000;
 }
 
-function recordWrong(wqId) {
-  if (!wqId) return;
-
-  // legacy counter
-  const diag = loadDiag();
-  diag[wqId] = (diag[wqId] || 0) + 1;
-  saveDiag(diag);
-
-  // Leitner: zurück in Box 1, sofort fällig
+function writeSrsEntry(wqId, entry) {
   const srs = loadSrs();
-  srs[wqId] = { box: 1, due: Date.now() };
+  srs[wqId] = entry;
   saveSrs(srs);
 }
 
 function recordCorrect(wqId) {
   if (!wqId) return;
-
-  // legacy counter (sanft abbauen)
-  const diag = loadDiag();
-  if (diag[wqId]) diag[wqId] = Math.max(0, diag[wqId] - 1);
-  saveDiag(diag);
-
-  // Leitner: eine Box weiter (max 5), fällig nach Intervall
-  const srs = loadSrs();
-  const cur = srs[wqId];
-  const curBox = cur && cur.box ? Math.min(5, Math.max(1, Number(cur.box))) : 1;
-  const nextBox = Math.min(5, curBox + 1);
-  srs[wqId] = { box: nextBox, due: nextDueMsForBox(nextBox) };
-  saveSrs(srs);
+  const e = getSrsEntry(wqId);
+  e.seen++;
+  e.correct++;
+  e.streak = Math.max(0, e.streak) + 1;
+  e.lastSeen = Date.now();
+  // Aus Box 1 erst nach zwei richtigen Antworten in Folge aufsteigen.
+  if (e.box > 1 || e.streak >= 2) e.box = clampBox(e.box + 1);
+  e.due = nextDueMsForBox(e.box);
+  if (e.leech && e.box >= 3) e.leech = false;   // Knackpunkt überwunden
+  writeSrsEntry(wqId, e);
+  markWordSeen(wqId);
 }
 
-function getSrsInfoFor(v) {
-  const srs = loadSrs();
-  return srs[v._wqId] || null;
+function recordWrong(wqId) {
+  if (!wqId) return;
+  const e = getSrsEntry(wqId);
+  e.seen++;
+  e.wrong++;
+  e.streak = 0;
+  e.lastSeen = Date.now();
+  // Ab Box 4 nur eine Box zurück, darunter zurück auf Box 1.
+  e.box = e.box >= MASTERY_BOX ? clampBox(e.box - 1) : 1;
+  e.due = Date.now();
+  if (e.wrong >= LEECH_THRESHOLD) e.leech = true;
+  writeSrsEntry(wqId, e);
+  markWordSeen(wqId);
+}
+
+/* Auswahlgewicht: schwache und überfällige Wörter werden häufiger gezogen,
+   sichere seltener.
+
+   Zwei Deckel sind wichtig:
+   1. Der Fehlerfaktor wird begrenzt. Sonst würde ein Wort mit 20 Fehlern
+      alles andere aus der Runde verdrängen.
+   2. Ein Knackpunkt bekommt höchstens das Gewicht eines Box-2-Worts. Ohne
+      diesen Deckel wäre ausgerechnet das Wort, an dem ein Kind hängt, das
+      mit Abstand häufigste, und genau das soll der Leech-Schutz verhindern.
+      Es kommt weiter regelmäßig dran, aber in der leichteren Form. */
+const WEIGHT_ERROR_CAP = 4;
+
+function wordWeight(v) {
+  const e = getSrsEntry(v._wqId);
+  const base    = BOX_WEIGHT[e.box] || 1;
+  const errors  = 1 + 0.5 * Math.min(e.wrong, WEIGHT_ERROR_CAP);
+  const overdue = (e.due && e.due <= Date.now()) ? 1.5 : 1;
+  const raw     = base * errors * overdue;
+  const capped  = e.leech ? Math.min(raw, BOX_WEIGHT[2]) : raw;
+  return Math.max(0.1, capped);
+}
+
+/* Gewichtete Ziehung ohne Zurücklegen. */
+function weightedSample(pool, n) {
+  const items = [...pool];
+  const out = [];
+  const take = Math.min(Number(n) || 0, items.length);
+  for (let k = 0; k < take; k++) {
+    const weights = items.map(wordWeight);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    let idx = items.length - 1;
+    for (let i = 0; i < items.length; i++) {
+      r -= weights[i];
+      if (r <= 0) { idx = i; break; }
+    }
+    out.push(items[idx]);
+    items.splice(idx, 1);
+  }
+  return out;
 }
 
 function getDueWords() {
-  migrateDiagToSrsIfNeeded();
+  migrateSrsIfNeeded();
   const srs = loadSrs();
   const now = Date.now();
   return getActiveVocab().filter(v => {
     const e = srs[v._wqId];
-    return e && typeof e.due === 'number' && e.due <= now;
+    return e && typeof e.due === 'number' && e.due > 0 && e.due <= now;
   });
 }
 
 function getWeakWords() {
-  // "Schwach" = historische Fehler (legacy) ODER SRS Box 1–2
-  migrateDiagToSrsIfNeeded();
-  const diag = loadDiag();
+  // "Schwach" = schon einmal falsch beantwortet ODER noch in Box 1/2
+  migrateSrsIfNeeded();
   const srs = loadSrs();
   return getActiveVocab().filter(v => {
-    const wrong = (diag[v._wqId] || 0) > 0;
-    const box = srs[v._wqId]?.box;
-    const lowBox = typeof box === 'number' ? box <= 2 : false;
-    return wrong || lowBox;
+    const e = srs[v._wqId];
+    if (!e) return false;
+    return (e.wrong || 0) > 0 || clampBox(e.box) <= 2;
   });
 }
 
@@ -504,19 +638,238 @@ function getPracticePool() {
   return getWeakWords();
 }
 
+/* ─────────── Lerndurchlauf: Runden-Engine (WQ-5.1) ───────────
+   Reiner Zufall garantiert keine Abdeckung: Bei 91 Wörtern kann ein Kind
+   zehn Runden spielen und Wörter nie gesehen haben. Ein Durchlauf merkt
+   sich deshalb, welche Wörter schon dran waren, und füllt jede Runde nach
+   fester Quote: höchstens 30 Prozent Wiederholungen, der Rest sind noch
+   nie gesehene Wörter. Erst wenn alles einmal dran war, entscheidet das
+   Gewicht aus dem SRS.
+
+   Ein Durchlauf gehört zu genau einer Kombination aus Listenauswahl und
+   Lernrichtung. */
+const RUN_KEY_PREFIX    = 'wq.run.';
+const RUN_MAX_AGE_MS    = 90 * 24 * 60 * 60 * 1000;
+const ROUND_SIZE        = 10;
+const ROUND_REVIEW_SHARE = 0.3;
+
+function runKey() {
+  const files = (CURRENT_WORDLIST && Array.isArray(CURRENT_WORDLIST.files))
+    ? [...CURRENT_WORDLIST.files].sort().join('|')
+    : '';
+  return RUN_KEY_PREFIX + makeWqId(files, LEARN_DIR, 'run');
+}
+
+function loadRunRaw() {
+  try {
+    const r = JSON.parse(localStorage.getItem(runKey()) || 'null');
+    if (r && typeof r === 'object' && Array.isArray(r.seen)) return r;
+  } catch {}
+  return null;
+}
+
+function saveRun(run) {
+  run.updatedAt = Date.now();
+  try { localStorage.setItem(runKey(), JSON.stringify(run)); } catch {}
+}
+
+/* Liefert den aktuellen Durchlauf, bereinigt um Wörter, die nicht mehr im
+   aktiven Lernset sind (Liste gewechselt oder Vokabeln deaktiviert). */
+function getRun() {
+  const activeIds = new Set(getActiveVocab().map(v => v._wqId));
+  const run = loadRunRaw() || { seen: [], round: 0, done: false, startedAt: Date.now() };
+  run.seen = run.seen.filter(id => activeIds.has(id));
+  return run;
+}
+
+function markWordSeen(wqId) {
+  if (!wqId || !CURRENT_WORDLIST) return;
+  const run = getRun();
+  if (run.seen.includes(wqId)) return;
+  run.seen.push(wqId);
+  saveRun(run);
+}
+
+function resetRun() {
+  const run = { seen: [], round: 0, done: false, startedAt: Date.now() };
+  saveRun(run);
+  updateProgressStrip();
+  updatePracticePanel();
+}
+
+function pruneOldRuns() {
+  const now = Date.now();
+  Object.keys(localStorage)
+    .filter(k => k.startsWith(RUN_KEY_PREFIX))
+    .forEach(k => {
+      try {
+        const r = JSON.parse(localStorage.getItem(k) || 'null');
+        if (!r || !r.updatedAt || (now - r.updatedAt) > RUN_MAX_AGE_MS) localStorage.removeItem(k);
+      } catch {
+        localStorage.removeItem(k);
+      }
+    });
+}
+
+/* Stellt eine Runde nach der Abdeckungsquote zusammen. */
+function buildRound(size) {
+  size = size || ROUND_SIZE;
+  const active = getActiveVocab();
+  if (!active.length) return [];
+
+  const seenSet    = new Set(getRun().seen);
+  const unseen     = active.filter(v => !seenSet.has(v._wqId));
+  const seenWords  = active.filter(v =>  seenSet.has(v._wqId));
+  const now        = Date.now();
+  const out        = [];
+
+  // 1. Fällige Wiederholungen, aber gedeckelt solange es noch Neues gibt.
+  const due = seenWords.filter(v => {
+    const e = getSrsEntry(v._wqId);
+    return e.due > 0 && e.due <= now;
+  });
+  const reviewCap = unseen.length ? Math.floor(size * ROUND_REVIEW_SHARE) : size;
+  weightedSample(due, Math.min(reviewCap, due.length)).forEach(v => out.push(v));
+
+  // 2. Noch nie gesehene Wörter füllen auf: das garantiert die Abdeckung.
+  shuffle(unseen).slice(0, Math.max(0, size - out.length)).forEach(v => out.push(v));
+
+  // 3. Ist alles einmal dran gewesen, entscheidet das Gewicht.
+  if (out.length < size) {
+    const used = new Set(out.map(v => v._wqId));
+    const rest = seenWords.filter(v => !used.has(v._wqId));
+    weightedSample(rest, size - out.length).forEach(v => out.push(v));
+  }
+
+  return shuffle(out);
+}
+
+/* Zwei bewusst getrennte Messgrößen (WQ-5.2):
+   Abdeckung = schon drangewesen, Beherrschung = sicher gelernt.
+
+   Beherrschung wird zweistufig gezählt. Box 4 und 5 sind "sicher", Box 3 ist
+   "fast sicher". Der Grund ist nicht Kosmetik: Der Weg auf Box 4 braucht vier
+   richtige Antworten, und wer eine Liste einmal durchspielt, landet meist auf
+   Box 3. Ohne die Vorstufe stünde nach einer langen Übungseinheit "0 von 91",
+   und das Kind lernt daraus vor allem, nichts erreicht zu haben.
+
+   Gelesen wird hier bewusst einmal aus dem Speicher statt je Wort, sonst
+   entstehen bei 500 Wörtern 500 JSON-Parsevorgänge pro Aktualisierung. */
+function getRunProgress() {
+  const active  = getActiveVocab();
+  const run     = getRun();
+  const seenSet = new Set(run.seen);
+  const srs     = loadSrs();
+  const total   = active.length;
+
+  let seenCount = 0, mastered = 0, almost = 0;
+  active.forEach(v => {
+    if (seenSet.has(v._wqId)) seenCount++;
+    const entry = srs[v._wqId];
+    if (!entry) return;
+    const box = clampBox(entry.box);
+    if (box >= MASTERY_BOX) mastered++;
+    else if (box === ALMOST_BOX) almost++;
+  });
+
+  return {
+    total,
+    seenCount,
+    mastered,
+    almost,
+    round: (run.round || 0) + 1,
+    totalRounds: Math.max(1, Math.ceil(total / ROUND_SIZE)),
+    complete: total > 0 && seenCount >= total
+  };
+}
+
+/* Wird am Rundenende aufgerufen: zählt die Runde und vergibt einmalig den
+   Bonus für einen komplett durchgespielten Listendurchlauf. */
+function finishRound() {
+  const run = getRun();
+  run.round = (run.round || 0) + 1;
+  let runBonus = 0;
+  const progress = getRunProgress();
+  if (progress.complete && !run.done) {
+    run.done = true;
+    runBonus = SCORE_RULES.runDone;
+  }
+  saveRun(run);
+  const roundBonus = SCORE_RULES.roundDone;
+  addScore(roundBonus + runBonus);
+  updateProgressStrip();
+  return { roundBonus, runBonus, progress: getRunProgress() };
+}
+
+/* Einheitlicher Abschlusstext für Runden, die noch mit alert() enden. */
+function roundSummary(title, correct, total, done) {
+  const lines = [title, `${correct} von ${total} richtig.`];
+  if (done) {
+    lines.push(`Runde geschafft: +${done.roundBonus} Punkte.`);
+    if (done.runBonus) lines.push(`Die ganze Liste ist durch: +${done.runBonus} Punkte! 🎉`);
+    lines.push(`${done.progress.seenCount} von ${done.progress.total} Wörtern waren schon dran, ${done.progress.mastered} sitzen sicher.`);
+  }
+  return lines.join('\n');
+}
+
 function clearDiagnosis() {
   localStorage.removeItem(DIAG_KEY);
+  localStorage.removeItem(SRS_KEY_V1);
   localStorage.removeItem(SRS_KEY);
+  updatePracticePanel();
+  updateProgressStrip();
+  if (LAST_TAB === 'vocab') renderVocab(VOCAB_FILTER);
+}
+
+/* Setzt einen einzelnen Knackpunkt zurück: Fehlerzähler auf null, damit das
+   Wort wieder normal im Umlauf ist. Der Lernstand selbst bleibt erhalten. */
+function clearLeech(wqId) {
+  if (!wqId) return;
+  const e = getSrsEntry(wqId);
+  e.wrong = 0;
+  e.leech = false;
+  writeSrsEntry(wqId, e);
+  renderVocab(VOCAB_FILTER);
   updatePracticePanel();
 }
 
 function updatePracticePanel() {
-  const due = getDueWords().length;
+  const due  = getDueWords().length;
   const weak = getWeakWords().length;
-  const dueEl = document.getElementById('practice-due-count');
+  const leeches = getActiveVocab().filter(v => getSrsEntry(v._wqId).leech).length;
+  const dueEl  = document.getElementById('practice-due-count');
   const weakEl = document.getElementById('practice-weak-count');
-  if (dueEl) dueEl.textContent = String(due);
+  const leechEl = document.getElementById('practice-leech-count');
+  if (dueEl)  dueEl.textContent  = String(due);
   if (weakEl) weakEl.textContent = String(weak);
+  if (leechEl) leechEl.textContent = String(leeches);
+
+  const runLine = document.getElementById('practice-run-line');
+  if (runLine) {
+    const p = getRunProgress();
+    runLine.textContent = p.total
+      ? `Durchlauf: ${p.seenCount} von ${p.total} Wörtern waren schon dran, ${p.mastered} sitzen sicher.`
+      : 'Noch keine Vokabeln im aktiven Lernset.';
+  }
+}
+
+/* ─────────── Bild-URLs aus Wortlisten absichern ───────────
+   Sobald Lehrkräfte eigene Listen einreichen, ist das img-Feld eine fremde
+   Eingabe. Eine beliebige URL wäre ein Zählpixel: Sie liefert dem Betreiber
+   jener Domain IP-Adresse, Gerät und Zeitpunkt jedes Kindes, das die Liste
+   öffnet. Deshalb nur HTTPS und nur bekannte Hosts. Zweite Ebene ist die
+   img-src-Direktive der CSP in .htaccess. */
+const IMG_ALLOWED_HOSTS = new Set(['img.bildungssprit.de']);
+
+function safeImgUrl(raw) {
+  try {
+    const url = new URL(String(raw), location.href);
+    if (url.protocol !== 'https:') return null;
+    if (url.hostname !== location.hostname && !IMG_ALLOWED_HOSTS.has(url.hostname)) return null;
+    return url.href;
+  } catch {
+    return null;
+  }
 }
 
 /* ─────────── visual helper (emoji / image / fallback) ─────────── */
@@ -524,9 +877,10 @@ function visual(item, size) {
   size = size || 'md';
   if (!item) return '';
   const alt = escapeHtml(item.de || item.en || '');
-  if (item.img) {
-    const src = escapeHtml(item.img);
-    return `<img class="word-visual word-visual-${size}" src="${src}" alt="${alt}" loading="lazy" onerror="handleImgError(this)">`;
+  const safe = item.img ? safeImgUrl(item.img) : null;
+  if (safe) {
+    const src = escapeHtml(safe);
+    return `<img class="word-visual word-visual-${size}" src="${src}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="handleImgError(this)">`;
   }
   if (item.emoji) {
     return `<span class="word-visual word-visual-${size}">${escapeHtml(item.emoji)}</span>`;
@@ -542,7 +896,8 @@ function shouldHideVisualInitially() {
   return LEARN_DIR === 'en2de';
 }
 function hasVisual(item) {
-  return !!(item && (item.img || item.emoji));
+  if (!item) return false;
+  return !!((item.img && safeImgUrl(item.img)) || item.emoji);
 }
 function visualPlaceholder(size) {
   size = size || 'md';
@@ -556,7 +911,7 @@ function visualForPrompt(item, size, revealed) {
 
 /** Text für Hilfe-Button: Bild vs. Emoji (EN→DE). */
 function visualHintLabel(item) {
-  if (item && item.img) {
+  if (item && item.img && safeImgUrl(item.img)) {
     return {
       text: '🖼️ Bild anzeigen',
       title: 'Optional: Bild anzeigen (Hilfe – die richtige Antwort bleibt dir überlassen).',
@@ -607,6 +962,9 @@ function setDirection(dir) {
   localStorage.setItem('wq.dir', dir);
   syncDirectionButtons();
   updateSpellingPlaceholder();
+  // Der Durchlauf hängt an der Lernrichtung: EN→DE wird getrennt gezählt.
+  updateProgressStrip();
+  updatePracticePanel();
   rerunActiveSection();
 }
 
@@ -661,7 +1019,7 @@ async function discoverWordlists() {
 
   const metas = await Promise.all(names.map(async (n) => {
     try {
-      const rr = await fetch('wordlists/' + n, { cache: 'no-store' });
+      const rr = await fetch('wordlists/' + encodeURIComponent(n), { cache: 'no-store' });
       if (!rr.ok) throw 0;
       const d = await rr.json();
       return {
@@ -690,6 +1048,11 @@ function normalizeWordEntry(w, file, catKey) {
     _wqId: makeWqId(file, en, de)
   };
 }
+
+/* Obergrenzen für eine einzelne Wortliste. Gelten im Client als
+   Schutz des Geräts, beim späteren Upload zusätzlich serverseitig. */
+const MAX_WORDS_PER_LIST = 500;
+const MAX_WORD_LEN       = 120;
 
 async function fetchOneWordlist(file) {
   const r = await fetch('wordlists/' + encodeURIComponent(file) + '?t=' + Date.now(), { cache: 'no-store' });
@@ -730,12 +1093,29 @@ async function loadWordlists(files) {
         if (data.description) descriptions.push(data.description);
         const srcCats = data.categories && typeof data.categories === 'object' ? data.categories : {};
 
-        const words = data.words.filter(w => w && typeof w === 'object' && w.en && w.de);
+        // Grenzen gegen überlange oder aufgeblähte Listen: Ein altes
+        // Schul-Tablet soll an einer fehlerhaften Einreichung nicht
+        // hängen bleiben. Serverseitig beim Upload nochmals prüfen.
+        const words = data.words
+          .filter(w =>
+            w && typeof w === 'object' &&
+            typeof w.en === 'string' && typeof w.de === 'string' &&
+            w.en.trim() && w.de.trim() &&
+            w.en.length <= MAX_WORD_LEN && w.de.length <= MAX_WORD_LEN
+          )
+          .slice(0, MAX_WORDS_PER_LIST);
+        if (data.words.length > MAX_WORDS_PER_LIST) {
+          errors.push(`„${file}“ wurde auf ${MAX_WORDS_PER_LIST} Wörter gekürzt.`);
+        }
         for (const w of words) {
           const rawCat = typeof w.cat === 'string' && w.cat.trim() ? w.cat.trim() : 'default';
           const catKey = stem + ':' + rawCat;
           if (!mergedCategories[catKey]) {
-            const catLabel = srcCats[rawCat] || (rawCat === 'default' ? 'Alle' : rawCat);
+            // Object.hasOwn: verhindert, dass "constructor" o. ä. als
+            // Kategorieschlüssel geerbte Eigenschaften nach oben holt.
+            const catLabel = (Object.hasOwn(srcCats, rawCat) && typeof srcCats[rawCat] === 'string')
+              ? srcCats[rawCat]
+              : (rawCat === 'default' ? 'Alle' : rawCat);
             mergedCategories[catKey] = listTitle + ' · ' + catLabel;
           }
           merged.push(normalizeWordEntry(w, file, catKey));
@@ -780,11 +1160,13 @@ async function loadWordlists(files) {
     }
     updateWordlistMeta();
     updatePracticePanel();
+    updateProgressStrip();
     rerunActiveSection();
   } catch (err) {
     showError(err.message || String(err));
     VOCAB = [];
     CURRENT_WORDLIST = null;
+    updateProgressStrip();
   } finally {
     if (picker) picker.classList.remove('is-loading');
   }
@@ -894,7 +1276,8 @@ function renderWordlistPanelList() {
   list.innerHTML = filtered.map(item => {
     const id = 'wlx-' + item.file.replace(/[^a-z0-9._-]/gi, '_');
     const checked = selected.has(item.file) ? ' checked' : '';
-    const count = item.count ? ` <span class="wl-count">(${item.count})</span>` : '';
+    const n = Number(item.count) || 0;
+    const count = n ? ` <span class="wl-count">(${n})</span>` : '';
     const sub = item.description ? `<div class="wl-desc">${escapeHtml(item.description)}</div>` : '';
     return `<label class="wl-row" for="${id}" role="option" aria-selected="${selected.has(item.file) ? 'true' : 'false'}">
       <input type="checkbox" id="${id}" value="${escapeHtml(item.file)}"${checked} />
@@ -983,10 +1366,37 @@ function hideError() {
 }
 
 /* ═══════════════════════════════════════════════
-   SCORE
+   SCORE (WQ-5.5)
+
+   Grundsätze für diese Zielgruppe:
+   - Es gibt nie Minuspunkte und keinen Zeitbonus im Lernmodus.
+   - Die Grundpunkte richten sich nach der Anforderung: freie Produktion
+     (Spelling) bringt mehr als Wiedererkennen (Memory).
+   - Der Comeback-Bonus ist der wichtigste Baustein: Wer ein vorher falsches
+     Wort jetzt kann, bekommt die höchste Einzelbelohnung. Damit wird der
+     Fehler zur Voraussetzung für den größten Ertrag.
+   - Der Rundenbonus ist leistungsunabhängig, damit auch eine schwache Runde
+     sichtbar etwas einbringt.
 ═══════════════════════════════════════════════ */
-let totalScore = parseInt(localStorage.getItem('wq.score') || localStorage.getItem('fruitScore') || '0');
-let highScore  = parseInt(localStorage.getItem('wq.high')  || localStorage.getItem('fruitHigh')  || '0');
+const SCORE_RULES = Object.freeze({
+  quiz: 10, quizEasy: 6, memory: 8, scramble: 15, spelling: 20, spellingHint: 10,
+  streakFrom: 3, streakStep: 2, streakMax: 10,
+  firstTime: 5, comeback: 10,
+  roundDone: 25, runDone: 100
+});
+
+function readStoredNumber(...keys) {
+  for (const k of keys) {
+    const n = parseInt(localStorage.getItem(k) || '', 10);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return 0;
+}
+let totalScore = readStoredNumber('wq.score', 'fruitScore');
+// Die Bestleistung ist der persönliche Vergleichswert und darf nie unter dem
+// aktuellen Punktestand liegen, auch nicht wenn der Speicher unvollständig ist.
+let highScore  = Math.max(readStoredNumber('wq.high', 'fruitHigh'), totalScore);
+let answerStreak = 0;   // richtige Antworten in Folge, wird je Runde zurückgesetzt
 
 function updateScoreBar() {
   document.getElementById('total-score').textContent = totalScore;
@@ -996,9 +1406,9 @@ function addScore(pts) {
   totalScore += pts;
   if (totalScore > highScore) {
     highScore = totalScore;
-    localStorage.setItem('wq.high', highScore);
+    try { localStorage.setItem('wq.high', highScore); } catch {}
   }
-  localStorage.setItem('wq.score', totalScore);
+  try { localStorage.setItem('wq.score', totalScore); } catch {}
   updateScoreBar();
   const el = document.getElementById('total-score');
   el.classList.remove('animate__animated','animate__bounceIn');
@@ -1006,6 +1416,162 @@ function addScore(pts) {
   el.classList.add('animate__animated','animate__bounceIn');
 }
 updateScoreBar();
+
+function resetAnswerStreak() { answerStreak = 0; }
+
+/* Vergibt die Punkte für eine richtige Antwort.
+   `before` ist der SRS-Stand VOR dieser Antwort und muss im Spiel vor
+   recordCorrect() eingesammelt werden, sonst ist der Comeback-Bonus weg. */
+function awardAnswer(kind, before) {
+  const prev = before || EMPTY_SRS;
+  let pts = SCORE_RULES[kind] ?? SCORE_RULES.quiz;
+  const reasons = [];
+
+  answerStreak++;
+  if (answerStreak >= SCORE_RULES.streakFrom) {
+    const bonus = Math.min(
+      SCORE_RULES.streakMax,
+      (answerStreak - SCORE_RULES.streakFrom + 1) * SCORE_RULES.streakStep
+    );
+    pts += bonus;
+    reasons.push(`Serie +${bonus}`);
+  }
+  if (prev.wrong > 0) {
+    pts += SCORE_RULES.comeback;
+    reasons.push(`Comeback +${SCORE_RULES.comeback}`);
+  } else if (prev.seen === 0) {
+    pts += SCORE_RULES.firstTime;
+    reasons.push(`Neu +${SCORE_RULES.firstTime}`);
+  }
+
+  addScore(pts);
+  return { pts, reasons };
+}
+
+/* ═══════════════════════════════════════════════
+   SPIELERNAME UND AVATAR (WQ-5.6)
+
+   Bewusst generiert statt eingetippt: So landet nie ein Klarname eines
+   Kindes in der App. Der Name bleibt im Browser erhalten, ist also über
+   Sitzungen hinweg "der eigene Name", und lässt sich neu würfeln.
+═══════════════════════════════════════════════ */
+const PLAYER_ADJ = [
+  'flink','klug','mutig','fröhlich','neugierig','tapfer','witzig','ruhig','schnell','clever',
+  'freundlich','wach','pfiffig','munter','stark','sanft','listig','heiter','emsig','kühn',
+  'flott','schlau','geduldig','eifrig','gelassen','wendig','zäh','sportlich','frech','nett'
+];
+/* g = grammatisches Geschlecht, damit die Endung des Adjektivs passt. */
+const PLAYER_ANIMALS = [
+  { n:'Fuchs',   g:'m', e:'🦊' }, { n:'Igel',     g:'m', e:'🦔' }, { n:'Hase',    g:'m', e:'🐰' },
+  { n:'Bär',     g:'m', e:'🐻' }, { n:'Wolf',     g:'m', e:'🐺' }, { n:'Tiger',   g:'m', e:'🐯' },
+  { n:'Löwe',    g:'m', e:'🦁' }, { n:'Delfin',   g:'m', e:'🐬' }, { n:'Pinguin', g:'m', e:'🐧' },
+  { n:'Papagei', g:'m', e:'🦜' }, { n:'Frosch',   g:'m', e:'🐸' }, { n:'Waschbär',g:'m', e:'🦝' },
+  { n:'Hirsch',  g:'m', e:'🦌' }, { n:'Wal',      g:'m', e:'🐳' }, { n:'Adler',   g:'m', e:'🦅' },
+  { n:'Hamster', g:'m', e:'🐹' }, { n:'Affe',     g:'m', e:'🐵' }, { n:'Elefant', g:'m', e:'🐘' },
+  { n:'Hund',    g:'m', e:'🐶' }, { n:'Panda',    g:'m', e:'🐼' },
+  { n:'Eule',    g:'f', e:'🦉' }, { n:'Biene',    g:'f', e:'🐝' }, { n:'Maus',    g:'f', e:'🐭' },
+  { n:'Katze',   g:'f', e:'🐱' }, { n:'Schildkröte', g:'f', e:'🐢' }, { n:'Giraffe', g:'f', e:'🦒' },
+  { n:'Robbe',   g:'f', e:'🦭' }, { n:'Ente',     g:'f', e:'🦆' }, { n:'Schlange',g:'f', e:'🐍' },
+  { n:'Fledermaus', g:'f', e:'🦇' }, { n:'Schnecke', g:'f', e:'🐌' }, { n:'Krabbe', g:'f', e:'🦀' },
+  { n:'Kuh',     g:'f', e:'🐮' }, { n:'Eidechse', g:'f', e:'🦎' },
+  { n:'Reh',     g:'n', e:'🦌' }, { n:'Faultier', g:'n', e:'🦥' }, { n:'Eichhörnchen', g:'n', e:'🐿️' },
+  { n:'Nilpferd',g:'n', e:'🦛' }, { n:'Krokodil', g:'n', e:'🐊' }, { n:'Zebra',   g:'n', e:'🦓' },
+  { n:'Küken',   g:'n', e:'🐥' }, { n:'Lama',     g:'n', e:'🦙' }, { n:'Schaf',   g:'n', e:'🐑' },
+  { n:'Pferd',   g:'n', e:'🐴' }
+];
+
+function adjEnding(genus) {
+  return genus === 'm' ? 'er' : genus === 'f' ? 'e' : 'es';
+}
+function makePlayer() {
+  const adj    = PLAYER_ADJ[Math.floor(Math.random() * PLAYER_ADJ.length)];
+  const animal = PLAYER_ANIMALS[Math.floor(Math.random() * PLAYER_ANIMALS.length)];
+  const word   = adj + adjEnding(animal.g);
+  return { name: `${word.charAt(0).toUpperCase()}${word.slice(1)} ${animal.n}`, emoji: animal.e };
+}
+function savePlayer(p) {
+  try { localStorage.setItem('wq.player', JSON.stringify(p)); } catch {}
+}
+function getPlayer() {
+  try {
+    const p = JSON.parse(localStorage.getItem('wq.player') || 'null');
+    if (p && typeof p.name === 'string' && typeof p.emoji === 'string') return p;
+  } catch {}
+  const fresh = makePlayer();
+  savePlayer(fresh);
+  return fresh;
+}
+function renderPlayer() {
+  const p = getPlayer();
+  const nameEl  = document.getElementById('player-name');
+  const emojiEl = document.getElementById('player-emoji');
+  if (nameEl)  nameEl.textContent  = p.name;
+  if (emojiEl) emojiEl.textContent = p.emoji;
+}
+function rerollPlayer() {
+  savePlayer(makePlayer());
+  renderPlayer();
+}
+
+/* ═══════════════════════════════════════════════
+   FORTSCHRITTSANZEIGE (WQ-5.2)
+   Zwei bewusst getrennte Balken: "war schon dran" und "sitzt sicher".
+═══════════════════════════════════════════════ */
+function updateProgressStrip() {
+  const strip = document.getElementById('progress-strip');
+  if (!strip) return;
+  const p = getRunProgress();
+  strip.hidden = !p.total;
+  if (!p.total) return;
+
+  const pctCov    = Math.round((p.seenCount / p.total) * 100);
+  const pctMas    = Math.round((p.mastered  / p.total) * 100);
+  const pctAlmost = Math.round((p.almost    / p.total) * 100);
+
+  const covVal = document.getElementById('prog-coverage-value');
+  const masVal = document.getElementById('prog-mastery-value');
+  const covBar = document.getElementById('prog-coverage-fill');
+  const masBar = document.getElementById('prog-mastery-fill');
+  const almBar = document.getElementById('prog-almost-fill');
+
+  if (covVal) covVal.textContent = `${p.seenCount} von ${p.total}`;
+  if (masVal) {
+    masVal.textContent = p.almost
+      ? `${p.mastered} sicher · ${p.almost} fast sicher`
+      : `${p.mastered} von ${p.total} sicher`;
+  }
+  if (covBar) {
+    covBar.style.width = `${pctCov}%`;
+    covBar.parentElement.setAttribute('aria-valuenow', String(pctCov));
+  }
+  if (masBar) masBar.style.width = `${pctMas}%`;
+  if (almBar) almBar.style.width = `${pctAlmost}%`;
+
+  const masTrack = document.getElementById('prog-mastery-track');
+  if (masTrack) {
+    masTrack.setAttribute('aria-valuenow', String(pctMas));
+    masTrack.setAttribute('aria-valuetext',
+      `${p.mastered} von ${p.total} sicher gelernt, ${p.almost} fast sicher`);
+  }
+
+  const roundEl = document.getElementById('prog-round');
+  if (roundEl) {
+    roundEl.textContent = p.complete
+      ? 'Durchlauf komplett 🎉'
+      : `Runde ${Math.min(p.round, p.totalRounds)} von ${p.totalRounds}`;
+  }
+}
+
+/* Reifegrad einer Vokabel: Farbe UND Text, damit die Farbe nie allein
+   die Information trägt. */
+function maturityInfo(wqId) {
+  const e = getSrsEntry(wqId);
+  if (e.leech)              return { cls:'mat-leech', label:'Knackpunkt',  icon:'🔧' };
+  if (!e.seen)              return { cls:'mat-new',   label:'neu',         icon:'○'  };
+  if (e.box >= MASTERY_BOX) return { cls:'mat-solid', label:'sicher',      icon:'✓'  };
+  if (e.box === ALMOST_BOX) return { cls:'mat-mid',   label:'fast sicher', icon:'◍'  };
+  return                           { cls:'mat-weak',  label:'wackelig',    icon:'◔'  };
+}
 
 /* ═══════════════════════════════════════════════
    TABS
@@ -1099,24 +1665,84 @@ function vocabSelectAll(active) {
 }
 
 /* ═══════════════════════════════════════════════
+   DISTRAKTOREN (WQ-5.4)
+
+   Zufällige Falschantworten aus dem Gesamtbestand prüfen nichts: Neben
+   "Erdbeere" stand dann "Arbeitet mit einem Partner zusammen". Plausible
+   Ablenker aus derselben Kategorie machen aus der Aufgabe erst eine
+   echte Wortschatzprüfung.
+═══════════════════════════════════════════════ */
+function isPhrase(text) {
+  return String(text || '').trim().split(/\s+/).length > 2;
+}
+
+function pickDistractors(item, n) {
+  if (n <= 0) return [];
+  const target = tgtText(item);
+  const wantPhrase = isPhrase(target);
+
+  const all = getActiveVocab().filter(v => v._wqId !== item._wqId && tgtText(v) !== target);
+  // Sätze und Einzelwörter nicht mischen, solange genug vom gleichen Typ da ist.
+  const sameKind = all.filter(v => isPhrase(tgtText(v)) === wantPhrase);
+  const base = sameKind.length >= n ? sameKind : all;
+
+  const out  = [];
+  const used = new Set();
+  const take = list => {
+    shuffle(list).forEach(v => {
+      if (out.length >= n || used.has(v._wqId)) return;
+      used.add(v._wqId);
+      out.push(v);
+    });
+  };
+
+  // 1. Priorität: gleiche Kategorie
+  const cat = item.cat || 'default';
+  take(base.filter(v => (v.cat || 'default') === cat));
+
+  // 2. Priorität: ähnliche Länge oder gleicher Anfangsbuchstabe
+  if (out.length < n) {
+    const len   = target.length;
+    const first = target.charAt(0).toLowerCase();
+    take(base.filter(v => {
+      if (used.has(v._wqId)) return false;
+      const t = tgtText(v);
+      return Math.abs(t.length - len) <= 3 || t.charAt(0).toLowerCase() === first;
+    }));
+  }
+
+  // 3. Rückfallebene: alles Übrige
+  if (out.length < n) take(base.filter(v => !used.has(v._wqId)));
+  if (out.length < n) take(all.filter(v => !used.has(v._wqId)));
+
+  return out.slice(0, n);
+}
+
+/* ═══════════════════════════════════════════════
    QUIZ
 ═══════════════════════════════════════════════ */
 let quizItems, quizIdx, quizScore;
 let quizVisualRevealed = false;
+let quizEasyMode = false;   // Knackpunkte: zwei statt vier Optionen
 
 function startQuiz() {
-  const pool = PRACTICE_MODE ? getPracticePool() : getActiveVocab();
-  if (!pool.length) {
-    if (PRACTICE_MODE) {
-      const h = document.getElementById('practice-hint');
-      if (h) h.textContent = 'Keine fälligen oder schwierigen Wörter im aktiven Lernset.';
-    }
+  const pool = PRACTICE_MODE ? getPracticePool() : null;
+  if (PRACTICE_MODE && !pool.length) {
+    const h = document.getElementById('practice-hint');
+    if (h) h.textContent = 'Keine fälligen oder schwierigen Wörter im aktiven Lernset.';
     return;
   }
-  quizItems = shuffle(pool).slice(0, Math.min(10, pool.length));
+  // Im Übungsmodus zählt die schwache Menge, sonst baut die Runden-Engine
+  // die Runde so, dass jede Vokabel der Liste garantiert drankommt.
+  quizItems = PRACTICE_MODE
+    ? weightedSample(pool, Math.min(ROUND_SIZE, pool.length))
+    : buildRound(ROUND_SIZE);
+  if (!quizItems.length) return;
+
   quizIdx   = 0;
   quizScore = 0;
   quizVisualRevealed = false;
+  resetAnswerStreak();
   document.getElementById('result-screen').classList.remove('active');
   document.getElementById('result-screen').style.display = 'none';
   document.querySelector('#section-quiz .card').style.display = '';
@@ -1126,7 +1752,11 @@ function startQuiz() {
 
 function showQuizQuestion() {
   const item = quizItems[quizIdx];
-  quizVisualRevealed = false;
+  const entry = getSrsEntry(item._wqId);
+  // Knackpunkt: leichtere Form, damit niemand an einem Wort hängen bleibt.
+  quizEasyMode = entry.leech;
+  quizVisualRevealed = quizEasyMode;
+
   const qh = document.getElementById('quiz-heading');
   if (qh) qh.textContent = PRACTICE_MODE ? '❓ Quiz · Üben' : '❓ Quiz';
   document.getElementById('quiz-counter').textContent   = `${quizIdx+1} / ${quizItems.length}`;
@@ -1134,13 +1764,14 @@ function showQuizQuestion() {
   document.getElementById('quiz-question').innerHTML    = visualForPrompt(item, 'lg', quizVisualRevealed);
   syncVisualHintWrap('quiz-visual-hint-wrap', 'quiz-show-visual', item, quizVisualRevealed);
   document.getElementById('quiz-hint').innerHTML        =
-    `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`;
+    `Was ist <span class="q-word">${escapeHtml(srcText(item))}</span> auf ${tgtLangName()}?`
+    + (quizEasyMode ? ' <span class="q-easy-note">(leichter, du übst dieses Wort gerade)</span>' : '');
   document.getElementById('quiz-feedback').textContent  = '';
   setNextReady('quiz', false);
 
-  const others = getActiveVocab().filter(v => v !== item);
-  const distractors = getRandom(others, Math.min(3, others.length));
-  const choices = shuffle([item, ...distractors]);
+  const wanted      = quizEasyMode ? 1 : 3;
+  const distractors = pickDistractors(item, wanted);
+  const choices     = shuffle([item, ...distractors]);
   const rightAnswer = tgtText(item);
   const grid = document.getElementById('quiz-choices');
   grid.innerHTML = '';
@@ -1148,12 +1779,12 @@ function showQuizQuestion() {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = tgtText(c);
-    btn.onclick = () => handleQuizAnswer(btn, c === item, rightAnswer, item);
+    btn.onclick = () => handleQuizAnswer(btn, c === item, rightAnswer, item, entry);
     grid.appendChild(btn);
   });
 }
 
-function handleQuizAnswer(btn, correct, rightAnswer, item) {
+function handleQuizAnswer(btn, correct, rightAnswer, item, before) {
   // Nach der Entscheidung Bild zeigen (Feedback-Verankerung)
   quizVisualRevealed = true;
   document.getElementById('quiz-question').innerHTML = visualForPrompt(item, 'lg', quizVisualRevealed);
@@ -1166,18 +1797,20 @@ function handleQuizAnswer(btn, correct, rightAnswer, item) {
   const fb = document.getElementById('quiz-feedback');
   if (correct) {
     btn.classList.add('correct-ans');
-    fb.textContent = praiseMsg();
+    const award = awardAnswer(quizEasyMode ? 'quizEasy' : 'quiz', before);
+    fb.textContent = praiseMsg(award);
     fb.className   = 'feedback correct';
-    addScore(10);
     quizScore++;
     recordCorrect(item._wqId);
   } else {
     btn.classList.add('wrong-ans');
     fb.textContent = growthMsg(rightAnswer);
     fb.className   = 'feedback wrong';
+    resetAnswerStreak();
     recordWrong(item._wqId);
   }
   updatePracticePanel();
+  updateProgressStrip();
   setNextReady('quiz', true);
 }
 
@@ -1195,14 +1828,24 @@ function showQuizResult() {
   document.getElementById('quiz-feedback').textContent = '';
   setNextReady('quiz', false);
   const pct = quizScore / quizItems.length;
+  // Der Rundenbonus ist leistungsunabhängig: Auch eine schwache Runde
+  // bringt sichtbar etwas ein.
+  const done = PRACTICE_MODE ? null : finishRound();
   const rs = document.getElementById('result-screen');
   rs.style.display = 'block';
   rs.classList.add('active');
   document.getElementById('result-emoji').textContent = pct >= .8 ? '🏆' : pct >= .5 ? '😊' : '💪';
-  document.getElementById('result-stars').textContent = '⭐'.repeat(Math.round(pct * 5));
+  document.getElementById('result-stars').textContent = '⭐'.repeat(Math.max(1, Math.round(pct * 5)));
   document.getElementById('result-title').textContent = pct >= .8 ? 'Super gemacht!' : pct >= .5 ? 'Gut gemacht!' : 'Weiter üben!';
-  document.getElementById('result-score').textContent = `${quizScore} von ${quizItems.length} richtig`;
-  if (pct >= .8) celebrate();
+
+  let scoreLine = `${quizScore} von ${quizItems.length} richtig`;
+  if (done) {
+    scoreLine += ` · Runde geschafft +${done.roundBonus}`;
+    if (done.runBonus) scoreLine += ` · Ganze Liste durch +${done.runBonus}`;
+    scoreLine += ` · ${done.progress.seenCount} von ${done.progress.total} Wörtern waren schon dran`;
+  }
+  document.getElementById('result-score').textContent = scoreLine;
+  if (pct >= .8 || (done && done.runBonus)) celebrate();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1227,7 +1870,17 @@ function startMemory(pairCount) {
   document.getElementById('memory-time').textContent  = '0:00';
   document.getElementById('memory-pairs').textContent = `0 / ${pairCount} Paare`;
 
-  const selected = getRandom(vocab, pairCount);
+  resetAnswerStreak();
+  // Memory arbeitet paarweise und nutzt deshalb keine volle Runde, zieht
+  // aber bevorzugt Wörter, die im Durchlauf noch nicht dran waren.
+  const seenSet  = new Set(getRun().seen);
+  const unseen   = vocab.filter(v => !seenSet.has(v._wqId));
+  const selected = shuffle(unseen).slice(0, pairCount);
+  if (selected.length < pairCount) {
+    const used = new Set(selected.map(v => v._wqId));
+    weightedSample(vocab.filter(v => !used.has(v._wqId)), pairCount - selected.length)
+      .forEach(v => selected.push(v));
+  }
   const tiles = [];
   selected.forEach((v, i) => {
     tiles.push({ id: i*2,   pairId: i, type:'visual', item: v });
@@ -1275,6 +1928,7 @@ function flipCard(idx) {
     document.getElementById('memory-tries').textContent = memTries;
     const [a, b] = memFlipped.map(i => memCards[i]);
     if (a.pairId === b.pairId && a.type !== b.type) {
+      const before = getSrsEntry(a.item._wqId);
       setTimeout(() => {
         memFlipped.forEach(i => {
           const e = document.querySelectorAll('.mem-card')[i];
@@ -1285,19 +1939,27 @@ function flipCard(idx) {
         memMatched++;
         const total = memCards.length / 2;
         document.getElementById('memory-pairs').textContent = `${memMatched} / ${total} Paare`;
-        addScore(15);
+        awardAnswer('memory', before);
         recordCorrect(a.item._wqId);
         updatePracticePanel();
+        updateProgressStrip();
         if (memMatched === total) {
           clearInterval(memTimer);
           celebrate();
-          setTimeout(() => alert(`🎉 Alle Paare gefunden!\nVersuche: ${memTries} | Zeit: ${document.getElementById('memory-time').textContent}`), 200);
+          const done = finishRound();
+          const zeit = document.getElementById('memory-time').textContent;
+          setTimeout(() => alert(
+            roundSummary('🎉 Alle Paare gefunden!', memMatched, total, done)
+            + `\nVersuche: ${memTries} | Zeit: ${zeit}`
+          ), 200);
         }
       }, 500);
     } else {
+      resetAnswerStreak();
       recordWrong(a.item._wqId);
       recordWrong(b.item._wqId);
       updatePracticePanel();
+      updateProgressStrip();
       setTimeout(() => {
         memFlipped.forEach(i => {
           const e = document.querySelectorAll('.mem-card')[i];
@@ -1330,11 +1992,12 @@ function isLetterChar(ch) {
 }
 
 function startScramble() {
-  const vocab = getActiveVocab();
-  if (!vocab.length) return;
-  scrambleItems = shuffle(vocab).slice(0, Math.min(10, vocab.length));
+  if (!getActiveVocab().length) return;
+  scrambleItems = buildRound(ROUND_SIZE);
+  if (!scrambleItems.length) return;
   scrambleIdx   = 0;
   scrambleScore = 0;
+  resetAnswerStreak();
   showScrambleQuestion();
 }
 
@@ -1451,17 +2114,20 @@ function checkScramble() {
   const expected = Array.from(target.toUpperCase()).filter(isLetterChar).join('');
   const answer   = scrambleAnswer.map(r => r.letter).join('');
   const fb       = document.getElementById('scramble-feedback');
+  const before   = getSrsEntry(item._wqId);
   // Nach dem Prüfen: Bild zeigen (egal ob richtig oder falsch)
   scrambleVisualRevealed = true;
   document.getElementById('scramble-emoji').innerHTML = visualForPrompt(item, 'md', scrambleVisualRevealed);
   syncVisualHintWrap('scramble-visual-hint-wrap', 'scramble-show-visual', item, true);
   if (answer === expected) {
-    fb.textContent = praiseMsg();
+    const award = awardAnswer('scramble', before);
+    fb.textContent = praiseMsg(award);
     fb.className   = 'feedback correct';
-    addScore(10); scrambleScore++;
+    scrambleScore++;
     celebrate();
     recordCorrect(item._wqId);
     updatePracticePanel();
+    updateProgressStrip();
     setNextReady('scramble', true);
     document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
   } else if (answer.length < expected.length) {
@@ -1470,8 +2136,10 @@ function checkScramble() {
   } else {
     fb.textContent = growthMsg(target);
     fb.className   = 'feedback wrong';
+    resetAnswerStreak();
     recordWrong(item._wqId);
     updatePracticePanel();
+    updateProgressStrip();
     setNextReady('scramble', true);
     document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='none');
   }
@@ -1481,7 +2149,8 @@ function scrambleNext() {
   scrambleIdx++;
   document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='');
   if (scrambleIdx >= scrambleItems.length) {
-    alert(`🎉 Scramble beendet!\n${scrambleScore} von ${scrambleItems.length} richtig.`);
+    const done = finishRound();
+    alert(roundSummary('🎉 Scramble beendet!', scrambleScore, scrambleItems.length, done));
     startScramble();
   } else {
     showScrambleQuestion();
@@ -1493,19 +2162,23 @@ function scrambleNext() {
 ═══════════════════════════════════════════════ */
 let spellingItems, spellingIdx, spellingScore;
 let spellingVisualRevealed = false;
+let spellingHintUsed = false;   // Tipp genutzt → halbe Grundpunkte
 
 function startSpelling() {
-  const vocab = getActiveVocab();
-  if (!vocab.length) return;
-  spellingItems = shuffle(vocab).slice(0, Math.min(10, vocab.length));
+  if (!getActiveVocab().length) return;
+  spellingItems = buildRound(ROUND_SIZE);
+  if (!spellingItems.length) return;
   spellingIdx   = 0;
   spellingScore = 0;
+  spellingHintUsed = false;
+  resetAnswerStreak();
   showSpellingQuestion();
 }
 
 function showSpellingQuestion() {
   const item = spellingItems[spellingIdx];
   spellingVisualRevealed = false;
+  spellingHintUsed = false;
   document.getElementById('spelling-counter').textContent  = `${spellingIdx+1} / ${spellingItems.length}`;
   document.getElementById('spelling-progress').style.width = `${((spellingIdx+1)/spellingItems.length)*100}%`;
   document.getElementById('spelling-emoji').innerHTML      = visualForPrompt(item, 'lg', spellingVisualRevealed);
@@ -1530,6 +2203,7 @@ function showHint() {
   const item = spellingItems[spellingIdx];
   const target = tgtText(item);
   const hint = target.slice(0,2) + '_'.repeat(Math.max(0, target.length - 2));
+  spellingHintUsed = true;
   document.getElementById('spelling-hint-text').textContent = `Tipp: ${hint} (${target.length} Buchstaben)`;
 }
 
@@ -1562,20 +2236,24 @@ function checkSpelling() {
   const target        = tgtText(item);
   const exactMatch    = typed.toLowerCase() === target.toLowerCase();
   const tolerantMatch = normalizeSpelling(typed) === normalizeSpelling(target);
+  const before        = getSrsEntry(item._wqId);
+  const kind          = spellingHintUsed ? 'spellingHint' : 'spelling';
 
   if (exactMatch) {
     inp.className  = 'correct';
-    fb.textContent = praiseMsg();
+    const award = awardAnswer(kind, before);
+    fb.textContent = praiseMsg(award);
     fb.className   = 'feedback correct';
-    addScore(10); spellingScore++;
+    spellingScore++;
     celebrate();
     recordCorrect(item._wqId);
     updatePracticePanel();
   } else if (tolerantMatch) {
     inp.className  = 'almost';
-    fb.textContent = `⚠️ Fast perfekt! Schreibweise: ${target}`;
+    const award = awardAnswer(kind, before);
+    fb.textContent = `⚠️ Fast perfekt! Schreibweise: ${target} · +${award.pts}`;
     fb.className   = 'feedback almost';
-    addScore(10); spellingScore++;
+    spellingScore++;
     celebrate();
     recordCorrect(item._wqId);
     updatePracticePanel();
@@ -1583,16 +2261,19 @@ function checkSpelling() {
     inp.className  = 'wrong';
     fb.textContent = growthMsg(`"${target}"`);
     fb.className   = 'feedback wrong';
+    resetAnswerStreak();
     recordWrong(item._wqId);
     updatePracticePanel();
   }
+  updateProgressStrip();
   setNextReady('spelling', true);
 }
 
 function spellingNext() {
   spellingIdx++;
   if (spellingIdx >= spellingItems.length) {
-    alert(`🐝 Spelling Bee beendet!\n${spellingScore} von ${spellingItems.length} richtig.`);
+    const done = finishRound();
+    alert(roundSummary('🐝 Spelling Bee beendet!', spellingScore, spellingItems.length, done));
     startSpelling();
   } else {
     showSpellingQuestion();
@@ -1670,7 +2351,13 @@ function renderVocab(filter) {
   const dis = getDisabledSet();
   const items = VOCAB_FILTER === 'all' ? VOCAB : VOCAB.filter(v => (v.cat || 'default') === VOCAB_FILTER);
   grid.innerHTML = items.map(v => {
-    const on = !dis.has(v._wqId);
+    const on  = !dis.has(v._wqId);
+    const mat = maturityInfo(v._wqId);
+    // Reifegrad als Farbe UND Text: Farbe trägt die Information nie allein.
+    const leechBtn = mat.cls === 'mat-leech'
+      ? `<button type="button" class="vocab-leech-reset" data-leech="${escapeHtml(v._wqId)}"
+                 title="Knackpunkt zurücksetzen" aria-label="Knackpunkt für ${escapeHtml(v.en)} zurücksetzen">↺</button>`
+      : '';
     return `
     <div class="vocab-card" style="--cat-color:${categoryColor(v.cat || 'default')}">
       <label class="vocab-learn-toggle">
@@ -1680,6 +2367,11 @@ function renderVocab(filter) {
       <div class="v-visual">${visual(v, 'sm')}</div>
       <div class="v-en">${escapeHtml(v.en)}</div>
       <div class="v-de">${escapeHtml(v.de)}</div>
+      <div class="v-maturity ${mat.cls}">
+        <span class="v-mat-icon" aria-hidden="true">${mat.icon}</span>
+        <span class="v-mat-label">${mat.label}</span>
+        ${leechBtn}
+      </div>
     </div>`;
   }).join('');
   if (!items.length) {
@@ -1690,8 +2382,12 @@ function renderVocab(filter) {
       setWordDisabled(inp.dataset.wqid, !inp.checked);
       renderVocab(VOCAB_FILTER);
       updatePracticePanel();
+      updateProgressStrip();
       if (['quiz', 'memory', 'scramble', 'spelling'].includes(LAST_TAB)) rerunActiveSection();
     });
+  });
+  grid.querySelectorAll('.vocab-leech-reset').forEach(btn => {
+    btn.addEventListener('click', () => clearLeech(btn.dataset.leech));
   });
 }
 
@@ -1711,6 +2407,13 @@ document.querySelectorAll('#direction-bar .dir-btn').forEach(btn => {
 });
 syncDirectionButtons();
 updateSpellingPlaceholder();
+
+/* Lernstand aus älteren Versionen übernehmen, alte Durchläufe aufräumen,
+   Spielername anzeigen. */
+migrateSrsIfNeeded();
+pruneOldRuns();
+renderPlayer();
+document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer);
 
 // Visual-Hilfe-Buttons (Bild erst nach Entscheidung oder per Klick einblenden)
 document.getElementById('quiz-show-visual')?.addEventListener('click', () => {

@@ -15,7 +15,13 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-header('Access-Control-Allow-Origin: *');
+header('X-Content-Type-Options: nosniff');
+// Bewusst kein Access-Control-Allow-Origin: Das Frontend ruft diesen
+// Endpunkt ausschließlich gleichursprünglich auf.
+
+// Obergrenze je Datei. Schützt davor, dass eine einzelne große oder
+// fehlerhafte Datei jeden Seitenaufruf ausbremst.
+const WQ_MAX_FILE_BYTES = 524288; // 512 KB
 
 $dir   = __DIR__;
 $files = glob($dir . '/*.json');
@@ -27,6 +33,9 @@ if ($files !== false) {
 
         // index.json (manueller Fallback-Manifest) nicht anzeigen
         if ($name === 'index.json') continue;
+
+        $size = @filesize($path);
+        if ($size === false || $size > WQ_MAX_FILE_BYTES) continue;
 
         $raw  = @file_get_contents($path);
         if ($raw === false) continue;
