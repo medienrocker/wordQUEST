@@ -48,6 +48,12 @@ Damit erreichen Korrekturen installierte Geräte verlässlich, ohne dass jemand 
 
 **Regel für jedes Release: `CACHE_VERSION` in `sw.js` hochzählen.** Ohne diese Änderung bemerkt der Browser keine neue Fassung, und der Hinweis erscheint nie.
 
+**Der Worker darf das Admincenter nicht anfassen.** Im Betrieb aufgetreten:
+Ein Aufruf von `/admin/` zeigte die Lernapp statt der Anmeldung, weil der
+Worker jede Navigation abfängt und die zwischengespeicherte `index.html`
+ausliefert. Pfade unter `/admin` und `/api/` sind deshalb ausdrücklich
+ausgenommen und gehen immer ans Netz.
+
 Eine Einschränkung bleibt: Wer die Leiste mit „Später" wegklickt, bleibt vorerst auf der alten Fassung. Die Leiste erscheint beim nächsten Seitenaufruf erneut, es gibt also kein dauerhaftes Wegdrücken.
 
 ### Obergrenzen beim Laden von Wortlisten
