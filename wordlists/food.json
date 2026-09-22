@@ -2,35 +2,217 @@
   "title": "Obst & Gemüse",
   "description": "Grundwortschatz Essen – Klasse 4",
   "categories": {
-    "fruit":  "🍎 Früchte",
+    "fruit": "🍎 Früchte",
     "veggie": "🥦 Gemüse"
   },
   "words": [
-    { "en": "apple",      "de": "Apfel",        "emoji": "🍎", "cat": "fruit"  },
-    { "en": "strawberry", "de": "Erdbeere",     "emoji": "🍓", "cat": "fruit"  },
-    { "en": "pear",       "de": "Birne",        "emoji": "🍐", "cat": "fruit"  },
-    { "en": "tomato",     "de": "Tomate",       "emoji": "🍅", "cat": "fruit"  },
-    { "en": "banana",     "de": "Banane",       "emoji": "🍌", "cat": "fruit"  },
-    { "en": "kiwi",       "de": "Kiwi",         "emoji": "🥝", "cat": "fruit"  },
-    { "en": "pineapple",  "de": "Ananas",       "emoji": "🍍", "cat": "fruit"  },
-    { "en": "cherry",     "de": "Kirsche",      "emoji": "🍒", "cat": "fruit"  },
-    { "en": "orange",     "de": "Orange",       "emoji": "🍊", "cat": "fruit"  },
-    { "en": "lemon",      "de": "Zitrone",      "emoji": "🍋", "cat": "fruit"  },
-    { "en": "plum",       "de": "Pflaume",      "emoji": "🍑", "cat": "fruit"  },
-    { "en": "watermelon", "de": "Wassermelone", "emoji": "🍉", "cat": "fruit"  },
-    { "en": "grape",      "de": "Traube",       "emoji": "🍇", "cat": "fruit"  },
-    { "en": "peach",      "de": "Pfirsich",     "emoji": "🍑", "cat": "fruit"  },
-    { "en": "raspberry",  "de": "Himbeere",     "emoji": "🫐", "cat": "fruit"  },
-    { "en": "blueberry",  "de": "Blaubeere",    "emoji": "🫐", "cat": "fruit"  },
-    { "en": "corn",       "de": "Mais",         "emoji": "🌽", "cat": "veggie" },
-    { "en": "pea",        "de": "Erbse",        "emoji": "🫛", "cat": "veggie" },
-    { "en": "onion",      "de": "Zwiebel",      "emoji": "🧅", "cat": "veggie" },
-    { "en": "pepper",     "de": "Paprika",      "emoji": "🫑", "cat": "veggie" },
-    { "en": "pumpkin",    "de": "Kürbis",       "emoji": "🎃", "cat": "veggie" },
-    { "en": "potato",     "de": "Kartoffel",    "emoji": "🥔", "cat": "veggie" },
-    { "en": "cucumber",   "de": "Gurke",        "emoji": "🥒", "cat": "veggie" },
-    { "en": "mushroom",   "de": "Pilz",         "emoji": "🍄", "cat": "veggie" },
-    { "en": "broccoli",   "de": "Brokkoli",     "emoji": "🥦", "cat": "veggie" },
-    { "en": "carrot",     "de": "Karotte",      "emoji": "🥕", "cat": "veggie" }
+    {
+      "en": "apple",
+      "de": "Apfel",
+      "emoji": "🍎",
+      "cat": "fruit",
+      "example": "I eat an apple every morning.",
+      "exampleDe": "Ich esse jeden Morgen einen Apfel."
+    },
+    {
+      "en": "strawberry",
+      "de": "Erdbeere",
+      "emoji": "🍓",
+      "cat": "fruit",
+      "example": "This strawberry is sweet and red.",
+      "exampleDe": "Diese Erdbeere ist süß und rot."
+    },
+    {
+      "en": "pear",
+      "de": "Birne",
+      "emoji": "🍐",
+      "cat": "fruit",
+      "example": "Would you like a pear or an apple?",
+      "exampleDe": "Möchtest du eine Birne oder einen Apfel?"
+    },
+    {
+      "en": "tomato",
+      "de": "Tomate",
+      "emoji": "🍅",
+      "cat": "fruit",
+      "example": "There is one tomato left in the fridge.",
+      "exampleDe": "Im Kühlschrank ist noch eine Tomate."
+    },
+    {
+      "en": "banana",
+      "de": "Banane",
+      "emoji": "🍌",
+      "cat": "fruit",
+      "example": "I take a banana to school every day.",
+      "exampleDe": "Ich nehme jeden Tag eine Banane mit in die Schule."
+    },
+    {
+      "en": "kiwi",
+      "de": "Kiwi",
+      "emoji": "🥝",
+      "cat": "fruit",
+      "example": "A kiwi is green inside.",
+      "exampleDe": "Eine Kiwi ist innen grün."
+    },
+    {
+      "en": "pineapple",
+      "de": "Ananas",
+      "emoji": "🍍",
+      "cat": "fruit",
+      "example": "A pineapple is too big for my lunch box.",
+      "exampleDe": "Eine Ananas ist zu groß für meine Brotdose."
+    },
+    {
+      "en": "cherry",
+      "de": "Kirsche",
+      "emoji": "🍒",
+      "cat": "fruit",
+      "example": "There is one cherry on the cake.",
+      "exampleDe": "Auf dem Kuchen ist eine Kirsche."
+    },
+    {
+      "en": "orange",
+      "de": "Orange",
+      "emoji": "🍊",
+      "cat": "fruit",
+      "example": "My brother drinks orange juice for breakfast.",
+      "exampleDe": "Mein Bruder trinkt Orangensaft zum Frühstück."
+    },
+    {
+      "en": "lemon",
+      "de": "Zitrone",
+      "emoji": "🍋",
+      "cat": "fruit",
+      "example": "A lemon tastes very sour.",
+      "exampleDe": "Eine Zitrone schmeckt sehr sauer."
+    },
+    {
+      "en": "plum",
+      "de": "Pflaume",
+      "emoji": "🍑",
+      "cat": "fruit",
+      "example": "This plum is small and purple.",
+      "exampleDe": "Diese Pflaume ist klein und lila."
+    },
+    {
+      "en": "watermelon",
+      "de": "Wassermelone",
+      "emoji": "🍉",
+      "cat": "fruit",
+      "example": "We eat watermelon on hot days.",
+      "exampleDe": "An heißen Tagen essen wir Wassermelone."
+    },
+    {
+      "en": "grape",
+      "de": "Traube",
+      "emoji": "🍇",
+      "cat": "fruit",
+      "example": "Can I have a grape, please?",
+      "exampleDe": "Kann ich bitte eine Traube haben?"
+    },
+    {
+      "en": "peach",
+      "de": "Pfirsich",
+      "emoji": "🍑",
+      "cat": "fruit",
+      "example": "The peach is soft and sweet.",
+      "exampleDe": "Der Pfirsich ist weich und süß."
+    },
+    {
+      "en": "raspberry",
+      "de": "Himbeere",
+      "emoji": "🫐",
+      "cat": "fruit",
+      "example": "I put a raspberry on my yoghurt.",
+      "exampleDe": "Ich lege eine Himbeere auf meinen Joghurt."
+    },
+    {
+      "en": "blueberry",
+      "de": "Blaubeere",
+      "emoji": "🫐",
+      "cat": "fruit",
+      "example": "One blueberry fell under the table.",
+      "exampleDe": "Eine Blaubeere ist unter den Tisch gefallen."
+    },
+    {
+      "en": "corn",
+      "de": "Mais",
+      "emoji": "🌽",
+      "cat": "veggie",
+      "example": "We eat corn with butter and salt.",
+      "exampleDe": "Wir essen Mais mit Butter und Salz."
+    },
+    {
+      "en": "pea",
+      "de": "Erbse",
+      "emoji": "🫛",
+      "cat": "veggie",
+      "example": "There is one pea left on my plate.",
+      "exampleDe": "Auf meinem Teller ist noch eine Erbse."
+    },
+    {
+      "en": "onion",
+      "de": "Zwiebel",
+      "emoji": "🧅",
+      "cat": "veggie",
+      "example": "My eyes hurt when I cut an onion.",
+      "exampleDe": "Meine Augen brennen, wenn ich eine Zwiebel schneide."
+    },
+    {
+      "en": "pepper",
+      "de": "Paprika",
+      "emoji": "🫑",
+      "cat": "veggie",
+      "example": "The red pepper is sweet, the green one is not.",
+      "exampleDe": "Die rote Paprika ist süß, die grüne nicht."
+    },
+    {
+      "en": "pumpkin",
+      "de": "Kürbis",
+      "emoji": "🎃",
+      "cat": "veggie",
+      "example": "We make a face in the pumpkin in October.",
+      "exampleDe": "Im Oktober schnitzen wir ein Gesicht in den Kürbis."
+    },
+    {
+      "en": "potato",
+      "de": "Kartoffel",
+      "emoji": "🥔",
+      "cat": "veggie",
+      "example": "My grandma cooks potato soup on Sundays.",
+      "exampleDe": "Meine Oma kocht sonntags Kartoffelsuppe."
+    },
+    {
+      "en": "cucumber",
+      "de": "Gurke",
+      "emoji": "🥒",
+      "cat": "veggie",
+      "example": "I like cucumber in my salad.",
+      "exampleDe": "Ich mag Gurke im Salat."
+    },
+    {
+      "en": "mushroom",
+      "de": "Pilz",
+      "emoji": "🍄",
+      "cat": "veggie",
+      "example": "Do not eat a mushroom from the forest.",
+      "exampleDe": "Iss keinen Pilz aus dem Wald."
+    },
+    {
+      "en": "broccoli",
+      "de": "Brokkoli",
+      "emoji": "🥦",
+      "cat": "veggie",
+      "example": "My sister never eats broccoli.",
+      "exampleDe": "Meine Schwester isst nie Brokkoli."
+    },
+    {
+      "en": "carrot",
+      "de": "Karotte",
+      "emoji": "🥕",
+      "cat": "veggie",
+      "example": "The rabbit wants my carrot.",
+      "exampleDe": "Der Hase will meine Karotte."
+    }
   ]
 }

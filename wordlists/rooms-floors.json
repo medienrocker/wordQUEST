@@ -2,23 +2,121 @@
   "title": "Haus & Stockwerke",
   "description": "Räume im Haus und die Stockwerke – Grundwortschatz.",
   "categories": {
-    "room":  "🏠 Räume",
+    "room": "🏠 Räume",
     "floor": "🏢 Stockwerke"
   },
   "words": [
-    { "en": "attic",           "de": "Dachboden",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_attic.png",          "cat": "room"  },
-    { "en": "bedroom",         "de": "Schlafzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bedroom.png",        "cat": "room"  },
-    { "en": "children's room", "de": "Kinderzimmer", "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_childrens-room.png", "cat": "room"  },
-    { "en": "bathroom",        "de": "Badezimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bathroom.png",       "cat": "room"  },
-    { "en": "living room",     "de": "Wohnzimmer",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_living-room.png",    "cat": "room"  },
-    { "en": "kitchen",         "de": "Küche",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_kitchen.png",        "cat": "room"  },
-    { "en": "dining room",     "de": "Esszimmer",    "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_dining-room.png",    "cat": "room"  },
-    { "en": "garden",          "de": "Garten",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garden.png",         "cat": "room"  },
-    { "en": "garage",          "de": "Garage",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garage.png",         "cat": "room"  },
-    { "en": "floors",          "de": "Stockwerke",   "emoji": "🏢",  "cat": "floor" },
-    { "en": "ground floor",    "de": "Erdgeschoss",  "emoji": "🏠",  "cat": "floor" },
-    { "en": "first floor",     "de": "erster Stock", "emoji": "1️⃣", "cat": "floor" },
-    { "en": "second floor",    "de": "zweiter Stock","emoji": "2️⃣", "cat": "floor" },
-    { "en": "third floor",     "de": "dritter Stock","emoji": "3️⃣", "cat": "floor" }
+    {
+      "en": "attic",
+      "de": "Dachboden",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_attic.png",
+      "cat": "room",
+      "example": "Our old toys are in the attic.",
+      "exampleDe": "Unser altes Spielzeug ist auf dem Dachboden."
+    },
+    {
+      "en": "bedroom",
+      "de": "Schlafzimmer",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bedroom.png",
+      "cat": "room",
+      "example": "My parents' bedroom is very quiet.",
+      "exampleDe": "Das Schlafzimmer meiner Eltern ist sehr ruhig."
+    },
+    {
+      "en": "children's room",
+      "de": "Kinderzimmer",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_childrens-room.png",
+      "cat": "room",
+      "example": "We play in the children's room.",
+      "exampleDe": "Wir spielen im Kinderzimmer."
+    },
+    {
+      "en": "bathroom",
+      "de": "Badezimmer",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bathroom.png",
+      "cat": "room",
+      "example": "I brush my teeth in the bathroom.",
+      "exampleDe": "Ich putze mir im Badezimmer die Zähne."
+    },
+    {
+      "en": "living room",
+      "de": "Wohnzimmer",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_living-room.png",
+      "cat": "room",
+      "example": "The TV is in the living room.",
+      "exampleDe": "Der Fernseher steht im Wohnzimmer."
+    },
+    {
+      "en": "kitchen",
+      "de": "Küche",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_kitchen.png",
+      "cat": "room",
+      "example": "It smells good in the kitchen.",
+      "exampleDe": "In der Küche riecht es gut."
+    },
+    {
+      "en": "dining room",
+      "de": "Esszimmer",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_dining-room.png",
+      "cat": "room",
+      "example": "We only use the dining room at Christmas.",
+      "exampleDe": "Das Esszimmer benutzen wir nur an Weihnachten."
+    },
+    {
+      "en": "garden",
+      "de": "Garten",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garden.png",
+      "cat": "room",
+      "example": "Our garden is small but green.",
+      "exampleDe": "Unser Garten ist klein, aber grün."
+    },
+    {
+      "en": "garage",
+      "de": "Garage",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garage.png",
+      "cat": "room",
+      "example": "My bike is in the garage.",
+      "exampleDe": "Mein Fahrrad steht in der Garage."
+    },
+    {
+      "en": "floors",
+      "de": "Stockwerke",
+      "emoji": "🏢",
+      "cat": "floor",
+      "example": "Our house has three floors.",
+      "exampleDe": "Unser Haus hat drei Stockwerke."
+    },
+    {
+      "en": "ground floor",
+      "de": "Erdgeschoss",
+      "emoji": "🏠",
+      "cat": "floor",
+      "example": "The kitchen is on the ground floor.",
+      "exampleDe": "Die Küche ist im Erdgeschoss."
+    },
+    {
+      "en": "first floor",
+      "de": "erster Stock",
+      "emoji": "1️⃣",
+      "cat": "floor",
+      "example": "My room is on the first floor.",
+      "exampleDe": "Mein Zimmer ist im ersten Stock."
+    },
+    {
+      "en": "second floor",
+      "de": "zweiter Stock",
+      "emoji": "2️⃣",
+      "cat": "floor",
+      "example": "Grandma lives on the second floor.",
+      "exampleDe": "Oma wohnt im zweiten Stock."
+    },
+    {
+      "en": "third floor",
+      "de": "dritter Stock",
+      "emoji": "3️⃣",
+      "cat": "floor",
+      "example": "There is no lift to the third floor.",
+      "exampleDe": "Zum dritten Stock gibt es keinen Aufzug."
+    }
   ]
 }

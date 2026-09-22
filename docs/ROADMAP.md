@@ -575,7 +575,11 @@ Das ist der größte Hebel, um den Bestand an Listen wachsen zu lassen, ohne das
 
 Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
 
-1. **Ton überall.** Aussprache an jedem Wort, Hörmodi. Größte inhaltliche Lücke im Ist-Stand. Siehe Epic 6.
+1. ~~**Ton überall.**~~ **Umgesetzt** mit WQ-6.1 und WQ-6.2.
+
+   **Nachtrag Beispielsätze:** Der Lückensatz-Modus aus WQ-6.3 war praktisch tot, weil nur 13 Prozent der Wörter einen Beispielsatz hatten und der Modus erst ab vier erscheint. Er stand damit bei zwei von sechs Listen zur Verfügung. Inzwischen haben 86 Prozent einen Satz, und der Modus erscheint bei allen Listen. Nicht ergänzt wurden Arbeitsanweisungen wie „Work with a partner.", die selbst schon ganze Sätze sind.
+
+   Dazu eine Regel in `gapInfo()`: Lücken unter drei Buchstaben werden übersprungen. Bei „I like tea, ___ I hate coffee" passen but, and und yet gleichermassen, das ist keine Aufgabe, sondern Raten. Der Satz bleibt trotzdem in der Vokabelliste stehen, und genau dort hilft er bei Wörtern wie „of" oder „so" am meisten, weil die sich einzeln gar nicht erklären lassen.
 2. **Foto zu Liste als Selbstbedienung** für Lehrkräfte. Größter Hebel für Inhaltswachstum. Siehe WQ-9.5.
 3. ~~**Klassenmodus mit Code.**~~ **Umgesetzt.** `klasse.php` für Lehrkräfte, `api/klasse.php` für die App, Aufsicht in der Übersicht des Admincenters.
 

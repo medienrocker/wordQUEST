@@ -18,46 +18,62 @@
       "en": "target task",
       "de": "Zielaufgabe",
       "emoji": "🎯",
-      "cat": "words"
+      "cat": "words",
+      "example": "Our target task is a poster about our town.",
+      "exampleDe": "Unsere Zielaufgabe ist ein Plakat über unsere Stadt."
     },
     {
       "en": "about",
       "de": "über; an",
-      "cat": "words"
+      "cat": "words",
+      "example": "We talk about our holidays.",
+      "exampleDe": "Wir reden über unsere Ferien."
     },
     {
       "en": "show",
       "de": "zeigen",
       "emoji": "👉",
-      "cat": "words"
+      "cat": "words",
+      "example": "Can you show me your photos?",
+      "exampleDe": "Kannst du mir deine Fotos zeigen?"
     },
     {
       "en": "new",
       "de": "neu",
       "emoji": "✨",
-      "cat": "words"
+      "cat": "words",
+      "example": "She has got a new phone.",
+      "exampleDe": "Sie hat ein neues Handy."
     },
     {
       "en": "look (at)",
       "de": "(an)sehen, (an)schauen",
       "emoji": "👀",
-      "cat": "words"
+      "cat": "words",
+      "example": "Look at the board, please.",
+      "exampleDe": "Schau bitte an die Tafel."
     },
     {
       "en": "there's (= there is)",
       "de": "dort ist; es gibt",
-      "cat": "words"
+      "cat": "words",
+      "example": "There's a cat in the garden.",
+      "exampleDe": "Im Garten ist eine Katze."
     },
     {
       "en": "be",
       "de": "sein",
-      "cat": "words"
+      "cat": "words",
+      "example": "I want to be a teacher.",
+      "exampleDe": "Ich will Lehrer werden."
     },
     {
       "en": "cousin",
       "de": "Cousin/e",
       "emoji": "🧑",
-      "cat": "words"
+      "cat": "words",
+      "example": "My cousin lives in Hamburg.",
+      "exampleDe": "Mein Cousin wohnt in Hamburg."
     },
     {
       "en": "these (pl of this)",
@@ -69,13 +85,17 @@
     {
       "en": "that",
       "de": "das",
-      "cat": "words"
+      "cat": "words",
+      "example": "That is my bike over there.",
+      "exampleDe": "Das ist mein Fahrrad da drüben."
     },
     {
       "en": "again",
       "de": "wieder, noch einmal",
       "emoji": "🔁",
-      "cat": "words"
+      "cat": "words",
+      "example": "Can you say that again, please?",
+      "exampleDe": "Kannst du das bitte noch einmal sagen?"
     },
     {
       "en": "cat",
@@ -89,17 +109,23 @@
       "en": "cap",
       "de": "Mütze",
       "emoji": "🧢",
-      "cat": "words"
+      "cat": "words",
+      "example": "He wears a red cap every day.",
+      "exampleDe": "Er trägt jeden Tag eine rote Mütze."
     },
     {
       "en": "have got",
       "de": "haben",
-      "cat": "words"
+      "cat": "words",
+      "example": "They have got two cats.",
+      "exampleDe": "Sie haben zwei Katzen."
     },
     {
       "en": "also",
       "de": "auch",
-      "cat": "words"
+      "cat": "words",
+      "example": "She plays tennis and also swims.",
+      "exampleDe": "Sie spielt Tennis und schwimmt auch."
     },
     {
       "en": "dancing",
@@ -125,61 +151,81 @@
     {
       "en": "always",
       "de": "immer",
-      "cat": "words"
+      "cat": "words",
+      "example": "I always walk to school.",
+      "exampleDe": "Ich gehe immer zu Fuß zur Schule."
     },
     {
       "en": "India",
       "de": "Indien",
       "emoji": "🇮🇳",
-      "cat": "words"
+      "cat": "words",
+      "example": "My grandparents come from India.",
+      "exampleDe": "Meine Großeltern kommen aus Indien."
     },
     {
       "en": "at home",
       "de": "zu Hause",
       "emoji": "🏠",
-      "cat": "words"
+      "cat": "words",
+      "example": "We stay at home on rainy days.",
+      "exampleDe": "An Regentagen bleiben wir zu Hause."
     },
     {
       "en": "cook",
       "de": "Koch/Köchin",
       "emoji": "👨‍🍳",
-      "cat": "words"
+      "cat": "words",
+      "example": "My uncle is a cook in a restaurant.",
+      "exampleDe": "Mein Onkel ist Koch in einem Restaurant."
     },
     {
       "en": "play the guitar",
       "de": "Gitarre spielen",
       "emoji": "🎸",
-      "cat": "words"
+      "cat": "words",
+      "example": "I play the guitar in a band.",
+      "exampleDe": "Ich spiele Gitarre in einer Band."
     },
     {
       "en": "guitar",
       "de": "Gitarre",
       "emoji": "🎸",
-      "cat": "words"
+      "cat": "words",
+      "example": "His guitar is old but very loud.",
+      "exampleDe": "Seine Gitarre ist alt, aber sehr laut."
     },
     {
       "en": "parrot",
       "de": "Papagei",
       "emoji": "🦜",
-      "cat": "words"
+      "cat": "words",
+      "example": "Their parrot says hello every morning.",
+      "exampleDe": "Ihr Papagei sagt jeden Morgen hallo."
     },
     {
       "en": "who",
       "de": "wer; der/die/das",
       "emoji": "❓",
-      "cat": "words"
+      "cat": "words",
+      "example": "Who is your best friend?",
+      "exampleDe": "Wer ist deine beste Freundin?"
     },
     {
       "en": "swim",
       "de": "schwimmen",
       "emoji": "🏊",
-      "cat": "words"
+      "cat": "words",
+      "example": "We swim in the lake in summer.",
+      "exampleDe": "Im Sommer schwimmen wir im See."
     },
     {
       "en": "all day",
       "de": "den ganzen Tag lang",
       "emoji": "🕛",
-      "cat": "words"
+      "cat": "words",
+      "example": "It rained all day yesterday.",
+      "exampleDe": "Gestern hat es den ganzen Tag geregnet."
     },
     {
       "en": "chase",
@@ -201,19 +247,25 @@
       "en": "nice",
       "de": "schön; nett",
       "emoji": "😊",
-      "cat": "words"
+      "cat": "words",
+      "example": "Your sister is really nice.",
+      "exampleDe": "Deine Schwester ist wirklich nett."
     },
     {
       "en": "learn",
       "de": "lernen",
       "emoji": "📚",
-      "cat": "words"
+      "cat": "words",
+      "example": "I learn ten new words every day.",
+      "exampleDe": "Ich lerne jeden Tag zehn neue Wörter."
     },
     {
       "en": "right away",
       "de": "sofort, gleich",
       "emoji": "⚡",
-      "cat": "words"
+      "cat": "words",
+      "example": "Come here right away, please.",
+      "exampleDe": "Komm bitte sofort her."
     },
     {
       "en": "What can you see?",

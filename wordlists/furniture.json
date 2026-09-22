@@ -5,17 +5,101 @@
     "furniture": "🪑 Möbel"
   },
   "words": [
-    { "en": "bed",      "de": "Bett",           "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bed.png",      "cat": "furniture" },
-    { "en": "sofa",     "de": "Sofa",           "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_sofa.png",     "cat": "furniture" },
-    { "en": "chair",    "de": "Stuhl",          "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_chair.png",    "cat": "furniture" },
-    { "en": "shelf",    "de": "Regal",          "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shelf.png",    "cat": "furniture" },
-    { "en": "fridge",   "de": "Kühlschrank",   "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_fridge.png",   "cat": "furniture" },
-    { "en": "toilet",   "de": "Toilette",       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_toilet.png",  "cat": "furniture" },
-    { "en": "shower",   "de": "Dusche",         "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shower.png",  "cat": "furniture" },
-    { "en": "cooker",   "de": "Herd",           "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_cooker.png",   "cat": "furniture" },
-    { "en": "wardrobe", "de": "Kleiderschrank", "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_wardrobe.png", "cat": "furniture" },
-    { "en": "table",    "de": "Tisch",          "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_table.png",    "cat": "furniture" },
-    { "en": "lamp",     "de": "Lampe",          "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_lamp.png",     "cat": "furniture" },
-    { "en": "plant",    "de": "Pflanze",        "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_plant.png",    "cat": "furniture" }
+    {
+      "en": "bed",
+      "de": "Bett",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bed.png",
+      "cat": "furniture",
+      "example": "My bed is next to the window.",
+      "exampleDe": "Mein Bett steht neben dem Fenster."
+    },
+    {
+      "en": "sofa",
+      "de": "Sofa",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_sofa.png",
+      "cat": "furniture",
+      "example": "We watch films on the sofa.",
+      "exampleDe": "Wir schauen Filme auf dem Sofa."
+    },
+    {
+      "en": "chair",
+      "de": "Stuhl",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_chair.png",
+      "cat": "furniture",
+      "example": "Please put the chair back under the table.",
+      "exampleDe": "Stell den Stuhl bitte wieder unter den Tisch."
+    },
+    {
+      "en": "shelf",
+      "de": "Regal",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shelf.png",
+      "cat": "furniture",
+      "example": "My books are on the top shelf.",
+      "exampleDe": "Meine Bücher stehen im obersten Regal."
+    },
+    {
+      "en": "fridge",
+      "de": "Kühlschrank",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_fridge.png",
+      "cat": "furniture",
+      "example": "The milk is in the fridge.",
+      "exampleDe": "Die Milch ist im Kühlschrank."
+    },
+    {
+      "en": "toilet",
+      "de": "Toilette",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_toilet.png",
+      "cat": "furniture",
+      "example": "The toilet is next to the bathroom.",
+      "exampleDe": "Die Toilette ist neben dem Badezimmer."
+    },
+    {
+      "en": "shower",
+      "de": "Dusche",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shower.png",
+      "cat": "furniture",
+      "example": "I sing in the shower every morning.",
+      "exampleDe": "Ich singe jeden Morgen unter der Dusche."
+    },
+    {
+      "en": "cooker",
+      "de": "Herd",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_cooker.png",
+      "cat": "furniture",
+      "example": "Dad makes pasta on the cooker.",
+      "exampleDe": "Papa macht Nudeln auf dem Herd."
+    },
+    {
+      "en": "wardrobe",
+      "de": "Kleiderschrank",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_wardrobe.png",
+      "cat": "furniture",
+      "example": "All my clothes are in the wardrobe.",
+      "exampleDe": "Meine ganzen Klamotten sind im Kleiderschrank."
+    },
+    {
+      "en": "table",
+      "de": "Tisch",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_table.png",
+      "cat": "furniture",
+      "example": "We eat dinner at the table together.",
+      "exampleDe": "Wir essen gemeinsam am Tisch zu Abend."
+    },
+    {
+      "en": "lamp",
+      "de": "Lampe",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_lamp.png",
+      "cat": "furniture",
+      "example": "Please turn off the lamp.",
+      "exampleDe": "Mach bitte die Lampe aus."
+    },
+    {
+      "en": "plant",
+      "de": "Pflanze",
+      "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_plant.png",
+      "cat": "furniture",
+      "example": "The plant needs water every week.",
+      "exampleDe": "Die Pflanze braucht jede Woche Wasser."
+    }
   ]
 }

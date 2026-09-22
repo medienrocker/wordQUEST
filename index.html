@@ -3354,6 +3354,11 @@ function gapInfo(item) {
   for (const kandidat of kandidaten) {
     const roh = kandidat.replace(/[.!?,;:]+$/, '');
     if (!roh) continue;
+    /* Sehr kurze Lücken taugen nicht. In "I like tea, ___ I hate coffee"
+       passen but, and und yet gleichermassen, und geraten wird ohnehin. Der
+       Beispielsatz bleibt trotzdem in der Vokabelliste stehen, dort hilft er
+       genau bei diesen Wörtern am meisten. */
+    if (roh.replace(/[^\p{L}]/gu, '').length < 3) continue;
     const muster = new RegExp(`(^|[^\\p{L}])(${roh.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})([^\\p{L}]|$)`, 'iu');
     const treffer = satz.match(muster);
     if (treffer) {
