@@ -1,0 +1,119 @@
+/* wordQUEST Admincenter – eigenes, schlankes Stylesheet.
+   Bewusst ohne Framework und ohne JavaScript: Die Content-Security-Policy
+   des Admincenters verbietet Skripte komplett (script-src 'none'). */
+:root {
+    --gruen: #4caf50;
+    --dunkel: #2e3a2e;
+    --grund: #f4f8f4;
+    --karte: #ffffff;
+    --linie: #dde6dd;
+    --rot: #c62828;
+    --radius: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--grund);
+    color: var(--dunkel);
+    line-height: 1.5;
+}
+
+main { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+h1 { font-size: 1.6rem; margin-bottom: 16px; }
+h2 { font-size: 1.1rem; margin-bottom: 10px; }
+
+/* ─── Kopfleiste ─── */
+.kopf {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: var(--dunkel);
+    color: #fff;
+    padding: 12px 16px;
+}
+.kopf .marke { font-weight: 700; }
+.kopf nav { display: flex; gap: 14px; }
+.kopf a { color: #cfe6cf; text-decoration: none; }
+.kopf a:hover, .kopf a:focus-visible { color: #fff; text-decoration: underline; }
+.kopf .wer { margin-left: auto; font-size: .92rem; display: flex; align-items: center; gap: 10px; }
+.kopf .abmelden {
+    border: 1px solid #6d836d; border-radius: var(--radius);
+    padding: 4px 10px;
+}
+
+.fuss {
+    text-align: center; color: #7d8a7d; font-size: .85rem; padding: 20px;
+}
+
+/* ─── Anmeldung ─── */
+.anmeldung {
+    max-width: 380px; margin: 48px auto;
+    background: var(--karte); border: 1px solid var(--linie);
+    border-radius: var(--radius); padding: 28px 24px;
+}
+.anmeldung h1 { font-size: 1.25rem; margin-bottom: 18px; text-align: center; }
+.anmeldung label { display: block; font-weight: 600; margin: 14px 0 4px; font-size: .92rem; }
+.anmeldung input {
+    width: 100%; font: inherit; padding: 10px 12px;
+    border: 2px solid var(--linie); border-radius: var(--radius);
+}
+.anmeldung input:focus-visible { outline: 3px solid var(--gruen); outline-offset: 1px; }
+
+.btn {
+    margin-top: 20px; width: 100%; font: inherit; font-weight: 700;
+    background: var(--gruen); color: #fff; border: none;
+    border-radius: var(--radius); padding: 12px; cursor: pointer;
+    min-height: 44px;
+}
+.btn:hover { background: #439a47; }
+.btn:focus-visible { outline: 3px solid var(--dunkel); outline-offset: 2px; }
+
+.meldung {
+    padding: 10px 12px; border-radius: var(--radius); font-size: .92rem;
+}
+.meldung.fehler { background: #fdeaea; border: 1px solid #f2b8b8; color: var(--rot); }
+
+.hinweis { font-size: .85rem; color: #6c7a6c; margin-top: 16px; }
+.hinweis code { background: #eef3ee; padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+
+/* ─── Karten und Tabellen ─── */
+.karte {
+    background: var(--karte); border: 1px solid var(--linie);
+    border-radius: var(--radius); padding: 18px; margin-bottom: 18px;
+}
+
+.zeitraum { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.zeitraum a {
+    text-decoration: none; color: var(--dunkel);
+    border: 1px solid var(--linie); background: var(--karte);
+    border-radius: var(--radius); padding: 7px 14px; font-size: .9rem;
+    min-height: 44px; display: inline-flex; align-items: center;
+}
+.zeitraum a.aktiv { background: var(--gruen); color: #fff; border-color: var(--gruen); font-weight: 700; }
+
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--linie); }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #6c7a6c; }
+td.zahl, th.zahl { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr:last-child td { border-bottom: none; }
+.warnung { color: var(--rot); font-weight: 700; }
+.leer { color: #7d8a7d; font-size: .92rem; }
+
+/* Tabellen dürfen auf schmalen Geräten scrollen, die Seite nicht. */
+.karte { overflow-x: auto; }
+
+/* Aktionsknöpfe in der Adminliste. */
+td.aktionen { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+td.aktionen form { margin: 0; }
+button.klein {
+    font: inherit; font-size: .82rem; font-weight: 600;
+    background: var(--karte); color: var(--dunkel);
+    border: 1px solid var(--linie); border-radius: var(--radius);
+    padding: 7px 10px; cursor: pointer; min-height: 38px;
+}
+button.klein:hover { background: var(--grund); }
+button.klein:focus-visible { outline: 3px solid var(--gruen); outline-offset: 1px; }

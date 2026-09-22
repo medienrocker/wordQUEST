@@ -91,6 +91,29 @@ Erwartet: `{"ok":true,"uebernommen":1}` und danach eine Datei `wordquest.sqlite`
 **Sicherung:** Die Datenbank ist eine einzelne Datei. `cp` genügt, am besten im
 selben Lauf wie die übrigen Sicherungen.
 
+## Einmalig: ersten Superadmin anlegen
+
+Das Admincenter liegt unter `/admin/`. Konten entstehen nur über die
+Kommandozeile, nie über ein Formular:
+
+```bash
+cd /var/www/vhosts/bildungssprit.de/wordquest.bildungssprit.de/httpdocs
+sudo -u bs_vps-user -H php scripts/admin-anlegen.php anlegen falk superadmin
+```
+
+Das Passwort wird abgefragt, mindestens 12 Zeichen. Wichtig ist `sudo -u
+bs_vps-user`: Läuft der Befehl als root, gehört die neu angelegte
+Datenbankdatei anschließend root und PHP kann nicht mehr hineinschreiben.
+
+Weitere Befehle:
+
+```bash
+php scripts/admin-anlegen.php liste
+php scripts/admin-anlegen.php anlegen <name> admin
+php scripts/admin-anlegen.php passwort <name>
+php scripts/admin-anlegen.php sperren <name>
+```
+
 ## Was nicht im Repo liegt
 
 `img/` (lokales Bildmaterial, die ausgelieferten Bilder liegen auf `img.bildungssprit.de`),

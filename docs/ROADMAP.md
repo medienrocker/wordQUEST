@@ -17,7 +17,9 @@ Dazu WQ-6.3: Beispielsätze im Schema und der Modus Lückensatz.
 
 Dazu WQ-7.1 und WQ-7.2: Serverfundament mit PHP und SQLite, anonyme Nutzungsstatistik.
 
-Offen: WQ-6.4, WQ-7.3 bis WQ-7.5, Epic 8 bis 10.
+Dazu WQ-7.3: Anmeldung mit Rollen, Admincenter mit Statistikübersicht.
+
+Offen: WQ-6.4, WQ-7.4, WQ-7.5, Epic 8 bis 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -301,11 +303,11 @@ Der letzte Punkt ist der wertvollste: Er zeigt dir, welche Vokabeln durchgängig
 
 **Akzeptanz:**
 
-- [ ] Rollen `superadmin` (verwaltet Admins) und `admin` (nur Inhalte).
-- [ ] Passwörter ausschließlich als `password_hash()`, Argon2id bevorzugt. Keine Zugangsdaten im Quelltext oder im Repository.
-- [ ] Sitzung über PHP-Session. Das Sitzungscookie ist technisch notwendig und betrifft nur die Administration, nicht die Schüleransicht.
-- [ ] CSRF-Token auf jedem Formular, Login mit Rate Limit, Zugriff nur über HTTPS.
-- [ ] Superadmin kann Admins anlegen, deaktivieren und löschen. Der letzte Superadmin lässt sich nicht löschen.
+- [x] Rollen `superadmin` (verwaltet Admins) und `admin` (nur Inhalte).
+- [x] Passwörter ausschließlich als `password_hash()`, Argon2id bevorzugt. Keine Zugangsdaten im Quelltext oder im Repository.
+- [x] Sitzung über PHP-Session. Das Sitzungscookie ist technisch notwendig und betrifft nur die Administration, nicht die Schüleransicht.
+- [x] CSRF-Token auf jedem Formular, Login mit Rate Limit, Zugriff nur über HTTPS.
+- [x] Superadmin kann Admins anlegen, deaktivieren und löschen. Der letzte Superadmin lässt sich nicht löschen.
 
 **Abhängigkeiten:** WQ-7.1.
 

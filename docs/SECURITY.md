@@ -111,6 +111,53 @@ nach außen.
 **Weiterhin offen:** Sobald Uploads oder ein Login dazukommen, gelten die
 Punkte im nächsten Abschnitt unverändert.
 
+## Anmeldung und Rollen, Stand nach WQ-7.3
+
+Zwei Rollen: `superadmin` verwaltet Konten, `admin` nur Inhalte.
+
+**Passwörter** liegen ausschließlich als Argon2id-Hash in der Datenbank,
+bcrypt als Rückfall, wenn die PHP-Installation Argon2id nicht mitbringt. Ein
+veralteter Hash wird bei der nächsten Anmeldung still erneuert. Nie steht ein
+Passwort im Repo oder in einer Konfigurationsdatei.
+
+**Konten entstehen nur über die Kommandozeile** (`scripts/admin-anlegen.php`,
+mit `PHP_SAPI`-Sperre gegen Webaufrufe). Das Passwort wird abgefragt statt als
+Argument übergeben, sonst stünde es in der Prozessliste und in der
+Shell-Historie. Folge dieser Entscheidung: Ein übernommenes Admin-Konto kann
+sich keine weiteren Konten verschaffen.
+
+**Gegen Benutzer-Enumeration und Timing-Angriffe** wird auch bei unbekanntem
+Benutzernamen gegen einen festen Dummy-Hash geprüft, die Fehlermeldung ist
+immer dieselbe, und eine zufällige Verzögerung von 150 bis 400 Millisekunden
+überdeckt den Rest. Gemessener Unterschied zwischen unbekanntem Benutzer und
+falschem Passwort: 59 Millisekunden, also deutlich innerhalb des Rauschens.
+
+**Kontosperre** nach 10 Fehlversuchen für 15 Minuten. Während der Sperre wird
+auch das richtige Passwort abgewiesen.
+
+**Sitzung:** eigener Name `wqadmin`, Cookie mit `httponly`, `samesite=Strict`
+und `secure` unter HTTPS, `use_strict_mode` und `use_only_cookies` gesetzt,
+nach der Anmeldung `session_regenerate_id(true)` gegen Session-Fixation,
+Leerlauf beendet die Sitzung nach 60 Minuten.
+
+**CSRF:** 32 Byte aus `random_bytes`, Vergleich mit `hash_equals`, verlangt bei
+jedem POST. Geprüft: Anmeldung ohne Token endet mit 403.
+
+**Rollen werden serverseitig durchgesetzt.** `wq_verlange_rolle('superadmin')`
+steht am Anfang jeder betroffenen Seite, das Ausblenden des Menüpunkts ist nur
+Kosmetik. Geprüft: Ein normaler Admin bekommt auf `admins.php` 403, der
+Menüpunkt fehlt ihm zusätzlich.
+
+**Selbstaussperrung verhindert:** Die eigene Rolle lässt sich nicht ändern, das
+eigene Konto nicht sperren, und der letzte aktive Superadmin kann weder
+herabgestuft noch gesperrt werden.
+
+**Das Admincenter kommt ohne JavaScript aus.** Seine Content-Security-Policy
+setzt deshalb `script-src 'none'`, gesendet aus PHP heraus, weil
+`.htaccess`-Header bei manchen Plesk-Konfigurationen nicht für PHP-Antworten
+greifen. Teilvorlagen (`kopf.php`, `fuss.php`) antworten bei direktem Aufruf
+mit 403.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.
