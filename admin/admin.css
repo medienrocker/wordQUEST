@@ -35,7 +35,18 @@ h2 { font-size: 1.1rem; margin-bottom: 10px; }
     color: #fff;
     padding: 12px 16px;
 }
-.kopf .marke { font-weight: 700; }
+.kopf .marke {
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.kopf .marke img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
 .kopf nav { display: flex; gap: 14px; }
 .kopf a { color: #cfe6cf; text-decoration: none; }
 .kopf a:hover, .kopf a:focus-visible { color: #fff; text-decoration: underline; }
@@ -45,8 +56,52 @@ h2 { font-size: 1.1rem; margin-bottom: 10px; }
     padding: 4px 10px;
 }
 
+/* Fußzeile im Stil der Lernapp, mit bildungssprit-Logo. */
 .fuss {
-    text-align: center; color: #7d8a7d; font-size: .85rem; padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    text-align: center;
+    color: #7d8a7d;
+    font-size: .85rem;
+    padding: 26px 16px 34px;
+}
+
+.fuss a { color: #55635a; }
+
+.fuss-logo {
+    display: inline-flex;
+    line-height: 0;
+}
+
+.fuss-logo img {
+    height: 34px;
+    width: auto;
+    opacity: .85;
+    transition: opacity .15s;
+}
+
+.fuss-logo img:hover { opacity: 1; }
+
+.fuss-logo:focus-visible,
+.fuss a:focus-visible {
+    outline: 3px solid var(--gruen);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fuss-logo img { transition: none; }
+}
+
+/* Anmeldeseite: App-Logo über dem Titel. */
+.anmeldung-logo {
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin: 0 auto 10px;
 }
 
 /* ─── Anmeldung ─── */

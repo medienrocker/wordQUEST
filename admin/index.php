@@ -48,7 +48,8 @@ $csrf = wq_csrf_token();
 require __DIR__ . '/kopf.php';
 ?>
 <div class="anmeldung">
-  <h1>🔒 wordQUEST Admincenter</h1>
+  <img class="anmeldung-logo" src="../wordQUEST_icon.png" alt="" width="64" height="64" />
+  <h1>wordQUEST Admincenter</h1>
 
   <?php if ($fehler !== ''): ?>
     <p class="meldung fehler" role="alert"><?= htmlspecialchars($fehler, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>

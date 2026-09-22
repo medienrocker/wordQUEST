@@ -10,7 +10,9 @@ declare(strict_types=1);
 if (!defined('WQ_ADMIN')) { http_response_code(403); exit('Nicht erlaubt.'); }
 
 if (!headers_sent()) {
-    header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
+    // img-src erlaubt zusätzlich den Bildhost, weil die Fußzeile das
+    // bildungssprit-Logo von dort lädt. Sonst blockt der Browser es still.
+    header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.bildungssprit.de; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
     header('Referrer-Policy: no-referrer');
@@ -30,7 +32,10 @@ $wqAdmin = function_exists('wq_aktueller_admin') ? wq_aktueller_admin() : null;
 <body>
 <?php if ($wqAdmin): ?>
 <header class="kopf">
-  <span class="marke">wordQUEST Admincenter</span>
+  <span class="marke">
+    <img src="../wordQUEST_icon.png" alt="" width="28" height="28" />
+    wordQUEST Admincenter
+  </span>
   <nav>
     <a href="dashboard.php">Übersicht</a>
     <?php if ($wqAdmin['rolle'] === 'superadmin'): ?>

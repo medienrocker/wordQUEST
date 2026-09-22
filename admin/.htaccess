@@ -7,7 +7,7 @@
 # Wichtig: form-action MUSS 'self' erlauben. Bei zwei CSP-Headern gilt die
 # Schnittmenge, ein 'none' an irgendeiner Stelle blockt jedes Formular still.
 <IfModule mod_headers.c>
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.bildungssprit.de; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
   Header always set X-Robots-Tag "noindex, nofollow"
   Header always set Cache-Control "no-store"
 </IfModule>

@@ -223,6 +223,20 @@ $h = (Invoke-WebRequest $b -UseBasicParsing).Headers
 Erwartet: `private/`, `api/lib/`, `docs/` und `.git/HEAD` jeweils **403 oder 404**,
 `sw.js` und die Startseite **200**, `CSP vorhanden` **True**.
 
+### Bei jedem Deploy, der ein Formular betrifft
+
+Einmal wirklich absenden und dabei die **Browserkonsole** (F12) offen haben.
+
+Grund: Eine Content-Security-Policy blockt Formulare **still**. Kein
+Serverfehler, kein Eintrag im Zugriffsprotokoll, keine Meldung auf der Seite.
+Nur die Konsole verrät es. Genau das hat die Anmeldung im Admincenter
+stundenlang blockiert, siehe [SECURITY.md](SECURITY.md).
+
+**Merkregel: Funktioniert etwas mit `curl`, aber nicht im Browser, liegt die
+Ursache fast immer bei etwas, das nur der Browser durchsetzt.** Also CSP,
+CORS, Cookie-Regeln, Mixed Content oder ein Service Worker. Dann zuerst die
+Konsole öffnen, nicht serverseitig suchen.
+
 Ist `CSP vorhanden` gleich `False`, liefert Plesk statische Dateien direkt über nginx
 aus und die `.htaccess`-Header greifen nicht. Dann entweder *Serve static files directly
 by nginx* abschalten oder die Header unter „Additional nginx directives" mit
