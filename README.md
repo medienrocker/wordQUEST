@@ -150,6 +150,18 @@ Beim Hinzufügen neuer Listen lokal: auch `wordlists/index.json` aktualisieren (
 
 ---
 
+## Mit einer Klasse üben
+
+Lehrkräfte legen unter **[klasse.php](klasse.php)** ohne Konto eine Klasse an
+und bekommen einen vorlesbaren Code wie `ABC-234` sowie einen geheimen Link
+für die Übersicht. Kinder geben den Code in der App unter **Üben** ein, worauf
+sich die Wortlisten der Klasse einstellen.
+
+Die Übersicht zeigt geübte Vokabeln, Trefferquote, abgeschlossene Durchläufe
+und vor allem die Wörter, die der Klasse durchgängig danebengehen. Sie zeigt
+**nie einzelne Kinder**, und unter drei Beitritten gar keine Zahlen. Begründung
+und Aufbau stehen in [docs/SECURITY.md](docs/SECURITY.md).
+
 ## Admincenter
 
 Erreichbar unter `/admin/`, Zugänge richtet der Betreiber über die Kommandozeile

@@ -461,6 +461,44 @@ Einträge bleiben erhalten, und einzelne lassen sich dort entfernen.
 **Mitmachen ist freiwillig.** In der App lässt sich die Teilnahme abschalten,
 ohne die Tafel selbst auszublenden.
 
+## Klassenmodus
+
+Der Modus ist so gebaut, dass eine Lehrkraft einzelne Kinder gar nicht sehen
+**kann**, nicht so, dass sie es nur nicht soll.
+
+**Gespeichert werden ausschliesslich Summen je Klasse**, in derselben Form wie
+die anonyme Gesamtstatistik: Tageszähler und Trefferquoten je Vokabel. Es gibt
+keine Tabelle mit einer Zeile je Gerät, also auch keine, die sich auswerten
+liesse.
+
+**Keine Gerätekennung.** Gezählt werden Beitritte, also wie oft der Code
+eingegeben wurde. Eine Zahl verschiedener Geräte liesse sich nur mit einer
+Kennung ermitteln. Die Anzeige heisst deshalb "Beitritte" und nicht "Kinder".
+
+**Mindestzahl vor der ersten Zahl.** Unter drei Beitritten zeigt die Übersicht
+gar nichts. Eine Klassensumme aus einem einzigen Gerät ist keine Summe,
+sondern der Lernstand eines Kindes.
+
+**Der Lehrkraft-Link ist der einzige Schlüssel.** 16 zufällige Bytes, kein
+Konto, kein Passwort. Die Seite setzt `X-Robots-Tag: noindex, nofollow`, und
+die `.htaccess` tut es noch einmal, damit der Link in keinen Suchindex gerät.
+
+**Codes verraten nichts.** Ein unbekannter und ein abgelaufener Code
+bekommen dieselbe Antwort. Sonst liesse sich durch Ausprobieren herausfinden,
+welche Codes vergeben sind. Die Zeichen sind ohne Verwechslungsgefahr gewählt,
+kein I und l, kein O und 0, weil der Code an der Tafel steht und abgetippt
+wird.
+
+**Getrennte Tabellen statt eines gemeinsamen Schlüssels.** Löscht eine
+Lehrkraft ihre Klasse, verschwinden deren Zahlen restlos, ohne die
+Gesamtstatistik anzurühren. Geprüft: nach dem Löschen null Klassenzeilen, die
+728 Fragen der Gesamtstatistik unverändert.
+
+**Die Mindestzeit gilt nur beim Anlegen.** Wer den geheimen Link besitzt, hat
+sich ausgewiesen; eine Wartezeit vor dem Bestätigen wäre dort nur eine Falle,
+weil die Rückfrage eine frische Marke erzeugt. Genau das ist im Test
+aufgefallen.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.

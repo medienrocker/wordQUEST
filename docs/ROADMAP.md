@@ -577,7 +577,15 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
 
 1. **Ton überall.** Aussprache an jedem Wort, Hörmodi. Größte inhaltliche Lücke im Ist-Stand. Siehe Epic 6.
 2. **Foto zu Liste als Selbstbedienung** für Lehrkräfte. Größter Hebel für Inhaltswachstum. Siehe WQ-9.5.
-3. **Klassenmodus mit Code.** Eine Lehrkraft erzeugt einen Code, die Klasse übt denselben Satz, die Lehrkraft sieht den Fortschritt der Klasse als Summe, nie einzelne Kinder. Damit ist der Modus von der Bauart her datenschutzkonform. Hier darf auf ausdrücklichen Wunsch der Lehrkraft auch ein Wettbewerb stattfinden, weil er dann pädagogisch begleitet ist.
+3. ~~**Klassenmodus mit Code.**~~ **Umgesetzt.** `klasse.php` für Lehrkräfte, `api/klasse.php` für die App, Aufsicht in der Übersicht des Admincenters.
+
+   Eine Lehrkraft legt ohne Konto eine Klasse an und bekommt zwei Dinge: einen vorlesbaren Code der Form `ABC-234` für die Kinder und einen geheimen Link für sich. Kinder geben den Code unter **Üben** ein, worauf sich die Wortlisten der Klasse von selbst einstellen und jede Runde zusätzlich für die Klasse zählt.
+
+   **Was die Lehrkraft sieht:** geübte Vokabeln, Trefferquote, abgeschlossene Durchläufe, Beitritte und die Wörter, die der Klasse durchgängig danebengehen. Letzteres ist der eigentliche Ertrag.
+
+   **Was sie nicht sieht, von der Bauart her:** einzelne Kinder. Es gibt keine Namensliste, keine Anwesenheit und keine Zeile je Gerät. Gespeichert werden nur Summen, in derselben Form wie die anonyme Gesamtstatistik. Unter drei Beitritten zeigt die Übersicht gar keine Zahlen, weil eine Klassensumme aus einem Gerät der Lernstand eines Kindes wäre. Gezählt werden Beitritte, nicht Geräte: Eine Gerätezahl liesse sich nur mit einer Kennung ermitteln, und die gibt es nicht.
+
+   Die Summen einer Klasse liegen in eigenen Tabellen. Löscht eine Lehrkraft ihre Klasse, verschwinden deren Zahlen restlos, ohne die Gesamtstatistik anzurühren.
 4. **Arbeitsblätter als PDF** aus jeder Liste erzeugen. Lehrkräfte arbeiten weiterhin viel auf Papier, und der vorhandene `pdf-creator` Skill deckt das ab.
 5. **Herkunftssprachen.** Nicht nur Englisch nach Deutsch, sondern auch Deutsch nach Türkisch, Arabisch, Ukrainisch. Für die Zielgruppe ist der Brückenschlag zur Familiensprache ein echter Mehrwert und ein Alleinstellungsmerkmal.
 6. **Lernstand mitnehmen ohne Konto.** Export und Import des Fortschritts als Datei oder QR-Code, damit ein Kind zwischen Schultablet und Handy wechseln kann.

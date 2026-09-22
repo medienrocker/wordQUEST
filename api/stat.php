@@ -22,6 +22,10 @@ declare(strict_types=1);
 
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/db.php';
+require __DIR__ . '/lib/wortlisten.php';
+require __DIR__ . '/lib/archiv.php';
+require __DIR__ . '/lib/einreichung.php';
+require __DIR__ . '/lib/klassen.php';
 
 wq_verlange_methode('POST');
 
@@ -59,6 +63,22 @@ const WQ_MODI = ['quiz', 'memory', 'scramble', 'spelling', 'listen', 'dictation'
 
 $tag = gmdate('Y-m-d');
 $pdo = wq_db();
+
+/* Klassenmodus: Übt jemand mit einem Klassencode, werden dieselben Zahlen ein
+   zweites Mal geschrieben, diesmal der Klasse zugeordnet. Zwei getrennte
+   Summenspeicher statt eines gemeinsamen mit Schlüssel: Löscht eine Lehrkraft
+   ihre Klasse, verschwinden deren Zahlen restlos, ohne die Gesamtstatistik
+   anzurühren. */
+$klasseId = 0;
+if (isset($daten['klasse']) && is_string($daten['klasse'])) {
+    $code = wq_klasse_code_normal($daten['klasse']);
+    if ($code !== '') {
+        $klasse = wq_klasse_nach_code($pdo, $code);
+        if (wq_klasse_nutzbar($klasse)) {
+            $klasseId = (int) $klasse['id'];
+        }
+    }
+}
 $maxLen = (int) $config['max_key_len'];
 $uebernommen = 0;
 
@@ -76,6 +96,7 @@ try {
                 continue;
             }
             wq_zaehler_erhoehen($pdo, $tag, 'liste', $wert);
+            if ($klasseId) { wq_klasse_zaehler($pdo, $klasseId, $tag, 'liste', $wert); }
             $uebernommen++;
 
         } elseif ($typ === 'modus') {
@@ -84,6 +105,7 @@ try {
                 continue;
             }
             wq_zaehler_erhoehen($pdo, $tag, 'modus', $wert);
+            if ($klasseId) { wq_klasse_zaehler($pdo, $klasseId, $tag, 'modus', $wert); }
             $uebernommen++;
 
         } elseif ($typ === 'runde') {
@@ -92,6 +114,7 @@ try {
                 continue;
             }
             wq_zaehler_erhoehen($pdo, $tag, 'runde', $wert);
+            if ($klasseId) { wq_klasse_zaehler($pdo, $klasseId, $tag, 'runde', $wert); }
             $richtig = isset($e['richtig']) ? (int) $e['richtig'] : 0;
             $gesamt  = isset($e['gesamt'])  ? (int) $e['gesamt']  : 0;
             // Trefferquote als zwei Summen, daraus lässt sich der Schnitt
@@ -99,8 +122,21 @@ try {
             if ($gesamt > 0 && $gesamt <= 100 && $richtig >= 0 && $richtig <= $gesamt) {
                 wq_zaehler_erhoehen($pdo, $tag, 'treffer', $wert, $richtig);
                 wq_zaehler_erhoehen($pdo, $tag, 'fragen',  $wert, $gesamt);
+                if ($klasseId) {
+                    wq_klasse_zaehler($pdo, $klasseId, $tag, 'treffer', $wert, $richtig);
+                    wq_klasse_zaehler($pdo, $klasseId, $tag, 'fragen',  $wert, $gesamt);
+                }
             }
             $uebernommen++;
+
+        } elseif ($typ === 'durchlauf') {
+            // Zählt, wie oft in dieser Klasse eine Liste ganz durchgespielt
+            // wurde. Für die Gesamtstatistik uninteressant, für eine
+            // Lehrkraft die eigentliche Frage.
+            if ($klasseId) {
+                wq_klasse_zaehler($pdo, $klasseId, $tag, 'durchlauf', 'gesamt');
+                $uebernommen++;
+            }
 
         } elseif ($typ === 'wort') {
             $liste = isset($e['liste']) && is_string($e['liste']) ? basename($e['liste']) : '';
@@ -112,6 +148,7 @@ try {
                 continue;
             }
             wq_wort_erhoehen($pdo, $liste, $wort, !empty($e['richtig']));
+            if ($klasseId) { wq_klasse_wort($pdo, $klasseId, $liste, $wort, !empty($e['richtig'])); }
             $uebernommen++;
         }
     }

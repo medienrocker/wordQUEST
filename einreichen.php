@@ -167,6 +167,7 @@ if (!headers_sent()) {
     <img src="wordQUEST_icon.png" alt="" width="34" height="34" />
     <span>wordQUEST</span>
   </a>
+  <a class="zurueck" href="klasse.php">Mit der Klasse üben</a>
   <a class="zurueck" href="index.html">Zur App</a>
 </header>
 

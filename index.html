@@ -223,6 +223,30 @@
     </div>
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
   </div>
+  <div class="card practice-card" id="klasse-karte" style="margin-top:14px;">
+    <h3 class="karten-titel">🏫 Mit deiner Klasse üben</h3>
+    <div id="klasse-aus">
+      <label class="klasse-label" for="klasse-code">Klassencode von der Lehrkraft</label>
+      <div class="klasse-reihe">
+        <input type="text" id="klasse-code" maxlength="7" autocomplete="off"
+               autocapitalize="characters" spellcheck="false" placeholder="ABC-234"
+               aria-describedby="klasse-hinweis" />
+        <button type="button" class="btn btn-green" id="klasse-beitreten">Mitmachen</button>
+      </div>
+      <p class="practice-privacy" id="klasse-hinweis" role="status">
+        Mit einem Code übt ihr alle dieselben Wörter. Deine Lehrkraft sieht nur
+        die Summe der ganzen Klasse, nie dich einzeln.
+      </p>
+    </div>
+    <div id="klasse-an" hidden>
+      <p class="klasse-aktiv">Du übst mit <b id="klasse-name"></b> <span class="klasse-code-marke" id="klasse-code-marke"></span></p>
+      <button type="button" class="btn btn-grey" id="klasse-verlassen">Klasse verlassen</button>
+      <p class="practice-privacy">
+        Dein Lernstand bleibt beim Verlassen erhalten. Es wird nur nicht mehr
+        zur Klasse gezählt.
+      </p>
+    </div>
+  </div>
   <div class="card practice-card" style="margin-top:14px;">
     <button type="button" class="btn btn-grey" onclick="resetRun()" title="Setzt nur zurück, welche Wörter schon dran waren. Lernstand und Fleißzähler bleiben.">🔄 Durchlauf neu starten</button>
     <p class="practice-privacy">Setzt nur zurück, welche Wörter schon dran waren. Dein Lernstand bleibt erhalten.</p>
@@ -480,6 +504,7 @@
   </span>
   <span class="credits-einreichen">
     Du unterrichtest? <a href="einreichen.php">Eigene Wortliste einreichen</a>
+    · <a href="klasse.php">Mit der Klasse üben</a>
   </span>
 </footer>
 
@@ -1009,6 +1034,7 @@ function finishRound() {
     run.durchlaeufe = (run.durchlaeufe || 0) + 1;   // Fleißzähler
     runBonus = SCORE_RULES.runDone;
     tafelMelden();   // genau hier, denn nur ein ganzer Durchlauf zählt
+    if (getKlasse()) statsMerken({ typ: 'durchlauf' });
   }
   saveRun(run);
   const roundBonus = SCORE_RULES.roundDone;
@@ -1210,7 +1236,13 @@ function paare_gefunden_stats(gesamt) { return Number(gesamt) || 0; }
 
 function statsSenden() {
   if (!statsErlaubt() || !statsPuffer.length) return;
-  const nutzlast = JSON.stringify({ events: statsPuffer.slice(0, STATS_MAX) });
+  // Im Klassenmodus zählt dieselbe Runde zusätzlich für die Klasse. Der Code
+  // ist die einzige Zusatzangabe, es geht keine Kennung mit.
+  const klasse = getKlasse();
+  const nutzlast = JSON.stringify({
+    events: statsPuffer.slice(0, STATS_MAX),
+    ...(klasse ? { klasse: klasse.code } : {})
+  });
   statsPuffer = [];
   try {
     // sendBeacon überlebt auch das Schließen des Tabs.
@@ -1226,6 +1258,92 @@ function statsSenden() {
     }).catch(() => {});
   } catch {
     /* Statistik ist Beiwerk, ein Fehler hier darf nichts beeinflussen. */
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   KLASSENMODUS (Epic 10, Punkt 3)
+
+   Ein Code, den die Lehrkraft an die Tafel schreibt. Wer ihn eingibt, übt
+   denselben Satz Vokabeln, und dieselbe Runde zählt zusätzlich für die
+   Klasse. Übertragen wird ausschliesslich der Code, keine Kennung und kein
+   Name. Die Lehrkraft sieht nur Summen.
+═══════════════════════════════════════════════ */
+const KLASSE_ENDPUNKT = 'api/klasse.php';
+
+function getKlasse() {
+  try {
+    const k = JSON.parse(localStorage.getItem('wq.klasse') || 'null');
+    if (k && typeof k.code === 'string' && typeof k.name === 'string') return k;
+  } catch {}
+  return null;
+}
+
+function setzeKlasse(k) {
+  try {
+    if (k) localStorage.setItem('wq.klasse', JSON.stringify(k));
+    else localStorage.removeItem('wq.klasse');
+  } catch {}
+  syncKlasseKarte();
+}
+
+function klasseHinweis(text, art) {
+  const el = document.getElementById('klasse-hinweis');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'practice-privacy' + (art ? ' ' + art : '');
+}
+
+function syncKlasseKarte() {
+  const k = getKlasse();
+  const aus = document.getElementById('klasse-aus');
+  const an  = document.getElementById('klasse-an');
+  if (!aus || !an) return;
+  aus.hidden = !!k;
+  an.hidden = !k;
+  if (k) {
+    const name = document.getElementById('klasse-name');
+    const marke = document.getElementById('klasse-code-marke');
+    if (name) name.textContent = k.name;
+    if (marke) marke.textContent = k.code;
+  }
+}
+
+async function klasseBeitreten(eingabe) {
+  const roh = String(eingabe || '').trim();
+  if (!roh) {
+    klasseHinweis('Bitte den Code eingeben, den deine Lehrkraft genannt hat.', 'warnung');
+    return;
+  }
+  if (istOffline()) {
+    klasseHinweis('Dafür brauchst du kurz Internet. Üben geht auch ohne.', 'warnung');
+    return;
+  }
+  klasseHinweis('Einen Moment …');
+  try {
+    const r = await fetch(KLASSE_ENDPUNKT + '?code=' + encodeURIComponent(roh), { cache: 'no-store' });
+    const d = await r.json();
+    if (!r.ok || !d.ok) {
+      klasseHinweis(d.fehler || 'Dieser Code passt nicht. Bitte noch einmal prüfen.', 'warnung');
+      return;
+    }
+    setzeKlasse({ code: d.code, name: d.name, listen: d.listen });
+
+    // Beitritt einmal melden. Scheitert das, ist nur der Zähler ungenau.
+    fetch(KLASSE_ENDPUNKT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: d.code })
+    }).catch(() => {});
+
+    // Die Wortlisten der Klasse übernehmen, darum geht es ja.
+    if (Array.isArray(d.listen) && d.listen.length) {
+      await loadWordlists(d.listen);
+      renderWordlistPicker();
+    }
+    klasseHinweis('Du übst jetzt mit ' + d.name + '.');
+  } catch {
+    klasseHinweis('Das hat nicht geklappt. Besteht eine Internetverbindung?', 'warnung');
   }
 }
 
@@ -3645,6 +3763,19 @@ syncTafelKnopf();
 document.getElementById('tafel-toggle')?.addEventListener('change', e => tafelErlaubnisSetzen(e.target.checked));
 ladeTafel();
 syncNetzHinweis();
+
+/* Klassenmodus verdrahten. */
+syncKlasseKarte();
+document.getElementById('klasse-beitreten')?.addEventListener('click', () => {
+  klasseBeitreten(document.getElementById('klasse-code')?.value);
+});
+document.getElementById('klasse-code')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); klasseBeitreten(e.target.value); }
+});
+document.getElementById('klasse-verlassen')?.addEventListener('click', () => {
+  setzeKlasse(null);
+  klasseHinweis('Du übst wieder für dich allein.');
+});
 window.addEventListener('pagehide', statsSenden);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') statsSenden();

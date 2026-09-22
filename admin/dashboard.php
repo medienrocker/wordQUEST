@@ -17,6 +17,7 @@ require __DIR__ . '/../api/lib/archiv.php';
 require __DIR__ . '/../api/lib/einreichung.php';
 require __DIR__ . '/../api/lib/einstellungen.php';
 require __DIR__ . '/../api/lib/tafel.php';
+require __DIR__ . '/../api/lib/klassen.php';
 
 $admin = wq_verlange_login();
 $pdo = wq_db();
@@ -34,6 +35,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             ? 'Die Ehrentafel ist eingeschaltet und erscheint wieder in der App.'
             : 'Die Ehrentafel ist ausgeschaltet. Die App blendet sie aus, die Einträge bleiben erhalten.';
 
+    } elseif ($aktion === 'klasse-schliessen') {
+        wq_klasse_schliessen($pdo, (int) ($_POST['id'] ?? 0));
+        $tafelMeldung = 'Die Klasse ist geschlossen. Der Code funktioniert nicht mehr.';
+
+    } elseif ($aktion === 'klasse-loeschen') {
+        wq_klasse_loeschen($pdo, (int) ($_POST['id'] ?? 0));
+        $tafelMeldung = 'Die Klasse und alle ihre Zahlen sind gelöscht.';
+
     } elseif ($aktion === 'tafel-loeschen') {
         wq_tafel_loeschen($pdo, (int) ($_POST['id'] ?? 0));
         $tafelMeldung = 'Eintrag entfernt.';
@@ -43,6 +52,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 $tafelAn = wq_schalter('tafel_aktiv', true);
 $tafelEintraege = wq_tafel_eintraege($pdo, 25);
 $tafelGeuebt = wq_tafel_gemeinschaft($pdo);
+$klassen = wq_klassen_liste($pdo);
 $csrf = wq_csrf_token();
 
 function wq_h(?string $s): string
@@ -220,6 +230,55 @@ require __DIR__ . '/kopf.php';
               <input type="hidden" name="aktion" value="tafel-loeschen" />
               <input type="hidden" name="id" value="<?= (int) $e['id'] ?>" />
               <button type="submit" class="klein">entfernen</button>
+            </form>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
+</section>
+<section class="karte">
+  <h2>Klassen<?= $klassen ? ' (' . count($klassen) . ')' : '' ?></h2>
+  <p class="hinweis">
+    Lehrkräfte legen Klassen selbst an, unter <code>/klasse.php</code>, ohne
+    Konto. Sichtbar ist hier nur, was zur Aufsicht nötig ist: Name, Code und
+    Umfang. Die Übersicht einer Klasse steht ausschliesslich der Lehrkraft
+    offen, über ihren geheimen Link. Auch dort gibt es keine einzelnen Kinder,
+    sondern nur Summen.
+  </p>
+  <?php if (!$klassen): ?>
+    <p class="leer">Noch keine Klassen.</p>
+  <?php else: ?>
+    <table>
+      <thead><tr><th>Name</th><th>Code</th><th class="zahl">Beitritte</th><th>Listen</th><th>Angelegt</th><th>Status</th><th>Aktion</th></tr></thead>
+      <tbody>
+      <?php foreach ($klassen as $k): ?>
+        <?php
+        $offen = (int) $k['aktiv'] === 1 && (int) $k['gueltig_bis'] > time();
+        $anzahlListen = count(wq_klasse_listen($k));
+        ?>
+        <tr>
+          <td><strong><?= wq_h((string) $k['name']) ?></strong></td>
+          <td><code><?= wq_h((string) $k['code']) ?></code></td>
+          <td class="zahl"><?= (int) $k['beitritte'] ?></td>
+          <td class="zahl"><?= $anzahlListen ?></td>
+          <td><?= wq_h(substr((string) $k['erstellt_am'], 0, 10)) ?></td>
+          <td><?= $offen ? 'offen' : 'geschlossen' ?></td>
+          <td class="aktionen">
+            <?php if ($offen): ?>
+              <form method="post">
+                <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+                <input type="hidden" name="aktion" value="klasse-schliessen" />
+                <input type="hidden" name="id" value="<?= (int) $k['id'] ?>" />
+                <button type="submit" class="klein">schließen</button>
+              </form>
+            <?php endif; ?>
+            <form method="post">
+              <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+              <input type="hidden" name="aktion" value="klasse-loeschen" />
+              <input type="hidden" name="id" value="<?= (int) $k['id'] ?>" />
+              <button type="submit" class="klein">löschen</button>
             </form>
           </td>
         </tr>

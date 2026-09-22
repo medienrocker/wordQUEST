@@ -54,6 +54,12 @@ RedirectMatch 404 (?i)^/img/.*\.(php\d?|phtml|phar|pht|shtml|html?|svg|xml|js)$
     Header always unset Content-Security-Policy
   </Files>
 
+  # Der Link zur Klassenübersicht ist ein Schlüssel und gehört in keinen
+  # Suchindex. Die Seite setzt den Header zusätzlich selbst.
+  <Files "klasse.php">
+    Header always set X-Robots-Tag "noindex, nofollow"
+  </Files>
+
   # Kurzes Caching für die HTML-Shell, kein Caching für Wortlisten
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, must-revalidate"

@@ -2648,3 +2648,67 @@ body.overlay-offen {
     font-size: 0.88rem;
     text-align: center;
 }
+
+/* ═══════════════ KLASSENMODUS ═══════════════ */
+.karten-titel {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.klasse-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+}
+
+.klasse-reihe {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#klasse-code {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    width: 9ch;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 2px solid #d5e3d5;
+    border-radius: var(--r-field);
+    background: #fff;
+    color: var(--text);
+}
+
+#klasse-code:focus-visible {
+    outline: 3px solid var(--teal-dark);
+    outline-offset: 2px;
+}
+
+.klasse-aktiv {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.klasse-code-marke {
+    display: inline-block;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    background: var(--teal-dark);
+    color: #fff;
+    border-radius: var(--r-mini);
+    padding: 2px 8px;
+    margin-left: 6px;
+}
+
+.practice-privacy.warnung {
+    color: #8a5300;
+    font-weight: 600;
+}

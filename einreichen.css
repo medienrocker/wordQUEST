@@ -255,3 +255,91 @@ button.klein:hover { background: var(--grund); }
     h1 { font-size: 1.45rem; }
     .karte { padding: 14px; }
 }
+
+/* ─── Klassenmodus ─── */
+.klassencode {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: clamp(2rem, 12vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-align: center;
+    color: var(--gruen-dunkel);
+    background: var(--grund);
+    border: 2px dashed var(--gruen);
+    border-radius: var(--radius);
+    padding: 16px 10px;
+    margin: 6px 0 12px;
+    word-break: break-all;
+}
+
+.schluessel {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: .95rem;
+    background: var(--grund);
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    padding: 12px;
+    word-break: break-all;
+    user-select: all;
+}
+
+label.kasten {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-weight: 400;
+    margin: 0 0 4px;
+    padding: 10px 12px;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+label.kasten:hover { background: var(--grund); }
+
+label.kasten input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    margin-top: 1px;
+    accent-color: var(--gruen);
+}
+
+.kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.kennzahl {
+    background: var(--grund);
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+}
+
+.kennzahl .wert {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--gruen-dunkel);
+    line-height: 1.15;
+}
+
+.kennzahl .was {
+    display: block;
+    font-size: .85rem;
+    color: #5a6a5a;
+    margin-top: 4px;
+}
+
+.warn-karte { border: 2px solid var(--rot); background: #fff8f7; }
+.warn-karte h2 { color: var(--rot); }
+
+.knopf.gefaehrlich { background: var(--rot); }
+.knopf.gefaehrlich:hover { background: #8c1d16; }
+.knopf.grau { background: #6b7a6b; }
+.knopf.grau:hover { background: #56634f; }
+
+th.zahl, td.zahl { text-align: right; white-space: nowrap; }
