@@ -40,6 +40,30 @@ installierte Geräte ihre alte Fassung.
 
 ---
 
+## Wortlisten einreichen: welche Formate gehen?
+
+Im Admincenter unter **Wortlisten**:
+
+| Format | Hinweis |
+|--------|---------|
+| **CSV** | Aus Excel mit "Speichern unter, CSV". Semikolon, Komma und Tabulator werden alle erkannt |
+| **Excel (.xlsx)** | Erstes Tabellenblatt, zwei Spalten |
+| **Eingefügte Tabelle** | Zeilen aus Excel oder Word direkt ins Textfeld kopieren |
+| **Einfache Zeilen** | `apple - Apfel`, eine je Zeile |
+| **JSON** | Nach dem Schema unten, bringt den Titel selbst mit |
+
+Erwartet werden zwei Spalten: **englisch, deutsch**. Eine Kopfzeile mit
+Bezeichnungen wie `en`, `deutsch`, `emoji`, `kategorie`, `beispiel` wird erkannt
+und zugeordnet. Ohne Kopfzeile gilt: erste Spalte englisch, zweite deutsch.
+
+Alles läuft anschließend durch dieselbe Prüfung wie eine JSON-Datei und landet
+als Einreichung. Erst die Freigabe macht eine Liste in der App sichtbar.
+
+**Fotos von Buchseiten** sind noch nicht möglich, siehe WQ-9.5 in der
+[Roadmap](docs/ROADMAP.md).
+
+---
+
 ## JSON-Schema
 
 ```json

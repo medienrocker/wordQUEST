@@ -15,6 +15,7 @@ require __DIR__ . '/../api/lib/bootstrap.php';
 require __DIR__ . '/../api/lib/db.php';
 require __DIR__ . '/../api/lib/auth.php';
 require __DIR__ . '/../api/lib/wortlisten.php';
+require __DIR__ . '/../api/lib/import.php';
 
 $admin = wq_verlange_login();
 $pdo = wq_db();
@@ -34,24 +35,54 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $aktion = (string) ($_POST['aktion'] ?? '');
 
     if ($aktion === 'hochladen') {
+        $titel = trim((string) ($_POST['titel'] ?? ''));
+        $eingefuegt = trim((string) ($_POST['eingefuegt'] ?? ''));
         $datei = $_FILES['liste'] ?? null;
-        if (!is_array($datei) || ($datei['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            $meldung = 'Es wurde keine Datei übertragen.';
-            $meldungArt = 'fehler';
-        } elseif ((int) $datei['size'] > WQ_LISTE_MAX_BYTES) {
+        $hatDatei = is_array($datei) && ($datei['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
+
+        $roh = '';
+        $quelle = '';
+        $tempPfad = null;
+
+        if ($hatDatei && (int) $datei['size'] > WQ_LISTE_MAX_BYTES) {
             $meldung = 'Die Datei ist größer als 512 KB.';
             $meldungArt = 'fehler';
-        } else {
+        } elseif ($hatDatei) {
             // Inhalt prüfen, nicht die Dateiendung. Eine .json-Endung sagt
             // nichts darüber aus, was in der Datei steht.
             $roh = (string) file_get_contents($datei['tmp_name'], false, null, 0, WQ_LISTE_MAX_BYTES + 1);
-            $pruefung = wq_wortliste_pruefen($roh);
-            if ($pruefung['ok']) {
-                $id = wq_einreichung_speichern($pdo, $roh, (string) ($datei['name'] ?? ''), $pruefung);
-                $meldung = 'Die Liste ist geprüft und liegt als Einreichung Nummer ' . $id . ' bereit.';
-            } else {
-                $meldung = 'Die Datei wurde nicht übernommen.';
+            $quelle = (string) ($datei['name'] ?? '');
+            $tempPfad = (string) $datei['tmp_name'];
+        } elseif ($eingefuegt !== '') {
+            $roh = mb_substr($eingefuegt, 0, WQ_LISTE_MAX_BYTES);
+            $quelle = 'eingefügt';
+        } else {
+            $meldung = 'Bitte eine Datei wählen oder eine Tabelle einfügen.';
+            $meldungArt = 'fehler';
+        }
+
+        if ($roh !== '') {
+            $import = wq_import($roh, $quelle, $titel, $tempPfad);
+            if (!$import['ok']) {
+                $meldung = $import['fehler'];
                 $meldungArt = 'fehler';
+            } else {
+                // Aus Tabellen und eingefügtem Text wird erst JSON erzeugt,
+                // danach läuft alles durch dieselbe Prüfung wie ein
+                // hochgeladenes JSON. Es gibt keinen zweiten Weg hinein.
+                if ($import['daten'] !== null) {
+                    $roh = (string) json_encode($import['daten'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+                $pruefung = wq_wortliste_pruefen($roh);
+                if ($pruefung['ok']) {
+                    $id = wq_einreichung_speichern($pdo, $roh, $quelle, $pruefung);
+                    $meldung = 'Erkannt als ' . wq_format_name($import['format']) . '. '
+                             . count($pruefung['daten']['words']) . ' Wörter gelesen, '
+                             . 'Einreichung Nummer ' . $id . ' liegt bereit.';
+                } else {
+                    $meldung = 'Die Daten wurden nicht übernommen.';
+                    $meldungArt = 'fehler';
+                }
             }
         }
 
@@ -108,14 +139,37 @@ require __DIR__ . '/kopf.php';
 <section class="karte">
   <h2>Liste hochladen</h2>
   <p class="hinweis">
-    JSON nach dem Schema aus der Projektdokumentation, höchstens 512 KB und
-    500 Wörter. Die Datei wird geprüft und als Einreichung abgelegt. Erst die
-    Freigabe macht sie in der App sichtbar.
+    Möglich sind <strong>CSV</strong>, <strong>Excel (.xlsx)</strong>,
+    <strong>JSON</strong> oder eine einfach <strong>eingefügte Tabelle</strong>.
+    Erwartet werden zwei Spalten: englisch und deutsch. Eine Kopfzeile mit
+    Bezeichnungen wie <code>en</code>, <code>deutsch</code>, <code>emoji</code>,
+    <code>kategorie</code> oder <code>beispiel</code> wird erkannt und
+    zugeordnet. Höchstens 512 KB und 500 Wörter.
+  </p>
+  <p class="hinweis">
+    Nichts wird sofort sichtbar: Alles landet zuerst als Einreichung und wird
+    erst durch die Freigabe veröffentlicht.
   </p>
   <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
     <input type="hidden" name="aktion" value="hochladen" />
-    <input type="file" name="liste" accept=".json,application/json" required />
+
+    <label for="titel">Titel der Liste</label>
+    <input type="text" id="titel" name="titel" maxlength="120"
+           placeholder="z. B. NHG 1 · Unit 3" />
+    <p class="hinweis">Bei JSON wird der Titel aus der Datei genommen, sonst wird er hier gebraucht.</p>
+
+    <label for="liste">Datei</label>
+    <input type="file" id="liste" name="liste" accept=".json,.csv,.tsv,.txt,.xlsx,application/json,text/csv" />
+
+    <label for="eingefuegt">… oder Tabelle einfügen</label>
+    <textarea id="eingefuegt" name="eingefuegt" rows="6"
+              placeholder="apple&#9;Apfel&#10;banana&#9;Banane"></textarea>
+    <p class="hinweis">
+      Aus Excel oder Word kopierte Zeilen lassen sich direkt einfügen.
+      Erkannt werden Tabulator, Semikolon, Komma und auch „wort - bedeutung“.
+    </p>
+
     <button type="submit" class="btn schmal">Prüfen und ablegen</button>
   </form>
 </section>
