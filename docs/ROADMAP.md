@@ -19,7 +19,9 @@ Dazu WQ-7.1 und WQ-7.2: Serverfundament mit PHP und SQLite, anonyme Nutzungsstat
 
 Dazu WQ-7.3: Anmeldung mit Rollen, Admincenter mit Statistikübersicht.
 
-Offen: WQ-6.4, WQ-7.4, WQ-7.5, Epic 8 bis 10.
+Dazu WQ-7.4: Wortlistenverwaltung mit Upload, Prüfung, Vorschau und Freigabe.
+
+Offen: WQ-6.4, WQ-7.5, Epic 8 bis 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -317,12 +319,12 @@ Der letzte Punkt ist der wertvollste: Er zeigt dir, welche Vokabeln durchgängig
 
 **Akzeptanz:**
 
-- [ ] Übersicht aller Listen mit Titel, Wortzahl, Status (sichtbar oder versteckt).
-- [ ] Upload einer JSON-Datei **mit Schemaprüfung**: Pflichtfelder, Typen, Größe, maximale Wortzahl. Ungültige Dateien werden mit verständlicher Meldung abgelehnt, nie ungeprüft gespeichert.
+- [x] Übersicht aller Listen mit Titel, Wortzahl, Status (sichtbar oder versteckt).
+- [x] Upload einer JSON-Datei **mit Schemaprüfung**: Pflichtfelder, Typen, Größe, maximale Wortzahl. Ungültige Dateien werden mit verständlicher Meldung abgelehnt, nie ungeprüft gespeichert.
 - [ ] Einfacher Tabelleneditor für `en`, `de`, `emoji`, `cat`, damit Tippfehler ohne FTP korrigierbar sind.
-- [ ] Vorschau vor dem Veröffentlichen.
-- [ ] Hochgeladene Dateien liegen in einem Verzeichnis ohne PHP-Ausführung, Dateinamen werden servergeneriert.
-- [ ] Jede Ausgabe von Listeninhalten im Admincenter ist HTML-escaped, wie in der Hauptanwendung bereits umgesetzt.
+- [x] Vorschau vor dem Veröffentlichen.
+- [x] Hochgeladene Dateien liegen in einem Verzeichnis ohne PHP-Ausführung, Dateinamen werden servergeneriert.
+- [x] Jede Ausgabe von Listeninhalten im Admincenter ist HTML-escaped, wie in der Hauptanwendung bereits umgesetzt.
 
 **Abhängigkeiten:** WQ-7.1, WQ-7.3.
 

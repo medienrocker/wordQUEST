@@ -38,6 +38,7 @@ $wqAdmin = function_exists('wq_aktueller_admin') ? wq_aktueller_admin() : null;
   </span>
   <nav>
     <a href="dashboard.php">Übersicht</a>
+    <a href="listen.php">Wortlisten</a>
     <?php if ($wqAdmin['rolle'] === 'superadmin'): ?>
       <a href="admins.php">Admins</a>
     <?php endif; ?>

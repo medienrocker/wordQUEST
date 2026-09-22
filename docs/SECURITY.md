@@ -211,6 +211,37 @@ Fehlermeldungen. Gegenprüfen lässt sich das mit:
 grep -rn "opt/plesk\|bs_vps-user" admin/ api/ index.html
 ```
 
+## Wortlisten-Upload, Stand nach WQ-7.4
+
+**Die hochgeladenen Bytes werden nie veröffentlicht.** Das ist die zentrale
+Entscheidung dieser Schicht. Geprüft wird die Struktur, geschrieben wird eine
+frisch aus den geprüften Werten erzeugte Datei. Damit sind Polyglot-Dateien,
+eingebetteter Code und unbekannte Felder ausgeschlossen, unabhängig davon, was
+jemand hochlädt. Im Test verschwanden erfundene Felder wie `boeses_feld` und
+`schadcode` restlos aus der veröffentlichten Datei.
+
+**Einreichungen liegen in der Datenbank, nicht im Dateisystem.** Das erspart
+Dateirechte, Pfadprüfungen und Aufräumarbeit, und der Upload berührt das
+ausgelieferte Verzeichnis zu keinem Zeitpunkt.
+
+**Geprüft wird der Inhalt, nicht die Dateiendung.** Eine `.json`-Endung sagt
+nichts darüber aus, was in der Datei steht.
+
+Weitere Grenzen: 512 KB je Datei, 500 Wörter, 120 Zeichen je Wort, 200 je
+Beispielsatz, 40 Kategorien, JSON-Tiefe 8. Bild-Adressen müssen HTTPS sein und
+von einem bekannten Host kommen, sonst werden sie mit Hinweis verworfen.
+Dateinamen erzeugt der Server aus dem Titel; ein Titel wie `../../etc/passwd`
+wird dabei zu `etc-passwd.json`.
+
+Geprüft wurde gegen: PHP-Code im JSON-Mantel, HTML mit Skript, kaputtes JSON,
+fehlende Pflichtfelder, fremde Bildhosts, unverschlüsselte Bild-Adressen,
+Path Traversal im Titel, unbekannte Zusatzfelder, Upload ohne CSRF-Token und
+Zugriff ohne Anmeldung. Alle wurden abgewiesen oder still bereinigt.
+
+**Offener Punkt:** Über die Oberfläche freigegebene Listen liegen nur auf dem
+Server, nicht im Repository. Sie gehören deshalb in die Sicherung, sonst gehen
+sie bei einer Neueinrichtung verloren.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.
