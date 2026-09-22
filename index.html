@@ -780,6 +780,20 @@ function buildRound(size) {
   const active = getActiveVocab();
   if (!active.length) return [];
 
+  // War der letzte Durchlauf abgeschlossen, beginnt hier der nächste.
+  // Ohne das bliebe ein Durchlauf für immer auf "komplett" stehen: Die
+  // Abdeckung klebte bei 100 Prozent und der Fleißzähler bei eins, egal wie
+  // oft noch gespielt wird. Der Zähler selbst bleibt natürlich erhalten,
+  // er misst die geleistete Arbeit.
+  const laufend = getRun();
+  if (laufend.done) {
+    laufend.seen = [];
+    laufend.round = 0;
+    laufend.done = false;
+    laufend.startedAt = Date.now();
+    saveRun(laufend);
+  }
+
   const seenSet    = new Set(getRun().seen);
   const unseen     = active.filter(v => !seenSet.has(v._wqId));
   const seenWords  = active.filter(v =>  seenSet.has(v._wqId));
@@ -890,7 +904,9 @@ function roundOverlayLines(done, extra) {
     lines.push({ icon: '📍', text: `${p.seenCount} von ${p.total} Wörtern waren schon dran` });
     lines.push({ icon: '✅', text: `${p.mastered} sicher, ${p.almost} fast sicher` });
     if (p.durchlaeufe) {
-      lines.push({ icon: '💪', text: `${p.durchlaeufe}× komplett geschafft` });
+      lines.push({ icon: '💪', text: p.durchlaeufe === 1
+        ? '<b>1 kompletter Durchlauf</b> geschafft'
+        : `<b>${p.durchlaeufe} komplette Durchläufe</b> geschafft` });
     }
   }
   (extra || []).forEach(t => lines.push({ icon: '⏱️', text: t }));
@@ -1707,9 +1723,12 @@ function updateProgressStrip() {
       : `Runde ${Math.min(p.round, p.totalRounds)} von ${p.totalRounds}`;
     // Fleißzähler: macht die geleistete Arbeit sichtbar, unabhängig vom
     // Ergebnis. Er zählt nur hoch und wird auch beim Neustart nicht gelöscht.
-    roundEl.textContent = p.durchlaeufe
-      ? `${stand} · 💪 ${p.durchlaeufe}× komplett geschafft`
-      : stand;
+    // Bewusst ohne "×": Die Schreibweise "3× komplett" liest sich sonst wie
+    // ein Multiplikator auf die Punkte, was es nicht ist.
+    const fleiss = p.durchlaeufe === 1
+      ? '💪 1 kompletter Durchlauf'
+      : `💪 ${p.durchlaeufe} komplette Durchläufe`;
+    roundEl.textContent = p.durchlaeufe ? `${stand} · ${fleiss}` : stand;
   }
 }
 
