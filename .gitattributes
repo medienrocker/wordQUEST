@@ -1,0 +1,11 @@
+# Shell-Skripte müssen LF behalten. Von Windows committete .sh-Dateien landen
+# sonst mit CRLF im Repo, und auf dem Linux-Server scheitert schon die Shebang
+# mit "bash\r: not found".
+*.sh text eol=lf
+
+# Der Service Worker und die Wortlisten sollen byte-genau bleiben.
+sw.js text eol=lf
+*.json text eol=lf
+
+# .htaccess wird von Apache gelesen, LF ist dort das sichere Format.
+.htaccess text eol=lf

@@ -6,33 +6,19 @@ In der **Vokabelansicht** kannst du einzelne Wörter für die Spiele aktivieren 
 
 ---
 
-## Deployment auf Plesk (wordQUEST.bildungssprit.de)
+## Deployment (wordquest.bildungssprit.de)
 
-### 1. Subdomain in Plesk anlegen
-1. Plesk → **Domains** → **Subdomain hinzufügen**
-2. Name: `wordquest`  ·  Parent: `bildungssprit.de`
-3. Document Root: `wordquest.bildungssprit.de/httpdocs` (Default)
-4. **PHP aktivieren** (Plesk → Hosting-Einstellungen → PHP-Support: an, PHP 8.x empfohlen)
-5. TLS: **Let's Encrypt** für die Subdomain aktivieren
+Der Deploy läuft über **git push lokal, git pull auf dem Server**. Kein FTP.
+Der Docroot ist das Git-Checkout selbst, es gibt keinen Build-Schritt.
 
-### 2. Dateien per FTP hochladen
-Lade den gesamten Projektinhalt in `…/wordquest.bildungssprit.de/httpdocs/`:
-
-```
-httpdocs/
-├── index.html
-├── manifest.webmanifest  ← PWA-Manifest
-├── sw.js                 ← Service Worker (optional, für Offline-Shell)
-├── .htaccess
-└── wordlists/
-    ├── index.php        ← Auto-Discovery-Endpoint
-    ├── index.json       ← Manifest-Fallback (optional)
-    ├── food.json
-    └── …
+```bash
+bash scripts/deploy.sh
 ```
 
-### 3. Fertig
-`https://wordquest.bildungssprit.de/` aufrufen — die Checkboxen listen alle `*.json`-Dateien aus dem `wordlists/`-Ordner (über `index.php` oder `index.json`).
+Vollständige Anleitung, Serverfakten und Fallstricke: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+
+**Vor jedem Push:** `CACHE_VERSION` in [`sw.js`](sw.js) hochzählen, sonst behalten
+installierte Geräte ihre alte Fassung.
 
 ---
 
@@ -46,9 +32,9 @@ httpdocs/
 
 ## Neue Wortliste hinzufügen
 
-1. JSON-Datei nach dem Schema unten erstellen (z. B. `schule.json`)
-2. Per FTP in `httpdocs/wordlists/` ablegen
-3. Seite neu laden — die neue Liste erscheint automatisch in der Auswahl
+1. JSON-Datei nach dem Schema unten erstellen (z. B. `schule.json`) und in `wordlists/` ablegen
+2. Dateinamen in `wordlists/index.json` ergänzen (nur für den lokalen Test nötig, auf dem Server erkennt `index.php` neue Dateien selbst)
+3. Committen, pushen, auf dem Server `bash scripts/deploy.sh`
 
 **Kein Rebuild, kein Server-Restart nötig.**
 
@@ -126,7 +112,14 @@ Beim Hinzufügen neuer Listen lokal: auch `wordlists/index.json` aktualisieren (
 
 ---
 
-## Spätere Erweiterung: Backend mit Login
+## Spätere Erweiterung: Admincenter mit Login
 
-Aktuell: Upload per FTP.
-Geplant: Web-UI mit Login zum Hochladen/Löschen/Bearbeiten der JSON-Dateien. Die Datenschicht (JSON-Dateien in `wordlists/`) bleibt dabei identisch — das Backend schreibt einfach in denselben Ordner, den das Frontend bereits liest. Keine Migration nötig.
+Aktuell: Wortlisten kommen über das Repo auf den Server.
+Geplant: Web-UI mit Login zum Hochladen, Bearbeiten und Freigeben der JSON-Dateien,
+dazu ein Postfach für Einreichungen von Lehrkräften. Siehe [docs/ROADMAP.md](docs/ROADMAP.md).
+
+**Wichtig dabei:** Eingereichte Dateien dürfen *nicht* direkt in `wordlists/` landen.
+Der Ordner liegt im Docroot, wird von `index.php` per `glob()` gelesen und wäre damit
+sofort live. Einreichungen gehören in eine Quarantäne außerhalb des Docroots,
+Veröffentlichung erst nach Freigabe. Begründung und die weiteren Pflichtpunkte stehen
+in [docs/SECURITY.md](docs/SECURITY.md).
