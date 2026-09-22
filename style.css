@@ -2170,28 +2170,61 @@ body.overlay-offen {
     opacity: 1;
 }
 
-/* Aussprachezeile nach einer Antwort im Quiz und beim Spelling. */
+/* Aussprachezeile nach einer Antwort im Quiz, beim Spelling und beim
+   Lückensatz. Die ganze Fläche ist der Knopf: groß genug zum Tippen und
+   deutlich als Einladung erkennbar, denn abgespielt wird nur auf Tippen. */
 .pron-row {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 2px;
-    margin-top: 10px;
-    padding: 6px 12px;
-    background: var(--bg);
-    border-radius: var(--r-pill);
-    width: fit-content;
-    margin-inline: auto;
+    margin-top: 12px;
 }
 
 .pron-row[hidden] {
     display: none;
 }
 
+.pron-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 2px solid var(--teal-dark);
+    border-radius: var(--r-pill);
+    background: var(--bg);
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background .15s, transform .15s;
+    max-width: 100%;
+}
+
+.pron-btn:hover {
+    background: #e2f4f1;
+    transform: translateY(-1px);
+}
+
+.pron-btn:focus-visible {
+    outline: 3px solid var(--lime);
+    outline-offset: 2px;
+}
+
 .pron-word {
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     color: var(--teal-dark);
+    text-align: left;
+}
+
+.pron-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pron-btn {
+        transition: none;
+    }
 }
 
 /* Auswahl der Übungsart im Hörmodus. */

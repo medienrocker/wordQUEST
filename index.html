@@ -1163,16 +1163,24 @@ function speakerBtnHtml(text, lang) {
        + ` title="Aussprache von ${t} anhören" aria-label="Aussprache von ${t} anhören">🔊</button>`;
 }
 
-/* Zeigt nach einer Antwort das englische Wort mit Lautsprecher und spricht es
-   einmal vor. Die Zeile wird in den Container mit der übergebenen Kennung
-   gelegt und beim nächsten Aufruf ersetzt. */
-function zeigeAusspracheHilfe(containerId, item) {
+/* Zeigt nach einer Antwort das englische Wort als anklickbaren Knopf.
+
+   Bewusst OHNE automatische Wiedergabe: Ton, der ungefragt losgeht, ist
+   verwirrend, und in einer Klasse mit 25 Geräten wird daraus Lärm. Gehört
+   wird nur, was angetippt wird. Einzige Ausnahme bleibt der Hörmodus, dort
+   ist das Abspielen die Aufgabe selbst. */
+function zeigeAusspracheHilfe(containerId, text) {
   const ziel = document.getElementById(containerId);
   if (!ziel) return;
-  if (!TTS.verfuegbar || !item) { ziel.innerHTML = ''; ziel.hidden = true; return; }
+  const inhalt = String(text || '').trim();
+  if (!TTS.verfuegbar || !inhalt) { ziel.innerHTML = ''; ziel.hidden = true; return; }
+  const sicher = escapeHtml(inhalt);
   ziel.hidden = false;
-  ziel.innerHTML = `<span class="pron-word">${escapeHtml(item.en)}</span>${speakerBtnHtml(item.en, 'en')}`;
-  speak(item.en, 'en');
+  ziel.innerHTML =
+    `<button type="button" class="pron-btn" data-tts="${sicher}" data-tts-lang="en"`
+    + ` aria-label="Aussprache von ${sicher} anhören">`
+    + `<span class="pron-word">${sicher}</span><span class="pron-icon" aria-hidden="true">🔊</span>`
+    + `</button>`;
 }
 
 function toggleTon() {
@@ -1239,10 +1247,18 @@ function visual(item, size) {
   return `<span class="word-visual word-visual-${size} is-fallback">${escapeHtml(letter)}</span>`;
 }
 
-/* In EN→DE soll das Bild nicht vor der Entscheidung helfen.
-   Stattdessen: Platzhalter bis zur Antwort oder per „Bild anzeigen“. */
+/* Bild und Emoji sind immer sofort sichtbar, auch in EN→DE.
+
+   Vorher waren sie dort bis zur Antwort verborgen, damit das Bild die Lösung
+   nicht verrät. Das kostete aber genau die Hilfe, die am meisten trägt: Bild
+   und Wort zusammen zu sehen, ist der Kern des Vokabellernens. Der Preis ist
+   bewusst in Kauf genommen: In EN→DE ist das Quiz damit leichter, weil das
+   Bild die Bedeutung mitliefert.
+
+   Die Rückkehr zum alten Verhalten ist eine Zeile: `return LEARN_DIR === 'en2de';`
+   Die Hilfe-Knöpfe blenden sich dann automatisch wieder ein. */
 function shouldHideVisualInitially() {
-  return LEARN_DIR === 'en2de';
+  return false;
 }
 function hasVisual(item) {
   if (!item) return false;
@@ -2199,10 +2215,10 @@ function handleQuizAnswer(btn, correct, rightAnswer, item, before) {
     resetAnswerStreak();
     recordWrong(item._wqId);
   }
-  // Nach der Entscheidung das englische Wort vorsprechen: Der Moment, in dem
-  // die Aufmerksamkeit ohnehin auf der Vokabel liegt, ist der beste für die
-  // Aussprache. Der Knopf bleibt zum Nachhören stehen.
-  zeigeAusspracheHilfe('quiz-pron', item);
+  // Nach der Entscheidung steht das englische Wort zum Anhören bereit. Der
+  // Moment, in dem die Aufmerksamkeit ohnehin auf der Vokabel liegt, ist der
+  // beste dafür. Abgespielt wird aber nur auf Tippen.
+  zeigeAusspracheHilfe('quiz-pron', item.en);
   updatePracticePanel();
   updateProgressStrip();
   setNextReady('quiz', true);
@@ -2673,7 +2689,7 @@ function checkSpelling() {
     recordWrong(item._wqId);
     updatePracticePanel();
   }
-  zeigeAusspracheHilfe('spelling-pron', item);
+  zeigeAusspracheHilfe('spelling-pron', item.en);
   updateProgressStrip();
   setNextReady('spelling', true);
 }
@@ -2990,11 +3006,8 @@ function handleClozeAnswer(btn, richtig, item, luecke) {
     resetAnswerStreak();
     recordWrong(item._wqId);
   }
-  // Vollständigen Satz zeigen und vorsprechen.
-  const zeile = document.getElementById('cloze-solution');
-  zeile.hidden = false;
-  zeile.innerHTML = `<span class="pron-word">${escapeHtml(item.example)}</span>${speakerBtnHtml(item.example, 'en')}`;
-  speak(item.example, 'en');
+  // Vollständigen Satz zum Anhören bereitstellen.
+  zeigeAusspracheHilfe('cloze-solution', item.example);
 
   updatePracticePanel();
   updateProgressStrip();
@@ -3193,7 +3206,7 @@ const HILFE = [
     titel: '🔊 Aussprache',
     eintraege: [
       { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
-      { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz und beim Spelling.' },
+      { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
       { name: 'Keine Lautsprecher zu sehen?', text: 'Dann hat dein Gerät keine englische Stimme installiert. Die App funktioniert trotzdem vollständig, nur eben ohne Ton.' }
     ]
   },
@@ -3286,7 +3299,7 @@ document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer
    Ein einziger Zuhörer am Dokument bedient alle Lautsprecher-Knöpfe, auch
    die, die erst später ins DOM kommen. */
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.tts-btn');
+  const btn = e.target.closest('[data-tts]');
   if (!btn) return;
   e.preventDefault();
   e.stopPropagation();
