@@ -171,13 +171,26 @@ function wq_ist_angemeldet(): bool
     return wq_aktueller_admin() !== null;
 }
 
+/** Leitet weiter und beendet das Skript. */
+function wq_umleiten(string $ziel): void
+{
+    // Weiterleitungen dürfen nie zwischengespeichert werden. Sonst folgt der
+    // Browser später einem gemerkten "du bist nicht angemeldet" und landet
+    // trotz gültiger Sitzung wieder auf der Anmeldeseite.
+    if (!headers_sent()) {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Location: ' . $ziel, true, 302);
+    }
+    exit;
+}
+
 /** Bricht ab, wenn niemand angemeldet ist. */
 function wq_verlange_login(): array
 {
     $admin = wq_aktueller_admin();
     if (!$admin) {
-        header('Location: index.php');
-        exit;
+        wq_umleiten('index.php');
     }
     return $admin;
 }

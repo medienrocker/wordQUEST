@@ -14,13 +14,11 @@ wq_session_start();
 
 if (($_GET['abmelden'] ?? '') === '1') {
     wq_logout();
-    header('Location: index.php');
-    exit;
+    wq_umleiten('index.php');
 }
 
 if (wq_ist_angemeldet()) {
-    header('Location: dashboard.php');
-    exit;
+    wq_umleiten('dashboard.php');
 }
 
 $fehler = '';
@@ -28,8 +26,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     wq_verlange_csrf();
     $ergebnis = wq_login(trim((string) ($_POST['benutzer'] ?? '')), (string) ($_POST['passwort'] ?? ''));
     if (!empty($ergebnis['ok'])) {
-        header('Location: dashboard.php');
-        exit;
+        wq_umleiten('dashboard.php');
     }
     $fehler = (string) $ergebnis['fehler'];
 }
