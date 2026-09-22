@@ -133,7 +133,27 @@ wqphp scripts/admin-anlegen.php liste
 wqphp scripts/admin-anlegen.php anlegen <name> admin
 wqphp scripts/admin-anlegen.php passwort <name>
 wqphp scripts/admin-anlegen.php sperren <name>
+wqphp scripts/admin-anlegen.php pruefen <name>
 ```
+
+### Anmeldung klappt nicht?
+
+Der Befehl `pruefen` sagt, woran es liegt, ohne das Passwort auszugeben:
+
+```bash
+wqphp scripts/admin-anlegen.php pruefen falk
+```
+
+Er meldet Zeichenzahl, Bytezahl, ob das Passwort reines ASCII ist und ob es
+zum gespeicherten Hash passt.
+
+**Umlaute und andere Nicht-ASCII-Zeichen sind die häufigste Ursache.** PuTTY
+sendet sie je nach Einstellung als ISO-8859-1, der Browser immer als UTF-8.
+Dann wird ein anderer Bytestrom gespeichert als später geprüft, und die
+Anmeldung scheitert trotz richtiger Eingabe. Erkennbar daran, dass Bytezahl
+und Zeichenzahl auseinanderfallen. Abhilfe: ein langes Passwort nur aus
+ASCII-Zeichen, oder in PuTTY unter Window, Translation die Zeichenkodierung
+auf UTF-8 stellen.
 
 ## Was nicht im Repo liegt
 

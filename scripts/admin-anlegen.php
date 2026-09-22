@@ -8,6 +8,7 @@
  *   php scripts/admin-anlegen.php liste
  *   php scripts/admin-anlegen.php anlegen <name> [superadmin|admin]
  *   php scripts/admin-anlegen.php passwort <name>
+ *   php scripts/admin-anlegen.php pruefen <name>
  *   php scripts/admin-anlegen.php sperren <name>
  *   php scripts/admin-anlegen.php entsperren <name>
  *
@@ -46,9 +47,13 @@ if (!in_array('sqlite', PDO::getAvailableDrivers(), true)) {
 function frage_passwort(string $text): string
 {
     echo $text;
-    // Eingabe verbergen, wo die Shell das hergibt.
-    $versteckt = @shell_exec('stty -echo 2>/dev/null; echo ok') !== null;
-    $eingabe = trim((string) fgets(STDIN));
+    // Eingabe verbergen, wo die Shell das hergibt. Unter Windows gibt es
+    // kein stty, dort würde der Aufruf nur eine Fehlermeldung ausgeben.
+    $unix = DIRECTORY_SEPARATOR === '/';
+    $versteckt = $unix && @shell_exec('stty -echo 2>/dev/null; echo ok') !== null;
+    // Nur das Zeilenende entfernen, nicht trimmen: Führende oder
+    // abschließende Leerzeichen können Teil des Passworts sein.
+    $eingabe = rtrim((string) fgets(STDIN), "\r\n");
     if ($versteckt) {
         @shell_exec('stty echo 2>/dev/null');
         echo "\n";
@@ -128,11 +133,38 @@ switch ($befehl) {
         echo ($aktiv === 1 ? "Entsperrt.\n" : "Gesperrt.\n");
         break;
 
+    case 'pruefen':
+        // Beantwortet die Frage, warum sich jemand nicht anmelden kann,
+        // ohne das Passwort auszugeben. Besonders hilfreich bei Umlauten:
+        // Terminal und Browser kodieren sie unter Umständen unterschiedlich.
+        $name = $argv[2] ?? '';
+        $admin = $name !== '' ? wq_admin_nach_name($pdo, $name) : null;
+        if (!$admin) {
+            exit("Unbekannter Benutzer.\n");
+        }
+        $p = frage_passwort('Passwort zum Pruefen: ');
+        $nurAscii = (bool) preg_match('/^[\x20-\x7E]*$/', $p);
+        printf("Zeichen:         %d\n", mb_strlen($p, 'UTF-8'));
+        printf("Bytes:           %d\n", strlen($p));
+        printf("Nur ASCII:       %s\n", $nurAscii ? 'ja' : 'NEIN');
+        printf("Gueltiges UTF-8: %s\n", mb_check_encoding($p, 'UTF-8') ? 'ja' : 'NEIN');
+        printf("Passt zum Hash:  %s\n",
+            password_verify($p, (string) $admin['passwort_hash']) ? 'JA' : 'nein');
+        if (!$nurAscii) {
+            echo PHP_EOL;
+            echo "Das Passwort enthaelt Nicht-ASCII-Zeichen. Terminal und Browser" . PHP_EOL;
+            echo "koennen sie unterschiedlich kodieren. Dann scheitert die Anmeldung" . PHP_EOL;
+            echo "im Browser trotz richtiger Eingabe. Sicherer: ein langes Passwort" . PHP_EOL;
+            echo "nur aus ASCII-Zeichen." . PHP_EOL;
+        }
+        break;
+
     default:
         echo "wordQUEST Admin-Verwaltung\n\n";
         echo "  php scripts/admin-anlegen.php liste\n";
         echo "  php scripts/admin-anlegen.php anlegen <name> [superadmin|admin]\n";
         echo "  php scripts/admin-anlegen.php passwort <name>\n";
+        echo "  php scripts/admin-anlegen.php pruefen <name>\n";
         echo "  php scripts/admin-anlegen.php sperren <name>\n";
         echo "  php scripts/admin-anlegen.php entsperren <name>\n";
 }
