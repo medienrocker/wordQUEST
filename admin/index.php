@@ -55,18 +55,9 @@ require __DIR__ . '/kopf.php';
     <button type="submit" class="btn">Anmelden</button>
   </form>
 
-  <p class="hinweis">
-    Konten werden ausschließlich über die Kommandozeile angelegt und geändert.
-    Auf diesem Server braucht es dafür den vollen Pfad zur Plesk-PHP, ein
-    blankes <code>php</code> ist die System-PHP ohne SQLite-Treiber.
-  </p>
-  <p class="hinweis">
-    Neues Konto:<br />
-    <code>sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php scripts/admin-anlegen.php anlegen &lt;name&gt; superadmin</code>
-  </p>
-  <p class="hinweis">
-    Passwort ändern oder vergessen:<br />
-    <code>sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php scripts/admin-anlegen.php passwort &lt;name&gt;</code>
-  </p>
+  <!-- Bewusst ohne technische Angaben: Serverpfade, Systembenutzer und
+       PHP-Version gehören nicht auf eine öffentlich erreichbare Seite.
+       Die Befehle zur Kontoverwaltung stehen in docs/DEPLOY.md. -->
+  <p class="hinweis">Zugänge richtet der Betreiber ein.</p>
 </div>
 <?php require __DIR__ . '/fuss.php'; ?>

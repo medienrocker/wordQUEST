@@ -164,6 +164,22 @@ setzt deshalb `script-src 'none'`, gesendet aus PHP heraus, weil
 greifen. Teilvorlagen (`kopf.php`, `fuss.php`) antworten bei direktem Aufruf
 mit 403.
 
+### Keine Serverinterna auf ausgelieferten Seiten
+
+Real passiert: Die Anmeldeseite des Admincenters trug als Hilfestellung die
+vollständigen Befehle zur Kontoverwaltung, inklusive Serverpfad
+`/opt/plesk/php/8.4/bin/php`, Systembenutzer `bs_vps-user` und
+Projektstruktur. Das ist eine Landkarte für jeden, der die Seite findet,
+und es stand auf der einen Seite, die ohne Anmeldung erreichbar ist.
+
+Entfernt. **Regel: Betriebswissen gehört in `docs/`, nie in eine Datei, die
+der Server ausliefert.** Das gilt besonders für Anmeldeseiten und
+Fehlermeldungen. Gegenprüfen lässt sich das mit:
+
+```bash
+grep -rn "opt/plesk\|bs_vps-user" admin/ api/ index.html
+```
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.
