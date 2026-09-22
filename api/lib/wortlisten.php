@@ -282,10 +282,44 @@ function wq_einreichung_veroeffentlichen(PDO $pdo, int $id, string $von): array
     return ['ok' => true, 'datei' => $name];
 }
 
+/**
+ * Lehnt eine Einreichung ab.
+ *
+ * Abgelehnt heißt **nicht gelöscht**: Der Eintrag bleibt mitsamt Inhalt
+ * erhalten und lässt sich mit `wq_einreichung_zurueckholen()` wieder in die
+ * Warteschlange stellen. Eine Ablehnung ist damit kein endgültiger Schritt,
+ * und niemand muss zögern, den Posteingang aufzuräumen.
+ */
 function wq_einreichung_ablehnen(PDO $pdo, int $id, string $von): void
 {
     $pdo->prepare('UPDATE einreichungen SET status = "abgelehnt", bearbeitet_am = :d, bearbeitet_von = :v WHERE id = :id')
         ->execute([':d' => gmdate('Y-m-d H:i:s'), ':v' => $von, ':id' => $id]);
+}
+
+/**
+ * Holt eine abgelehnte Einreichung zurück in die Warteschlange.
+ *
+ * Eine bereits veröffentlichte wird nicht zurückgeholt. Sonst entstünde beim
+ * zweiten Freigeben eine zweite Datei mit demselben Inhalt, weil der
+ * Dateiname bei Namensgleichheit durchnummeriert wird.
+ *
+ * @return array{ok: bool, fehler?: string}
+ */
+function wq_einreichung_zurueckholen(PDO $pdo, int $id): array
+{
+    $eintrag = wq_einreichung_holen($pdo, $id);
+    if (!$eintrag) {
+        return ['ok' => false, 'fehler' => 'Einreichung nicht gefunden.'];
+    }
+    if ($eintrag['status'] === 'veroeffentlicht') {
+        return ['ok' => false, 'fehler' => 'Diese Einreichung ist bereits veröffentlicht. Eine zweite Freigabe würde eine zweite Datei mit demselben Inhalt anlegen.'];
+    }
+    if ($eintrag['status'] === 'neu') {
+        return ['ok' => false, 'fehler' => 'Diese Einreichung liegt bereits in der Warteschlange.'];
+    }
+    $pdo->prepare('UPDATE einreichungen SET status = "neu", bearbeitet_am = NULL, bearbeitet_von = NULL WHERE id = :id')
+        ->execute([':id' => $id]);
+    return ['ok' => true];
 }
 
 /** Alle veröffentlichten Listen im Wortlistenverzeichnis. */

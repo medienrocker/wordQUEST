@@ -98,7 +98,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
     } elseif ($aktion === 'ablehnen') {
         wq_einreichung_ablehnen($pdo, (int) ($_POST['id'] ?? 0), $admin['name']);
-        $meldung = 'Einreichung abgelehnt.';
+        $meldung = 'Einreichung abgelehnt. Sie bleibt erhalten und lässt sich weiter unten zurückholen.';
+
+    } elseif ($aktion === 'zurueckholen') {
+        $ergebnis = wq_einreichung_zurueckholen($pdo, (int) ($_POST['id'] ?? 0));
+        if (!empty($ergebnis['ok'])) {
+            $meldung = 'Zurück in der Warteschlange. Die Einreichung steht wieder oben.';
+        } else {
+            $meldung = (string) $ergebnis['fehler'];
+            $meldungArt = 'fehler';
+        }
     }
 }
 
@@ -113,7 +122,10 @@ if (isset($_GET['ansehen'])) {
 }
 
 $offen = $pdo->query('SELECT * FROM einreichungen WHERE status = "neu" ORDER BY id DESC')->fetchAll();
-$erledigt = $pdo->query('SELECT * FROM einreichungen WHERE status != "neu" ORDER BY id DESC LIMIT 20')->fetchAll();
+/* Abgelehnte vollständig, nicht nur die letzten: Genau sie will man später
+   vielleicht zurückholen, und dann dürfen sie nicht hinten abgeschnitten sein. */
+$abgelehnt = $pdo->query('SELECT * FROM einreichungen WHERE status = "abgelehnt" ORDER BY id DESC')->fetchAll();
+$erledigt = $pdo->query('SELECT * FROM einreichungen WHERE status = "veroeffentlicht" ORDER BY id DESC LIMIT 20')->fetchAll();
 $listen = wq_vorhandene_listen();
 $csrf = wq_csrf_token();
 
@@ -285,19 +297,51 @@ require __DIR__ . '/kopf.php';
   </table>
 </section>
 
+<?php if ($abgelehnt): ?>
+<section class="karte">
+  <h2>Abgelehnt (<?= count($abgelehnt) ?>)</h2>
+  <p class="hinweis">
+    Abgelehnt heißt nicht gelöscht. Der Inhalt bleibt vollständig erhalten und
+    lässt sich jederzeit zurück in die Warteschlange stellen.
+  </p>
+  <table>
+    <thead><tr><th>Nr.</th><th>Titel</th><th class="zahl">Wörter</th><th>Abgelehnt von</th><th>Aktion</th></tr></thead>
+    <tbody>
+    <?php foreach ($abgelehnt as $e): ?>
+      <tr>
+        <td><?= (int) $e['id'] ?></td>
+        <td><?= wq_h((string) ($e['titel'] ?? 'ohne Titel')) ?></td>
+        <td class="zahl"><?= (int) $e['anzahl_woerter'] ?></td>
+        <td><?= wq_h((string) ($e['bearbeitet_von'] ?? '')) ?></td>
+        <td class="aktionen">
+          <a class="klein-link" href="?ansehen=<?= (int) $e['id'] ?>">ansehen</a>
+          <form method="post">
+            <input type="hidden" name="csrf" value="<?= wq_h($csrf) ?>" />
+            <input type="hidden" name="id" value="<?= (int) $e['id'] ?>" />
+            <input type="hidden" name="aktion" value="zurueckholen" />
+            <button type="submit" class="klein">zurückholen</button>
+          </form>
+        </td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+</section>
+<?php endif; ?>
+
 <?php if ($erledigt): ?>
 <section class="karte">
-  <h2>Zuletzt bearbeitet</h2>
+  <h2>Zuletzt veröffentlicht</h2>
   <table>
-    <thead><tr><th>Nr.</th><th>Titel</th><th>Status</th><th>Datei</th><th>Von</th></tr></thead>
+    <thead><tr><th>Nr.</th><th>Titel</th><th>Datei</th><th>Von</th><th>Wann</th></tr></thead>
     <tbody>
     <?php foreach ($erledigt as $e): ?>
       <tr>
         <td><?= (int) $e['id'] ?></td>
         <td><?= wq_h((string) ($e['titel'] ?? '')) ?></td>
-        <td><?= $e['status'] === 'veroeffentlicht' ? 'veröffentlicht' : 'abgelehnt' ?></td>
         <td><?= wq_h((string) ($e['zieldatei'] ?? '–')) ?></td>
         <td><?= wq_h((string) ($e['bearbeitet_von'] ?? '')) ?></td>
+        <td><?= wq_h((string) ($e['bearbeitet_am'] ?? '')) ?></td>
       </tr>
     <?php endforeach; ?>
     </tbody>

@@ -158,7 +158,7 @@ ein. Vier Bereiche:
 | Bereich | Wofür |
 |---------|-------|
 | **Übersicht** | Anonyme Nutzungszahlen, dazu die Wörter mit den meisten Fehlern |
-| **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben |
+| **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben. Abgelehntes bleibt erhalten und lässt sich zurückholen |
 | **Foto** | Foto einer Wortschatzseite im Browser erkennen und als Einreichung übernehmen |
 | **Bilder** | Bilder zu Vokabeln hochladen und zuordnen, mit Arbeitsliste "ohne Visualisierung" |
 
