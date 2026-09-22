@@ -25,6 +25,27 @@ require __DIR__ . '/../api/lib/bootstrap.php';
 require __DIR__ . '/../api/lib/db.php';
 require __DIR__ . '/../api/lib/auth.php';
 
+/* Auf Plesk-Servern ist `php` oft die System-PHP des Betriebssystems, nicht
+   die des Webauftritts. Ihr fehlt häufig pdo_sqlite, und dann scheitert das
+   Skript mit einer wenig sprechenden Meldung. Deshalb hier früh und
+   deutlich prüfen. */
+if (!in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+    fwrite(STDERR, "Diesem PHP fehlt der SQLite-Treiber (pdo_sqlite).
+");
+    fwrite(STDERR, 'Verwendet wurde: ' . PHP_BINARY . ' (Version ' . PHP_VERSION . ")
+
+");
+    $kandidaten = glob('/opt/plesk/php/*/bin/php') ?: [];
+    if ($kandidaten) {
+        rsort($kandidaten);
+        fwrite(STDERR, "Nimm stattdessen die PHP-Version des Webauftritts, zum Beispiel:
+");
+        fwrite(STDERR, '  ' . $kandidaten[0] . ' ' . ($argv[0] ?? 'scripts/admin-anlegen.php') . " ...
+");
+    }
+    exit(1);
+}
+
 function frage_passwort(string $text): string
 {
     echo $text;

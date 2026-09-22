@@ -102,12 +102,24 @@ if (!empty($wqConfig['error_log'])) {
 
 set_exception_handler(static function (Throwable $e): void {
     error_log('wordQUEST: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    // Auf der Kommandozeile die echte Meldung zeigen. Dort sitzt niemand
+    // Fremdes davor, und ein verschlucktes "Interner Fehler." macht die
+    // Fehlersuche unnötig schwer.
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, 'Fehler: ' . $e->getMessage() . PHP_EOL);
+        fwrite(STDERR, '  in ' . $e->getFile() . ':' . $e->getLine() . PHP_EOL);
+        exit(1);
+    }
     wq_json(['ok' => false, 'fehler' => 'Interner Fehler.'], 500);
 });
 
 register_shutdown_function(static function (): void {
     $letzter = error_get_last();
     if ($letzter && in_array($letzter['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        if (PHP_SAPI === 'cli') {
+            fwrite(STDERR, 'Fehler: ' . $letzter['message'] . PHP_EOL);
+            return;
+        }
         if (!headers_sent()) {
             http_response_code(500);
             header('Content-Type: application/json; charset=utf-8');
