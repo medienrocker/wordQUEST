@@ -25,7 +25,7 @@ installierte Geräte ihre alte Fassung.
 ## Progressive Web App (PWA)
 
 - **Installation:** In Chromium-basierten Browsern erscheint „App installieren“, sobald `manifest.webmanifest` und `sw.js` mit ausgeliefert werden (HTTPS oder `localhost`).
-- **Aktualität der Wortlisten:** Der Service Worker cached die statische Shell (`index.html`, Styles, Icons). Inhalte unter `wordlists/` werden **nicht** dauerhaft gecacht, damit neue JSON-Dateien nach einem Upload sichtbar bleiben.
+- **Offline und Aktualität:** Der Service Worker hält zwei getrennte Speicher. Die Shell (`index.html`, Styles, Icons) liegt unter einer Versionsnummer und wird bei jedem Release getauscht. Wortlisten und Bilder liegen in einem eigenen Speicher, der ein Update überlebt. Wortlisten kommen **zuerst aus dem Netz** und nur beim Ausfall aus dem Speicher, damit eine frisch freigegebene Liste sofort erscheint. Bilder kommen zuerst aus dem Speicher, weil ihr Dateiname stabil ist. Ergebnis: Einmal mit Verbindung geöffnet, läuft die App danach vollständig ohne Netz.
 - **MIME-Typ:** `.htaccess` setzt `application/manifest+json` für `.webmanifest`. Falls nötig, in Plesk unter Apache-Einstellungen prüfen.
 
 ---

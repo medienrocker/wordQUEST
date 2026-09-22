@@ -583,7 +583,7 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
 6. **Lernstand mitnehmen ohne Konto.** Export und Import des Fortschritts als Datei oder QR-Code, damit ein Kind zwischen Schultablet und Handy wechseln kann.
 7. **Barrierefreiheitspaket.** Legasthenie-Modus mit größerer Laufweite und optionaler Schriftart, vollständige Tastaturbedienung, `prefers-reduced-motion`, Ansagen für Screenreader bei Spielereignissen.
 8. **Adaptive Schwierigkeit.** Zwei statt vier Antwortoptionen, wenn die Trefferquote einbricht. Zielkorridor 70 bis 80 Prozent Erfolg.
-9. **Vollständiger Offlinebetrieb** einschließlich zwischengespeicherter Listen und Bilder. Wichtig für Kinder mit knappem Datenvolumen.
+9. ~~**Vollständiger Offlinebetrieb**~~ **Umgesetzt.** Der Service Worker hält Wortlisten und Bilder in einem eigenen, unversionierten Speicher, der ein Update überlebt. Wortlisten laufen nach "Netz zuerst, Speicher als Rückfall", damit eine frisch freigegebene Liste sofort erscheint; Bilder nach "Speicher zuerst", weil ein Bilddateiname stabil ist und erneutes Laden nur Datenvolumen kostet. Vorher startete die App offline zwar, fand aber keine einzige Vokabel und zeigte nur eine Fehlermeldung. Sie funktionierte damit genau dann nicht, wenn man sie sich gerade nicht leisten kann.
 
 ---
 

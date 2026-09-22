@@ -1,12 +1,32 @@
-/* wordQUEST – Service Worker (statische Shell, Wortlisten immer frisch)
+/* wordQUEST – Service Worker
+
+   Zwei Speicher mit unterschiedlichem Zweck:
+
+   1. Die **Shell** (index.html, Styles, Symbole) liegt unter einer
+      Versionsnummer und wird bei jedem Release ausgetauscht.
+   2. Die **Daten** (Wortlisten und deren Bilder) liegen in einem eigenen,
+      unversionierten Speicher. Der überlebt ein Update, denn eine neue
+      Programmfassung macht die Vokabeln von gestern nicht ungültig.
+
+   Warum überhaupt Wortlisten im Cache: Die App richtet sich an Kinder mit
+   knappem Datenvolumen. Ohne Zwischenspeicher startet die App offline zwar,
+   findet aber keine einzige Vokabel und zeigt nur eine Fehlermeldung. Sie
+   funktionierte damit genau dann nicht, wenn man sie sich gerade nicht leisten
+   kann.
 
    WICHTIG beim Ausliefern: CACHE_VERSION bei jedem Release hochzählen.
    Nur wenn sich diese Datei unterscheidet, bemerkt der Browser überhaupt
    eine neue Fassung und der Update-Hinweis in index.html erscheint.
 */
-const CACHE_VERSION = 'v18';
+const CACHE_VERSION = 'v19';
 const CACHE_NAME = `wordquest-static-${CACHE_VERSION}`;
+const DATEN_CACHE = 'wordquest-daten';
 const ASSETS = ['./index.html', './style.css', './wordQUEST_icon.png', './favicon.ico', './manifest.webmanifest'];
+
+/* Obergrenze für den Datenspeicher. Eine Wortliste wiegt wenige Kilobyte, ein
+   Bild höchstens 25. Die Grenze verhindert trotzdem, dass der Speicher über
+   Monate unbemerkt zuwächst. */
+const DATEN_MAX = 300;
 
 /* Lokale Entwicklung: nie aus dem Cache ausliefern. Sonst zeigt der Browser
    nach einer Änderung weiter die alte Datei, und man sucht den Fehler im Code
@@ -32,8 +52,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      // Lokal alles wegräumen, sonst nur die alten Versionen.
-      Promise.all(keys.filter((k) => LOKAL || k !== CACHE_NAME).map((k) => caches.delete(k)))
+      // Lokal alles wegräumen. Sonst nur alte Shell-Fassungen, der
+      // Datenspeicher bleibt ausdrücklich stehen.
+      Promise.all(
+        keys
+          .filter((k) => LOKAL || (k !== CACHE_NAME && k !== DATEN_CACHE))
+          .map((k) => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -43,13 +68,61 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WARTEN') self.skipWaiting();
 });
 
-/* Nur Dateien der Shell dürfen in den Cache. Alles andere, etwa Bild-URLs aus
-   Wortlisten, würde den Cache sonst unbegrenzt volllaufen lassen. */
+/* Nur Dateien der Shell dürfen in den Shell-Cache. */
 function istShellAsset(path) {
   return ASSETS.some((a) => {
     const rein = a.replace('./', '/');
     return path === rein || path.endsWith(rein);
   });
+}
+
+/** Ältestes zuerst wegwerfen, wenn der Datenspeicher zu voll wird. */
+async function datenSpeicherKuerzen(cache) {
+  const schluessel = await cache.keys();
+  if (schluessel.length <= DATEN_MAX) return;
+  await Promise.all(
+    schluessel.slice(0, schluessel.length - DATEN_MAX).map((k) => cache.delete(k))
+  );
+}
+
+/**
+ * Netz zuerst, Cache als Rückfallebene.
+ *
+ * Für Wortlisten ist die Reihenfolge wichtig: Eine im Admincenter
+ * veröffentlichte oder bearbeitete Liste muss sofort sichtbar sein. Der Cache
+ * springt nur ein, wenn das Netz nicht antwortet.
+ */
+async function netzZuerst(request) {
+  const cache = await caches.open(DATEN_CACHE);
+  try {
+    const antwort = await fetch(request);
+    if (antwort && antwort.ok && antwort.type === 'basic') {
+      cache.put(request, antwort.clone()).then(() => datenSpeicherKuerzen(cache)).catch(() => {});
+    }
+    return antwort;
+  } catch (fehler) {
+    const gespeichert = await cache.match(request);
+    if (gespeichert) return gespeichert;
+    throw fehler;
+  }
+}
+
+/**
+ * Cache zuerst, Netz nur beim ersten Mal.
+ *
+ * Für Bilder richtig herum: Der Dateiname eines Bildes ist stabil, ein
+ * einmal geladenes Bild ändert sich nicht mehr. Jedes erneute Laden wäre
+ * verschenktes Datenvolumen.
+ */
+async function cacheZuerst(request) {
+  const cache = await caches.open(DATEN_CACHE);
+  const gespeichert = await cache.match(request);
+  if (gespeichert) return gespeichert;
+  const antwort = await fetch(request);
+  if (antwort && antwort.ok && antwort.type === 'basic') {
+    cache.put(request, antwort.clone()).then(() => datenSpeicherKuerzen(cache)).catch(() => {});
+  }
+  return antwort;
 }
 
 self.addEventListener('fetch', (event) => {
@@ -69,9 +142,22 @@ self.addEventListener('fetch', (event) => {
   // Der Aufruf von /admin/ zeigte die Vokabelapp statt der Anmeldung.
   if (path.startsWith('/admin') || path.startsWith('/api/')) return;
 
-  // Wortlisten und PHP immer frisch aus dem Netz, damit neue Listen sofort
-  // sichtbar sind.
-  if (path.includes('/wordlists/') || path.endsWith('.php')) {
+  // Wortlisten samt Auto-Discovery: frisch, wenn das Netz da ist, sonst aus
+  // dem Zwischenspeicher. Genau das macht die App offline benutzbar.
+  if (path.includes('/wordlists/')) {
+    event.respondWith(netzZuerst(event.request));
+    return;
+  }
+
+  // Bilder zu Vokabeln: einmal laden, dann für immer aus dem Speicher.
+  if (path.startsWith('/img/')) {
+    event.respondWith(cacheZuerst(event.request));
+    return;
+  }
+
+  // Übrige PHP-Seiten, etwa die Einreichungsseite: immer aus dem Netz, sie
+  // ergeben ohne Server keinen Sinn.
+  if (path.endsWith('.php')) {
     event.respondWith(fetch(event.request));
     return;
   }

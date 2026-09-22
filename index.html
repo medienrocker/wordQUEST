@@ -96,6 +96,9 @@
   </div>
 </div>
 <div id="load-status" role="alert" hidden></div>
+<div id="netz-hinweis" role="status" hidden>
+  <span aria-hidden="true">📴</span> Gerade offline. Deine Listen und dein Lernstand sind da, nur Neues kommt erst mit Internet.
+</div>
 
 <div id="score-bar">
   <div class="score-item player-badge">
@@ -1884,6 +1887,28 @@ function hideError() {
   el.textContent = '';
 }
 
+/* ─────────── Offline ───────────
+
+   Die App richtet sich an Kinder mit knappem Datenvolumen. Dass sie ohne Netz
+   weiterläuft, ist deshalb kein Zusatz, sondern Grundfunktion. Der Hinweis
+   sagt nur, was gerade nicht geht, statt Fehlermeldungen zu werfen: Üben geht
+   immer, weil Listen und Lernstand auf dem Gerät liegen. */
+function istOffline() {
+  return navigator.onLine === false;
+}
+
+function syncNetzHinweis() {
+  const el = document.getElementById('netz-hinweis');
+  if (el) el.hidden = !istOffline();
+}
+
+window.addEventListener('online', () => {
+  syncNetzHinweis();
+  // Wieder da: Tafel und Listenauswahl dürfen sich auffrischen.
+  if (typeof ladeTafel === 'function') ladeTafel(true);
+});
+window.addEventListener('offline', syncNetzHinweis);
+
 /* ═══════════════════════════════════════════════
    SCORE (WQ-5.5)
 
@@ -2142,7 +2167,11 @@ async function ladeTafel(erzwingen) {
     // Kein Server, kein Drama: Die App funktioniert auch ohne Tafel.
     TAFEL_AKTIV = false;
     zeigeTafelZugaenge(false);
-    if (hinweis) hinweis.textContent = 'Die Ehrentafel ist gerade nicht erreichbar.';
+    if (hinweis) {
+      hinweis.textContent = istOffline()
+        ? 'Die Ehrentafel braucht Internet. Üben geht auch ohne.'
+        : 'Die Ehrentafel ist gerade nicht erreichbar.';
+    }
   }
 }
 
@@ -3615,6 +3644,7 @@ document.getElementById('stats-toggle')?.addEventListener('change', e => statsSc
 syncTafelKnopf();
 document.getElementById('tafel-toggle')?.addEventListener('change', e => tafelErlaubnisSetzen(e.target.checked));
 ladeTafel();
+syncNetzHinweis();
 window.addEventListener('pagehide', statsSenden);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') statsSenden();
@@ -3725,7 +3755,9 @@ document.getElementById('spelling-show-visual')?.addEventListener('click', () =>
     console.error(err);
     const picker = document.getElementById('wordlist-picker');
     if (picker) picker.innerHTML = '<span class="empty-state">Keine Listen gefunden.</span>';
-    showError(err.message || 'Unbekannter Fehler beim Laden der Wortlisten.');
+    showError(istOffline()
+      ? 'Ohne Internet und ohne gespeicherte Listen geht es leider nicht. Öffne die App einmal mit Verbindung, danach läuft sie auch offline.'
+      : (err.message || 'Unbekannter Fehler beim Laden der Wortlisten.'));
   }
 })();
 

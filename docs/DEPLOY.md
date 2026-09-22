@@ -283,6 +283,19 @@ plus `git checkout -f -B main origin/main`.
 die `.htaccess` für statische Dateien nicht und die Sicherheits-Header fehlen. Nach dem
 Deploy von außen gegenprüfen, siehe [SECURITY.md](SECURITY.md).
 
+## Offline-Betrieb prüfen
+
+Service Worker lassen sich nur im echten Browser prüfen, nicht auf der
+Kommandozeile. Nach einem Deploy, der `sw.js` berührt:
+
+1. Die App einmal mit Verbindung öffnen und eine Liste auswählen.
+2. In den Entwicklerwerkzeugen unter Netzwerk auf "Offline" stellen,
+   oder am Telefon den Flugmodus einschalten.
+3. Neu laden. Erwartet: Die App startet, die Liste ist da, Üben funktioniert,
+   und oben steht der gelbe Hinweis "Gerade offline".
+4. Erwartet ebenso: Ehrentafel und Einreichungsseite melden, dass sie
+   Internet brauchen. Das ist richtig so, beide ergeben ohne Server keinen Sinn.
+
 ## Prüfung nach dem Deploy, von außen
 
 ```powershell
