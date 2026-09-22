@@ -148,6 +148,7 @@
   <button class="tab-btn" data-tab="scramble">🔀 Scramble</button>
   <button class="tab-btn" data-tab="spelling">✍️ Spelling</button>
   <button class="tab-btn" data-tab="listen" id="tab-listen" hidden>🎧 Hören</button>
+  <button class="tab-btn" data-tab="cloze" id="tab-cloze" hidden>📝 Lückensatz</button>
   <button class="tab-btn" data-tab="practice">📈 Üben</button>
   <button class="tab-btn" data-tab="vocab">📚 Vokabeln</button>
 </nav>
@@ -175,6 +176,11 @@
       <span class="icon">✍️</span>
       <h3>Spelling Bee</h3>
       <p>Schreibe das Wort</p>
+    </div>
+    <div class="menu-card c-cloze" id="menu-card-cloze" onclick="openTab('cloze')" hidden>
+      <span class="icon">📝</span>
+      <h3>Lückensatz</h3>
+      <p>Das fehlende Wort im Satz finden</p>
     </div>
     <div class="menu-card c-listen" id="menu-card-listen" onclick="openTab('listen')" hidden>
       <span class="icon">🎧</span>
@@ -348,6 +354,27 @@
         <button type="button" class="btn btn-listen" onclick="checkListenDictation()" title="Geschriebenes Wort prüfen.">✓ Prüfen</button>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ══════════════ LÜCKENSATZ ══════════════
+     Trainiert das Wort im Satz statt isoliert, eine Stufe über der
+     Einzelvokabel. Erscheint nur, wenn die gewählten Listen genügend
+     Beispielsätze mitbringen. -->
+<section id="section-cloze" class="section">
+  <div class="game-header">
+    <h2>📝 Lückensatz</h2>
+    <span class="game-badge badge-cloze" id="cloze-counter">1 / 10</span>
+    <button class="btn btn-cloze next-btn-inline" id="cloze-next-top" onclick="clozeNext()" disabled>Weiter →</button>
+    <div class="feedback" id="cloze-feedback" aria-live="polite"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="cloze-progress" style="width:10%"></div></div>
+  <div class="card">
+    <p class="cloze-lead">Welches Wort fehlt?</p>
+    <p class="cloze-sentence" id="cloze-sentence"></p>
+    <p class="cloze-translation" id="cloze-translation"></p>
+    <div id="cloze-choices"></div>
+    <div id="cloze-solution" class="pron-row" hidden></div>
   </div>
 </section>
 
@@ -1357,14 +1384,20 @@ async function discoverWordlists() {
   return metas;
 }
 
+/* Nimmt nur bekannte Felder auf. Alles andere aus einer eingereichten Datei
+   wird verworfen, statt ungeprüft mitgeschleppt zu werden. */
 function normalizeWordEntry(w, file, catKey) {
   const en = String(w.en).trim();
   const de = String(w.de).trim();
+  const kurzerText = v =>
+    (typeof v === 'string' && v.trim() && v.length <= MAX_EXAMPLE_LEN) ? v.trim() : null;
   return {
     en,
     de,
     emoji: typeof w.emoji === 'string' && w.emoji.trim() ? w.emoji.trim() : null,
     img:   typeof w.img   === 'string' && w.img.trim()   ? w.img.trim()   : null,
+    example:   kurzerText(w.example),
+    exampleDe: kurzerText(w.exampleDe),
     cat:   catKey,
     _srcFile: file,
     _wqId: makeWqId(file, en, de)
@@ -1375,6 +1408,7 @@ function normalizeWordEntry(w, file, catKey) {
    Schutz des Geräts, beim späteren Upload zusätzlich serverseitig. */
 const MAX_WORDS_PER_LIST = 500;
 const MAX_WORD_LEN       = 120;
+const MAX_EXAMPLE_LEN    = 200;
 
 async function fetchOneWordlist(file) {
   const r = await fetch('wordlists/' + encodeURIComponent(file) + '?t=' + Date.now(), { cache: 'no-store' });
@@ -1483,6 +1517,7 @@ async function loadWordlists(files) {
     updateWordlistMeta();
     updatePracticePanel();
     updateProgressStrip();
+    syncClozeUi();
     rerunActiveSection();
   } catch (err) {
     showError(err.message || String(err));
@@ -1702,7 +1737,7 @@ function hideError() {
 ═══════════════════════════════════════════════ */
 const SCORE_RULES = Object.freeze({
   quiz: 10, quizEasy: 6, memory: 8, scramble: 15, spelling: 20, spellingHint: 10,
-  listen: 15, dictation: 20,
+  listen: 15, dictation: 20, cloze: 15,
   streakFrom: 3, streakStep: 2, streakMax: 10,
   firstTime: 5, comeback: 10,
   roundDone: 25, runDone: 100
@@ -1940,7 +1975,7 @@ function openTab(name, opts) {
   if (btn) btn.classList.add('active');
 
   const pool = getActiveVocab();
-  const needsPool = ['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(name);
+  const needsPool = ['quiz', 'memory', 'scramble', 'spelling', 'listen', 'cloze'].includes(name);
 
   if (!VOCAB.length && name !== 'menu') {
     showEmptyState(name, 'no-data');
@@ -1955,6 +1990,7 @@ function openTab(name, opts) {
 
   if (name === 'quiz')    startQuiz();
   if (name === 'listen')  startListening();
+  if (name === 'cloze')   startCloze();
   if (name === 'scramble')startScramble();
   if (name === 'spelling')startSpelling();
   if (name === 'memory')  startMemory(8);
@@ -1967,13 +2003,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 function rerunActiveSection() {
   if (!VOCAB.length) return;
-  if (!getActiveVocab().length && ['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(LAST_TAB)) {
+  if (!getActiveVocab().length && ['quiz', 'memory', 'scramble', 'spelling', 'listen', 'cloze'].includes(LAST_TAB)) {
     showEmptyState(LAST_TAB, 'no-active');
     return;
   }
   clearEmptyStateInSection(LAST_TAB);
   if (LAST_TAB === 'quiz')    startQuiz();
   if (LAST_TAB === 'listen')  startListening();
+  if (LAST_TAB === 'cloze')   startCloze();
   if (LAST_TAB === 'scramble')startScramble();
   if (LAST_TAB === 'spelling')startSpelling();
   if (LAST_TAB === 'memory')  startMemory(8);
@@ -2812,6 +2849,176 @@ function listenNext() {
 }
 
 /* ═══════════════════════════════════════════════
+   LÜCKENSATZ (WQ-6.3)
+
+   Nutzt die Beispielsätze aus dem Lehrwerk. Das Wort im Satz zu erkennen ist
+   eine Stufe über der Einzelvokabel: Es verlangt, die Bedeutung im Kontext
+   zu prüfen statt nur ein Paar abzurufen.
+
+   Nicht jedes Wort taugt dafür. Ein Eintrag wie "be good at something" steht
+   im Satz als "is good at", ein Eintrag wie "these (pl of this)" enthält
+   einen Klammerzusatz. Deshalb wird für jeden Eintrag erst geprüft, ob sich
+   im Satz überhaupt eine Lücke bilden lässt. Nur solche Wörter kommen dran.
+═══════════════════════════════════════════════ */
+const CLOZE_LUECKE = '_____';
+const CLOZE_MIN_WOERTER = 4;   // darunter lohnt der Modus nicht
+
+/* Sucht das Wort im Beispielsatz und liefert Satz mit Lücke plus Lösung.
+   Liefert null, wenn sich keine sinnvolle Lücke bilden lässt. */
+function gapInfo(item) {
+  const satz = item && typeof item.example === 'string' ? item.example.trim() : '';
+  if (!satz) return null;
+
+  // Klammerzusätze entfernen: "these (pl of this)" → "these"
+  const basis = String(item.en || '').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!basis) return null;
+
+  // Erst die ganze Wendung versuchen, dann die längsten Einzelwörter daraus.
+  const kandidaten = [basis];
+  if (basis.includes(' ')) {
+    basis.split(' ')
+      .filter(w => w.replace(/[^\p{L}]/gu, '').length > 2)
+      .sort((a, b) => b.length - a.length)
+      .forEach(w => kandidaten.push(w));
+  }
+
+  for (const kandidat of kandidaten) {
+    const roh = kandidat.replace(/[.!?,;:]+$/, '');
+    if (!roh) continue;
+    const muster = new RegExp(`(^|[^\\p{L}])(${roh.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})([^\\p{L}]|$)`, 'iu');
+    const treffer = satz.match(muster);
+    if (treffer) {
+      return {
+        satzMitLuecke: satz.replace(muster, `$1${CLOZE_LUECKE}$3`),
+        loesung: treffer[2]
+      };
+    }
+  }
+  return null;
+}
+
+function getClozePool() {
+  return getActiveVocab().filter(v => gapInfo(v));
+}
+
+/* Blendet Reiter und Menükarte nur ein, wenn genügend Sätze da sind. */
+function syncClozeUi() {
+  const genug = getClozePool().length >= CLOZE_MIN_WOERTER;
+  const tab  = document.getElementById('tab-cloze');
+  const card = document.getElementById('menu-card-cloze');
+  if (tab)  tab.hidden  = !genug;
+  if (card) card.hidden = !genug;
+  if (!genug && LAST_TAB === 'cloze') openTab('menu');
+}
+
+let clozeItems, clozeIdx, clozeScore;
+
+function startCloze() {
+  const pool = getClozePool();
+  if (pool.length < CLOZE_MIN_WOERTER) { syncClozeUi(); return; }
+  // Aus der Runden-Engine ziehen, aber nur Wörter mit brauchbarem Satz.
+  const erlaubt = new Set(pool.map(v => v._wqId));
+  let runde = buildRound(ROUND_SIZE).filter(v => erlaubt.has(v._wqId));
+  if (runde.length < Math.min(5, pool.length)) {
+    const genutzt = new Set(runde.map(v => v._wqId));
+    weightedSample(pool.filter(v => !genutzt.has(v._wqId)),
+                   Math.min(ROUND_SIZE, pool.length) - runde.length)
+      .forEach(v => runde.push(v));
+  }
+  clozeItems = shuffle(runde);
+  if (!clozeItems.length) return;
+  clozeIdx = 0;
+  clozeScore = 0;
+  resetAnswerStreak();
+  showClozeQuestion();
+}
+
+function showClozeQuestion() {
+  const item = clozeItems[clozeIdx];
+  const luecke = gapInfo(item);
+  if (!luecke) { clozeNext(); return; }
+
+  document.getElementById('cloze-counter').textContent  = `${clozeIdx + 1} / ${clozeItems.length}`;
+  document.getElementById('cloze-progress').style.width = `${((clozeIdx + 1) / clozeItems.length) * 100}%`;
+  document.getElementById('cloze-feedback').textContent = '';
+  document.getElementById('cloze-sentence').innerHTML =
+    escapeHtml(luecke.satzMitLuecke).replace(CLOZE_LUECKE, '<span class="cloze-gap">?</span>');
+  document.getElementById('cloze-translation').textContent = item.exampleDe || '';
+  const loesungZeile = document.getElementById('cloze-solution');
+  loesungZeile.innerHTML = '';
+  loesungZeile.hidden = true;
+  setNextReady('cloze', false);
+
+  // Ablenker: andere Lösungswörter aus demselben Bestand, damit sie
+  // grammatisch in dieselbe Lücke passen könnten.
+  const andere = getClozePool()
+    .filter(v => v._wqId !== item._wqId)
+    .map(v => gapInfo(v)?.loesung)
+    .filter(w => w && w.toLowerCase() !== luecke.loesung.toLowerCase());
+  const einmalig = [...new Set(andere)];
+  const auswahl = shuffle([luecke.loesung, ...shuffle(einmalig).slice(0, 3)]);
+
+  const grid = document.getElementById('cloze-choices');
+  grid.innerHTML = '';
+  auswahl.forEach(wort => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = wort;
+    btn.onclick = () => handleClozeAnswer(btn, wort === luecke.loesung, item, luecke);
+    grid.appendChild(btn);
+  });
+}
+
+function handleClozeAnswer(btn, richtig, item, luecke) {
+  const before = getSrsEntry(item._wqId);
+  document.querySelectorAll('#cloze-choices .choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === luecke.loesung) b.classList.add('correct-ans');
+  });
+  const fb = document.getElementById('cloze-feedback');
+  if (richtig) {
+    btn.classList.add('correct-ans');
+    const award = awardAnswer('cloze', before);
+    fb.textContent = praiseMsg(award);
+    fb.className = 'feedback correct';
+    clozeScore++;
+    recordCorrect(item._wqId);
+  } else {
+    btn.classList.add('wrong-ans');
+    fb.textContent = growthMsg(luecke.loesung);
+    fb.className = 'feedback wrong';
+    resetAnswerStreak();
+    recordWrong(item._wqId);
+  }
+  // Vollständigen Satz zeigen und vorsprechen.
+  const zeile = document.getElementById('cloze-solution');
+  zeile.hidden = false;
+  zeile.innerHTML = `<span class="pron-word">${escapeHtml(item.example)}</span>${speakerBtnHtml(item.example, 'en')}`;
+  speak(item.example, 'en');
+
+  updatePracticePanel();
+  updateProgressStrip();
+  setNextReady('cloze', true);
+}
+
+function clozeNext() {
+  clozeIdx++;
+  if (clozeIdx >= clozeItems.length) {
+    const done = finishRound();
+    showRoundOverlay({
+      emoji: '📝',
+      title: 'Lückensätze geschafft!',
+      correct: clozeScore,
+      total: clozeItems.length,
+      done,
+      onNochmal: startCloze
+    });
+  } else {
+    showClozeQuestion();
+  }
+}
+
+/* ═══════════════════════════════════════════════
    VOCAB LIST (dynamische Kategorien)
 ═══════════════════════════════════════════════ */
 function getCategories() {
@@ -2898,6 +3105,10 @@ function renderVocab(filter) {
       <div class="v-visual">${visual(v, 'sm')}</div>
       <div class="v-en">${escapeHtml(v.en)}${speakerBtnHtml(v.en, 'en')}</div>
       <div class="v-de">${escapeHtml(v.de)}</div>
+      ${v.example ? `<div class="v-example">
+        <span class="v-example-en">${escapeHtml(v.example)}${speakerBtnHtml(v.example, 'en')}</span>
+        ${v.exampleDe ? `<span class="v-example-de">${escapeHtml(v.exampleDe)}</span>` : ''}
+      </div>` : ''}
       <div class="v-maturity ${mat.cls}">
         <span class="v-mat-icon" aria-hidden="true">${mat.icon}</span>
         <span class="v-mat-label">${mat.label}</span>
@@ -2914,7 +3125,7 @@ function renderVocab(filter) {
       renderVocab(VOCAB_FILTER);
       updatePracticePanel();
       updateProgressStrip();
-      if (['quiz', 'memory', 'scramble', 'spelling', 'listen'].includes(LAST_TAB)) rerunActiveSection();
+      if (['quiz', 'memory', 'scramble', 'spelling', 'listen', 'cloze'].includes(LAST_TAB)) rerunActiveSection();
     });
   });
   grid.querySelectorAll('.vocab-leech-reset').forEach(btn => {
@@ -2994,6 +3205,7 @@ const HILFE = [
       { sel: '[data-tab="scramble"]', name: 'Scramble',  text: 'Aus durcheinandergewürfelten Buchstaben das Wort bauen.' },
       { sel: '[data-tab="spelling"]', name: 'Spelling',  text: 'Das Wort selbst schreiben. Bringt die meisten Punkte, weil es am schwersten ist.' },
       { sel: '[data-tab="listen"]',   name: 'Hören',     text: 'Das englische Wort wird vorgelesen. Bei „Zuordnen" wählst du die Bedeutung, bei „Diktat" schreibst du das Wort. Du darfst so oft nachhören, wie du willst, das kostet keine Punkte.' },
+      { sel: '[data-tab="cloze"]',    name: 'Lückensatz', text: 'Ein Satz aus dem Buch, in dem ein Wort fehlt. Erscheint nur bei Listen, die Beispielsätze mitbringen.' },
       { sel: '[data-tab="practice"]', name: 'Üben',      text: 'Übt nur die Wörter, die noch wackeln oder heute wieder fällig sind.' },
       { sel: '[data-tab="vocab"]',    name: 'Vokabeln',  text: 'Alle Wörter auf einen Blick. Hier siehst du deinen Lernstand und kannst einzelne Wörter für die Spiele abwählen.' },
       { sel: '[data-tab="menu"]',     name: 'Menü',      text: 'Zurück zur Spielauswahl.' }

@@ -2,101 +2,565 @@
   "title": "NHG 1 · Welcome",
   "description": "Notting Hill Gate 1, Welcome-Kapitel und NHG-Song (S. 189-191)",
   "categories": {
-    "words":   "📖 Wörter",
+    "words": "📖 Wörter",
     "phrases": "🗣️ Sätze & Aufgaben"
   },
   "words": [
-    { "en": "no",                "de": "nein",                              "emoji": "❌", "cat": "words" },
-    { "en": "cheese",            "de": "Käse",                              "emoji": "🧀", "cat": "words" },
-    { "en": "hate",              "de": "hassen, nicht ausstehen können",    "emoji": "😖", "cat": "words" },
-    { "en": "apple",             "de": "Apfel",                             "emoji": "🍎", "cat": "words" },
-    { "en": "ugh",               "de": "i, igitt",                          "emoji": "🤢", "cat": "words" },
-    { "en": "Look!",             "de": "Schau(t) mal!",                     "emoji": "👀", "cat": "words" },
-    { "en": "give",              "de": "geben",                             "emoji": "🎁", "cat": "words" },
-    { "en": "(to) me",           "de": "mir, mich, ich",                    "cat": "words" },
-    { "en": "banana",            "de": "Banane",                            "emoji": "🍌", "cat": "words" },
-    { "en": "think",             "de": "denken, glauben",                   "emoji": "🤔", "cat": "words" },
-    { "en": "sure",              "de": "sicher",                            "emoji": "👌", "cat": "words" },
-    { "en": "great",             "de": "groß; großartig",                   "emoji": "🌟", "cat": "words" },
-    { "en": "idea",              "de": "Idee",                              "emoji": "💡", "cat": "words" },
-    { "en": "swap for",          "de": "eintauschen gegen",                 "emoji": "🔄", "cat": "words" },
-    { "en": "Sorry.",            "de": "Es tut mir leid., Entschuldigung.", "emoji": "🙇", "cat": "words" },
-    { "en": "but",               "de": "aber",                              "cat": "words" },
-    { "en": "have",              "de": "haben; essen, trinken",             "cat": "words" },
-    { "en": "a (little) bit",    "de": "ein (kleines) bisschen",            "emoji": "🤏", "cat": "words" },
-    { "en": "of",                "de": "von",                               "cat": "words" },
-    { "en": "it",                "de": "es",                                "cat": "words" },
-    { "en": "Thank you.",        "de": "Danke.",                            "emoji": "🙏", "cat": "words" },
-    { "en": "food",              "de": "Essen",                             "emoji": "🍽️", "cat": "words" },
-    { "en": "chant",             "de": "Sprechgesang",                      "emoji": "🎤", "cat": "words" },
-    { "en": "a lot (of)",        "de": "viel(e), sehr, jede Menge",         "cat": "words" },
-    { "en": "hello",             "de": "hallo",                             "emoji": "👋", "cat": "words" },
-    { "en": "everybody",         "de": "alle; jeder",                       "emoji": "👥", "cat": "words" },
-    { "en": "I've got",          "de": "ich habe",                          "cat": "words" },
-    { "en": "little",            "de": "klein",                             "emoji": "🐜", "cat": "words" },
-    { "en": "brother",           "de": "Bruder",                            "emoji": "👦", "cat": "words" },
-    { "en": "his",               "de": "sein/seine/seiner/seins",           "cat": "words" },
-    { "en": "he",                "de": "er",                                "cat": "words" },
-    { "en": "football",          "de": "Fußball",                           "emoji": "⚽", "cat": "words" },
-    { "en": "like doing something", "de": "etwas gern tun",                 "emoji": "😊", "cat": "words" },
-    { "en": "play",              "de": "spielen",                           "emoji": "🎮", "cat": "words" },
-    { "en": "wheelchair",        "de": "Rollstuhl",                         "emoji": "🦽", "cat": "words" },
-    { "en": "be good at something", "de": "gut in etwas sein",              "emoji": "💪", "cat": "words" },
-    { "en": "good",              "de": "gut",                               "emoji": "👍", "cat": "words" },
-    { "en": "go",                "de": "gehen; fahren",                     "emoji": "🚶", "cat": "words" },
-    { "en": "to",                "de": "in, nach, zu; (um) zu",             "cat": "words" },
-    { "en": "club",              "de": "Klub; AG",                          "emoji": "🏅", "cat": "words" },
-    { "en": "at",                "de": "an, in, bei, um",                   "cat": "words" },
-    { "en": "school",            "de": "Schule",                            "emoji": "🏫", "cat": "words" },
-    { "en": "music",             "de": "Musik",                             "emoji": "🎵", "cat": "words" },
-    { "en": "lots of",           "de": "viel, jede Menge",                  "cat": "words" },
-    { "en": "song",              "de": "Lied",                              "emoji": "🎶", "cat": "words" },
-    { "en": "dinosaur",          "de": "Dinosaurier",                       "emoji": "🦖", "cat": "words" },
-    { "en": "too",               "de": "auch",                              "cat": "words" },
-    { "en": "room",              "de": "Raum, Zimmer",                      "emoji": "🚪", "cat": "words" },
-    { "en": "pig",               "de": "Schwein",                           "emoji": "🐷", "cat": "words" },
-    { "en": "rabbit",            "de": "Kaninchen",                         "emoji": "🐰", "cat": "words" },
-    { "en": "they",              "de": "sie",                               "cat": "words" },
-    { "en": "cute",              "de": "süß, niedlich",                     "emoji": "🥰", "cat": "words" },
-    { "en": "carrot",            "de": "Möhre, Karotte",                    "emoji": "🥕", "cat": "words" },
-    { "en": "for breakfast",     "de": "zum Frühstück",                     "emoji": "🥐", "cat": "words" },
-    { "en": "glass",             "de": "Glas",                              "emoji": "🥛", "cat": "words" },
-    { "en": "orange juice",      "de": "Orangensaft",                       "emoji": "🧃", "cat": "words" },
-    { "en": "best",              "de": "beste (r, s)",                      "emoji": "🏆", "cat": "words" },
-    { "en": "friend",            "de": "Freund/in",                         "emoji": "🧑‍🤝‍🧑", "cat": "words" },
-    { "en": "Goodbye.",          "de": "Auf Wiedersehen.",                  "emoji": "👋", "cat": "words" },
-    { "en": "part",              "de": "Teil",                              "emoji": "🧩", "cat": "words" },
-    { "en": "come",              "de": "kommen",                            "cat": "words" },
-    { "en": "city",              "de": "Stadt; Innenstadt",                 "emoji": "🏙️", "cat": "words" },
-    { "en": "meet",              "de": "treffen; sich treffen",             "emoji": "🤝", "cat": "words" },
-    { "en": "nice",              "de": "schön; nett",                       "emoji": "😊", "cat": "words" },
-    { "en": "child (pl children)", "de": "Kind",                            "emoji": "🧒", "cat": "words" },
-    { "en": "walk",              "de": "gehen",                             "emoji": "🚶", "cat": "words" },
-    { "en": "down",              "de": "hinunter",                          "emoji": "⬇️", "cat": "words" },
-    { "en": "street",            "de": "Straße",                            "emoji": "🛣️", "cat": "words" },
-    { "en": "some",              "de": "einige, ein paar; etwas",           "cat": "words" },
-    { "en": "live",              "de": "leben, wohnen",                     "emoji": "🏡", "cat": "words" },
-    { "en": "perfect",           "de": "perfekt",                           "emoji": "💯", "cat": "words" },
-    { "en": "place",             "de": "Ort; Platz",                        "emoji": "📍", "cat": "words" },
-    { "en": "stay",              "de": "bleiben; wohnen",                   "cat": "words" },
-    { "en": "not",               "de": "nicht",                             "cat": "words" },
-    { "en": "far",               "de": "weit",                              "cat": "words" },
-    { "en": "away",              "de": "weg",                               "cat": "words" },
-    { "en": "so",                "de": "deshalb, daher",                    "cat": "words" },
-    { "en": "all",               "de": "alle, alles",                       "cat": "words" },
-    { "en": "their",             "de": "ihr(e)",                            "cat": "words" },
-    { "en": "pet",               "de": "Haustier",                          "emoji": "🐾", "cat": "words" },
-    { "en": "really",            "de": "wirklich",                          "cat": "words" },
-    { "en": "want",              "de": "wollen",                            "cat": "words" },
-    { "en": "them",              "de": "sie, ihnen",                        "cat": "words" },
-
-    { "en": "What do you think?",             "de": "Was hältst du davon?",                        "emoji": "💬", "cat": "phrases" },
-    { "en": "Act out the dialogue.",          "de": "Spielt den Dialog nach.",                     "emoji": "🎭", "cat": "phrases" },
-    { "en": "Listen to the chant and say it.", "de": "Höre dir den Sprechgesang an und sage ihn.", "emoji": "👂", "cat": "phrases" },
-    { "en": "Make your own chant.",           "de": "Mache deinen eigenen Sprechgesang.",          "emoji": "🎤", "cat": "phrases" },
-    { "en": "Read about …",                   "de": "Lies über …",                                 "emoji": "📖", "cat": "phrases" },
-    { "en": "Listen to the song.",            "de": "Höre dir das Lied an.",                       "emoji": "🎧", "cat": "phrases" },
-    { "en": "Then sing along.",               "de": "Singe dann mit.",                             "emoji": "🎶", "cat": "phrases" },
-    { "en": "What about you?",                "de": "Und du?",                                     "emoji": "💬", "cat": "phrases" }
+    {
+      "en": "no",
+      "de": "nein",
+      "emoji": "❌",
+      "cat": "words"
+    },
+    {
+      "en": "cheese",
+      "de": "Käse",
+      "emoji": "🧀",
+      "cat": "words"
+    },
+    {
+      "en": "hate",
+      "de": "hassen, nicht ausstehen können",
+      "emoji": "😖",
+      "cat": "words"
+    },
+    {
+      "en": "apple",
+      "de": "Apfel",
+      "emoji": "🍎",
+      "cat": "words",
+      "example": "This is an apple and that's a banana.",
+      "exampleDe": "Das ist ein Apfel und das ist eine Banane."
+    },
+    {
+      "en": "ugh",
+      "de": "i, igitt",
+      "emoji": "🤢",
+      "cat": "words"
+    },
+    {
+      "en": "Look!",
+      "de": "Schau(t) mal!",
+      "emoji": "👀",
+      "cat": "words"
+    },
+    {
+      "en": "give",
+      "de": "geben",
+      "emoji": "🎁",
+      "cat": "words"
+    },
+    {
+      "en": "(to) me",
+      "de": "mir, mich, ich",
+      "cat": "words"
+    },
+    {
+      "en": "banana",
+      "de": "Banane",
+      "emoji": "🍌",
+      "cat": "words",
+      "example": "This is an apple and that's a banana.",
+      "exampleDe": "Das ist ein Apfel und das ist eine Banane."
+    },
+    {
+      "en": "think",
+      "de": "denken, glauben",
+      "emoji": "🤔",
+      "cat": "words"
+    },
+    {
+      "en": "sure",
+      "de": "sicher",
+      "emoji": "👌",
+      "cat": "words"
+    },
+    {
+      "en": "great",
+      "de": "groß; großartig",
+      "emoji": "🌟",
+      "cat": "words",
+      "example": "If you think something is a great idea, you like it.",
+      "exampleDe": "Wenn du etwas eine großartige Idee findest, gefällt es dir."
+    },
+    {
+      "en": "idea",
+      "de": "Idee",
+      "emoji": "💡",
+      "cat": "words",
+      "example": "If you think something is a great idea, you like it.",
+      "exampleDe": "Wenn du etwas eine großartige Idee findest, gefällt es dir."
+    },
+    {
+      "en": "swap for",
+      "de": "eintauschen gegen",
+      "emoji": "🔄",
+      "cat": "words"
+    },
+    {
+      "en": "Sorry.",
+      "de": "Es tut mir leid., Entschuldigung.",
+      "emoji": "🙇",
+      "cat": "words"
+    },
+    {
+      "en": "but",
+      "de": "aber",
+      "cat": "words"
+    },
+    {
+      "en": "have",
+      "de": "haben; essen, trinken",
+      "cat": "words"
+    },
+    {
+      "en": "a (little) bit",
+      "de": "ein (kleines) bisschen",
+      "emoji": "🤏",
+      "cat": "words"
+    },
+    {
+      "en": "of",
+      "de": "von",
+      "cat": "words"
+    },
+    {
+      "en": "it",
+      "de": "es",
+      "cat": "words"
+    },
+    {
+      "en": "Thank you.",
+      "de": "Danke.",
+      "emoji": "🙏",
+      "cat": "words"
+    },
+    {
+      "en": "food",
+      "de": "Essen",
+      "emoji": "🍽️",
+      "cat": "words"
+    },
+    {
+      "en": "chant",
+      "de": "Sprechgesang",
+      "emoji": "🎤",
+      "cat": "words"
+    },
+    {
+      "en": "a lot (of)",
+      "de": "viel(e), sehr, jede Menge",
+      "cat": "words"
+    },
+    {
+      "en": "hello",
+      "de": "hallo",
+      "emoji": "👋",
+      "cat": "words"
+    },
+    {
+      "en": "everybody",
+      "de": "alle; jeder",
+      "emoji": "👥",
+      "cat": "words"
+    },
+    {
+      "en": "I've got",
+      "de": "ich habe",
+      "cat": "words"
+    },
+    {
+      "en": "little",
+      "de": "klein",
+      "emoji": "🐜",
+      "cat": "words"
+    },
+    {
+      "en": "brother",
+      "de": "Bruder",
+      "emoji": "👦",
+      "cat": "words",
+      "example": "I've got a brother.",
+      "exampleDe": "Ich habe einen Bruder."
+    },
+    {
+      "en": "his",
+      "de": "sein/seine/seiner/seins",
+      "cat": "words",
+      "example": "His brother is wearing a green T-shirt.",
+      "exampleDe": "Sein Bruder trägt ein grünes T-Shirt."
+    },
+    {
+      "en": "he",
+      "de": "er",
+      "cat": "words",
+      "example": "He is a boy.",
+      "exampleDe": "Er ist ein Junge."
+    },
+    {
+      "en": "football",
+      "de": "Fußball",
+      "emoji": "⚽",
+      "cat": "words",
+      "example": "She is good at football.",
+      "exampleDe": "Sie ist gut im Fußball."
+    },
+    {
+      "en": "like doing something",
+      "de": "etwas gern tun",
+      "emoji": "😊",
+      "cat": "words"
+    },
+    {
+      "en": "play",
+      "de": "spielen",
+      "emoji": "🎮",
+      "cat": "words"
+    },
+    {
+      "en": "wheelchair",
+      "de": "Rollstuhl",
+      "emoji": "🦽",
+      "cat": "words"
+    },
+    {
+      "en": "be good at something",
+      "de": "gut in etwas sein",
+      "emoji": "💪",
+      "cat": "words",
+      "example": "She is good at football.",
+      "exampleDe": "Sie ist gut im Fußball."
+    },
+    {
+      "en": "good",
+      "de": "gut",
+      "emoji": "👍",
+      "cat": "words"
+    },
+    {
+      "en": "go",
+      "de": "gehen; fahren",
+      "emoji": "🚶",
+      "cat": "words"
+    },
+    {
+      "en": "to",
+      "de": "in, nach, zu; (um) zu",
+      "cat": "words"
+    },
+    {
+      "en": "club",
+      "de": "Klub; AG",
+      "emoji": "🏅",
+      "cat": "words"
+    },
+    {
+      "en": "at",
+      "de": "an, in, bei, um",
+      "cat": "words"
+    },
+    {
+      "en": "school",
+      "de": "Schule",
+      "emoji": "🏫",
+      "cat": "words"
+    },
+    {
+      "en": "music",
+      "de": "Musik",
+      "emoji": "🎵",
+      "cat": "words",
+      "example": "They love music.",
+      "exampleDe": "Sie lieben Musik."
+    },
+    {
+      "en": "lots of",
+      "de": "viel, jede Menge",
+      "cat": "words"
+    },
+    {
+      "en": "song",
+      "de": "Lied",
+      "emoji": "🎶",
+      "cat": "words"
+    },
+    {
+      "en": "dinosaur",
+      "de": "Dinosaurier",
+      "emoji": "🦖",
+      "cat": "words"
+    },
+    {
+      "en": "too",
+      "de": "auch",
+      "cat": "words"
+    },
+    {
+      "en": "room",
+      "de": "Raum, Zimmer",
+      "emoji": "🚪",
+      "cat": "words"
+    },
+    {
+      "en": "pig",
+      "de": "Schwein",
+      "emoji": "🐷",
+      "cat": "words"
+    },
+    {
+      "en": "rabbit",
+      "de": "Kaninchen",
+      "emoji": "🐰",
+      "cat": "words",
+      "example": "This is a rabbit.",
+      "exampleDe": "Das ist ein Kaninchen."
+    },
+    {
+      "en": "they",
+      "de": "sie",
+      "cat": "words"
+    },
+    {
+      "en": "cute",
+      "de": "süß, niedlich",
+      "emoji": "🥰",
+      "cat": "words"
+    },
+    {
+      "en": "carrot",
+      "de": "Möhre, Karotte",
+      "emoji": "🥕",
+      "cat": "words"
+    },
+    {
+      "en": "for breakfast",
+      "de": "zum Frühstück",
+      "emoji": "🥐",
+      "cat": "words"
+    },
+    {
+      "en": "glass",
+      "de": "Glas",
+      "emoji": "🥛",
+      "cat": "words"
+    },
+    {
+      "en": "orange juice",
+      "de": "Orangensaft",
+      "emoji": "🧃",
+      "cat": "words"
+    },
+    {
+      "en": "best",
+      "de": "beste (r, s)",
+      "emoji": "🏆",
+      "cat": "words"
+    },
+    {
+      "en": "friend",
+      "de": "Freund/in",
+      "emoji": "🧑‍🤝‍🧑",
+      "cat": "words",
+      "example": "They are friends.",
+      "exampleDe": "Sie sind Freunde."
+    },
+    {
+      "en": "Goodbye.",
+      "de": "Auf Wiedersehen.",
+      "emoji": "👋",
+      "cat": "words"
+    },
+    {
+      "en": "part",
+      "de": "Teil",
+      "emoji": "🧩",
+      "cat": "words"
+    },
+    {
+      "en": "come",
+      "de": "kommen",
+      "cat": "words"
+    },
+    {
+      "en": "city",
+      "de": "Stadt; Innenstadt",
+      "emoji": "🏙️",
+      "cat": "words",
+      "example": "London is a city.",
+      "exampleDe": "London ist eine Stadt."
+    },
+    {
+      "en": "meet",
+      "de": "treffen; sich treffen",
+      "emoji": "🤝",
+      "cat": "words"
+    },
+    {
+      "en": "nice",
+      "de": "schön; nett",
+      "emoji": "😊",
+      "cat": "words"
+    },
+    {
+      "en": "child (pl children)",
+      "de": "Kind",
+      "emoji": "🧒",
+      "cat": "words",
+      "example": "This is a child, these are children.",
+      "exampleDe": "Das ist ein Kind, das sind Kinder."
+    },
+    {
+      "en": "walk",
+      "de": "gehen",
+      "emoji": "🚶",
+      "cat": "words"
+    },
+    {
+      "en": "down",
+      "de": "hinunter",
+      "emoji": "⬇️",
+      "cat": "words"
+    },
+    {
+      "en": "street",
+      "de": "Straße",
+      "emoji": "🛣️",
+      "cat": "words"
+    },
+    {
+      "en": "some",
+      "de": "einige, ein paar; etwas",
+      "cat": "words"
+    },
+    {
+      "en": "live",
+      "de": "leben, wohnen",
+      "emoji": "🏡",
+      "cat": "words"
+    },
+    {
+      "en": "perfect",
+      "de": "perfekt",
+      "emoji": "💯",
+      "cat": "words",
+      "example": "This is a perfect place to live in.",
+      "exampleDe": "Das ist ein perfekter Ort zum Wohnen."
+    },
+    {
+      "en": "place",
+      "de": "Ort; Platz",
+      "emoji": "📍",
+      "cat": "words",
+      "example": "This is a perfect place to live in.",
+      "exampleDe": "Das ist ein perfekter Ort zum Wohnen."
+    },
+    {
+      "en": "stay",
+      "de": "bleiben; wohnen",
+      "cat": "words"
+    },
+    {
+      "en": "not",
+      "de": "nicht",
+      "cat": "words"
+    },
+    {
+      "en": "far",
+      "de": "weit",
+      "cat": "words"
+    },
+    {
+      "en": "away",
+      "de": "weg",
+      "cat": "words"
+    },
+    {
+      "en": "so",
+      "de": "deshalb, daher",
+      "cat": "words"
+    },
+    {
+      "en": "all",
+      "de": "alle, alles",
+      "cat": "words"
+    },
+    {
+      "en": "their",
+      "de": "ihr(e)",
+      "cat": "words"
+    },
+    {
+      "en": "pet",
+      "de": "Haustier",
+      "emoji": "🐾",
+      "cat": "words",
+      "example": "This is Rajiv's pet Ruby.",
+      "exampleDe": "Das ist Rajivs Haustier Ruby."
+    },
+    {
+      "en": "really",
+      "de": "wirklich",
+      "cat": "words"
+    },
+    {
+      "en": "want",
+      "de": "wollen",
+      "cat": "words"
+    },
+    {
+      "en": "them",
+      "de": "sie, ihnen",
+      "cat": "words",
+      "example": "They are my friends. Do you want to meet them?",
+      "exampleDe": "Das sind meine Freunde. Willst du sie kennenlernen?"
+    },
+    {
+      "en": "What do you think?",
+      "de": "Was hältst du davon?",
+      "emoji": "💬",
+      "cat": "phrases"
+    },
+    {
+      "en": "Act out the dialogue.",
+      "de": "Spielt den Dialog nach.",
+      "emoji": "🎭",
+      "cat": "phrases"
+    },
+    {
+      "en": "Listen to the chant and say it.",
+      "de": "Höre dir den Sprechgesang an und sage ihn.",
+      "emoji": "👂",
+      "cat": "phrases"
+    },
+    {
+      "en": "Make your own chant.",
+      "de": "Mache deinen eigenen Sprechgesang.",
+      "emoji": "🎤",
+      "cat": "phrases"
+    },
+    {
+      "en": "Read about …",
+      "de": "Lies über …",
+      "emoji": "📖",
+      "cat": "phrases"
+    },
+    {
+      "en": "Listen to the song.",
+      "de": "Höre dir das Lied an.",
+      "emoji": "🎧",
+      "cat": "phrases"
+    },
+    {
+      "en": "Then sing along.",
+      "de": "Singe dann mit.",
+      "emoji": "🎶",
+      "cat": "phrases"
+    },
+    {
+      "en": "What about you?",
+      "de": "Und du?",
+      "emoji": "💬",
+      "cat": "phrases"
+    }
   ]
 }

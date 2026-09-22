@@ -13,7 +13,9 @@ Epic 5 vollständig (Runden-Engine, Fortschrittsanzeige, SRS Version 2 mit Leech
 Neu dazu: Aussprache über die Web Speech API an jedem englischen Wort, dazu der Hörmodus
 als fünftes Spiel mit den Stufen „Zuordnen" und „Diktat".
 
-Offen: WQ-6.3 und WQ-6.4, Epic 7 bis 10.
+Dazu WQ-6.3: Beispielsätze im Schema und der Modus Lückensatz.
+
+Offen: WQ-6.4, Epic 7 bis 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -234,10 +236,10 @@ Der Rundenabschluss-Bonus ist bewusst leistungsunabhängig, damit auch eine Rund
 
 **Akzeptanz:**
 
-- [ ] Schema-Erweiterung um `example` und `exampleDe`, beide optional, README aktualisiert.
-- [ ] Neuer Modus "Lückensatz": Satz mit Lücke, Auswahl oder Eingabe des fehlenden Worts.
-- [ ] Modus erscheint nur, wenn genügend Wörter der Auswahl einen Beispielsatz haben.
-- [ ] Beispielsätze werden in der Vokabelansicht angezeigt, auch ohne den Spielmodus.
+- [x] Schema-Erweiterung um `example` und `exampleDe`, beide optional, README aktualisiert.
+- [x] Neuer Modus "Lückensatz": Satz mit Lücke, Auswahl oder Eingabe des fehlenden Worts.
+- [x] Modus erscheint nur, wenn genügend Wörter der Auswahl einen Beispielsatz haben.
+- [x] Beispielsätze werden in der Vokabelansicht angezeigt, auch ohne den Spielmodus.
 
 **Abhängigkeiten:** keine, profitiert von WQ-5.4.
 

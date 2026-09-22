@@ -2355,3 +2355,98 @@ body.overlay-offen {
     font-size: .88rem;
     white-space: nowrap;
 }
+
+/* ═══════════════════════════════════════════════
+   LÜCKENSATZ
+═══════════════════════════════════════════════ */
+.cloze-lead {
+    text-align: center;
+    font-weight: 800;
+    color: #667;
+    margin-bottom: 10px;
+}
+
+.cloze-sentence {
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.cloze-gap {
+    display: inline-block;
+    min-width: 70px;
+    padding: 2px 12px;
+    margin: 0 3px;
+    border-bottom: 4px solid var(--purple);
+    background: #f7f0fb;
+    border-radius: var(--r-mini) var(--r-mini) 0 0;
+    color: var(--purple);
+    font-weight: 900;
+}
+
+.cloze-translation {
+    text-align: center;
+    color: #778;
+    font-size: .95rem;
+    margin-bottom: 18px;
+}
+
+#cloze-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 560px;
+    margin-inline: auto;
+}
+
+@media (max-width: 480px) {
+    #cloze-choices {
+        grid-template-columns: 1fr;
+    }
+}
+
+.badge-cloze {
+    background: var(--purple);
+}
+
+.btn-cloze {
+    background: var(--purple);
+    color: #fff;
+}
+
+.menu-card.c-cloze {
+    border-color: var(--purple);
+}
+
+.tab-btn[data-tab="cloze"] {
+    border-color: var(--purple);
+    color: #555;
+}
+
+.tab-btn.active[data-tab="cloze"] {
+    background: var(--purple);
+    color: #fff;
+}
+
+/* Beispielsatz in der Vokabelkarte. */
+.v-example {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #dfe7df;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: .82rem;
+    line-height: 1.35;
+}
+
+.v-example-en {
+    font-weight: 700;
+    color: #3f5a4a;
+}
+
+.v-example-de {
+    color: #8a9a8a;
+}

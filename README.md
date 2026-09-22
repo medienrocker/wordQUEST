@@ -75,6 +75,8 @@ installierte Geräte ihre alte Fassung.
 | `words[].emoji` | optional | Ein Emoji als Visualisierung |
 | `words[].img` | optional | URL zu einem Bild. Hat Vorrang vor `emoji` |
 | `words[].cat` | optional | Kategorie-Key (für Filter). Ohne Angabe → `"default"` |
+| `words[].example` | optional | Beispielsatz auf Englisch. Speist den Modus **Lückensatz** |
+| `words[].exampleDe` | optional | Übersetzung des Beispielsatzes |
 
 ### Wichtige Regeln
 
@@ -82,6 +84,11 @@ installierte Geräte ihre alte Fassung.
 - **Bilder werden in ein festes Quadrat gezwungen** (via `object-fit: contain`). Egal ob Hoch-, Quer- oder Quadratformat: das Seitenverhältnis bleibt erhalten, es wird nichts abgeschnitten.
 - **Bild-URLs sollten HTTPS** sein, sonst blockiert der Browser sie (Mixed Content).
 - **Kategorien sind optional.** Ohne Kategorien wird in der Vokabelliste nur der „Alle"-Filter gezeigt.
+- **Beispielsätze lohnen sich.** Kommt das Wort im Satz wörtlich vor, entsteht daraus
+  automatisch eine Lückensatz-Aufgabe. Steht im Satz nur eine gebeugte Form (`chase`
+  gegen `chasing`, `friend` gegen `friends`), wird der Eintrag für diesen Modus still
+  übersprungen. Der Satz erscheint trotzdem in der Vokabelansicht.
+- Der Modus **Lückensatz** erscheint erst, wenn die Auswahl mindestens 4 solcher Wörter hat.
 - **Mindestens 4 Einträge** empfohlen (für Quiz mit 4 Antwortoptionen). Bei weniger wird die Auswahl automatisch verkleinert.
 
 ---
