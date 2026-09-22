@@ -244,8 +244,10 @@ function wq_csrf_gueltig(?string $token): bool
 function wq_verlange_csrf(): void
 {
     if (!wq_csrf_gueltig($_POST['csrf'] ?? null)) {
+        error_log('wordQUEST: CSRF-Pruefung fehlgeschlagen auf ' . ($_SERVER['REQUEST_URI'] ?? '?'));
         http_response_code(403);
-        exit('Sitzung abgelaufen. Bitte die Seite neu laden.');
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('Sitzung abgelaufen. Bitte die Seite neu laden und erneut anmelden.');
     }
 }
 

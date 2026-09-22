@@ -23,8 +23,21 @@ if (wq_ist_angemeldet()) {
 
 $fehler = '';
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    /* Anmeldeversuche werden protokolliert: Benutzername und Ergebnis, nie
+       das Passwort. Das ist bei einem Admincenter ohnehin guter Brauch und
+       beantwortet außerdem die Frage, ob eine Anfrage überhaupt bis hierher
+       kommt oder schon vorher abgefangen wird. */
+    $benutzer = trim((string) ($_POST['benutzer'] ?? ''));
+    error_log(sprintf('wordQUEST Anmeldung: POST eingegangen, benutzer=%s, csrf=%s',
+        $benutzer !== '' ? $benutzer : '(leer)',
+        wq_csrf_gueltig($_POST['csrf'] ?? null) ? 'gueltig' : 'UNGUELTIG'));
+
     wq_verlange_csrf();
-    $ergebnis = wq_login(trim((string) ($_POST['benutzer'] ?? '')), (string) ($_POST['passwort'] ?? ''));
+    $ergebnis = wq_login($benutzer, (string) ($_POST['passwort'] ?? ''));
+    error_log(sprintf('wordQUEST Anmeldung: benutzer=%s, ergebnis=%s',
+        $benutzer !== '' ? $benutzer : '(leer)',
+        !empty($ergebnis['ok']) ? 'erfolgreich' : 'abgewiesen (' . ($ergebnis['fehler'] ?? '') . ')'));
+
     if (!empty($ergebnis['ok'])) {
         wq_umleiten('dashboard.php');
     }
