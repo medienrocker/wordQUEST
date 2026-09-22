@@ -56,8 +56,17 @@ require __DIR__ . '/kopf.php';
   </form>
 
   <p class="hinweis">
-    Konten werden ausschließlich über die Kommandozeile angelegt:
-    <code>php scripts/admin-anlegen.php anlegen &lt;name&gt; superadmin</code>
+    Konten werden ausschließlich über die Kommandozeile angelegt und geändert.
+    Auf diesem Server braucht es dafür den vollen Pfad zur Plesk-PHP, ein
+    blankes <code>php</code> ist die System-PHP ohne SQLite-Treiber.
+  </p>
+  <p class="hinweis">
+    Neues Konto:<br />
+    <code>sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php scripts/admin-anlegen.php anlegen &lt;name&gt; superadmin</code>
+  </p>
+  <p class="hinweis">
+    Passwort ändern oder vergessen:<br />
+    <code>sudo -u bs_vps-user -H /opt/plesk/php/8.4/bin/php scripts/admin-anlegen.php passwort &lt;name&gt;</code>
   </p>
 </div>
 <?php require __DIR__ . '/fuss.php'; ?>

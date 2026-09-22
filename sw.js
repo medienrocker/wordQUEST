@@ -4,7 +4,7 @@
    Nur wenn sich diese Datei unterscheidet, bemerkt der Browser überhaupt
    eine neue Fassung und der Update-Hinweis in index.html erscheint.
 */
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const CACHE_NAME = `wordquest-static-${CACHE_VERSION}`;
 const ASSETS = ['./index.html', './style.css', './wordQUEST_icon.png', './favicon.ico', './manifest.webmanifest'];
 
@@ -62,6 +62,12 @@ self.addEventListener('fetch', (event) => {
   if (LOKAL) return;
 
   const path = url.pathname;
+
+  // Admincenter und API gehören NICHT zur Lernapp. Ohne diese Zeile fängt der
+  // Worker die Navigation zu /admin/ ab und liefert die zwischengespeicherte
+  // index.html der Lernapp aus, also die falsche Seite. Real aufgetreten:
+  // Der Aufruf von /admin/ zeigte die Vokabelapp statt der Anmeldung.
+  if (path.startsWith('/admin') || path.startsWith('/api/')) return;
 
   // Wortlisten und PHP immer frisch aus dem Netz, damit neue Listen sofort
   // sichtbar sind.
