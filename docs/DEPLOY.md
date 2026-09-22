@@ -157,8 +157,22 @@ auf UTF-8 stellen.
 
 ## Was nicht im Repo liegt
 
-`img/` (lokales Bildmaterial, die ausgelieferten Bilder liegen auf `img.bildungssprit.de`),
-`index2.html` und `_RAW/` sind in `.gitignore` und landen damit nie auf dem Server.
+`img/`, `index2.html` und `_RAW/` sind in `.gitignore` und landen damit nie auf
+dem Server.
+
+**Achtung bei `img/auto/`.** Dort legt die Bilderverwaltung des Admincenters
+(WQ-7.5) die hochgeladenen Bilder ab. Der Ordner entsteht auf dem Server und
+ist durch `img/` mit ausgeschlossen, ein `git pull` fasst ihn also nie an. Das
+ist so gewollt, bedeutet aber: **`img/auto/` gehört in die Sicherung**, genau
+wie `private/`. Ohne ihn zeigen die betroffenen Vokabeln nach einer
+Wiederherstellung wieder nur den Anfangsbuchstaben im Kreis.
+
+```bash
+cp -a "$D/httpdocs/img/auto" /pfad/zur/sicherung/
+```
+
+Der Ordner muss `bs_vps-user` gehören, sonst kann PHP nicht hineinschreiben.
+`scripts/deploy.sh` setzt das beim nächsten Lauf ohnehin mit.
 
 ## Was im Repo liegt, aber nicht öffentlich sein darf
 

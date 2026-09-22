@@ -59,8 +59,9 @@ und zugeordnet. Ohne Kopfzeile gilt: erste Spalte englisch, zweite deutsch.
 Alles läuft anschließend durch dieselbe Prüfung wie eine JSON-Datei und landet
 als Einreichung. Erst die Freigabe macht eine Liste in der App sichtbar.
 
-**Fotos von Buchseiten** sind noch nicht möglich, siehe WQ-9.5 in der
-[Roadmap](docs/ROADMAP.md).
+**Fotos von Buchseiten** gehen im Admincenter unter **Foto**. Die Texterkennung
+läuft im Browser, das Foto wird nicht hochgeladen. Nach dem Erkennen steht die
+Tabelle zum Korrigieren bereit, erst die bestätigte Fassung wird übernommen.
 
 ---
 
@@ -143,11 +144,24 @@ Beim Hinzufügen neuer Listen lokal: auch `wordlists/index.json` aktualisieren (
 
 ---
 
-## Spätere Erweiterung: Admincenter mit Login
+## Admincenter
 
-Aktuell: Wortlisten kommen über das Repo auf den Server.
-Geplant: Web-UI mit Login zum Hochladen, Bearbeiten und Freigeben der JSON-Dateien,
-dazu ein Postfach für Einreichungen von Lehrkräften. Siehe [docs/ROADMAP.md](docs/ROADMAP.md).
+Erreichbar unter `/admin/`, Zugänge richtet der Betreiber über die Kommandozeile
+ein. Vier Bereiche:
+
+| Bereich | Wofür |
+|---------|-------|
+| **Übersicht** | Anonyme Nutzungszahlen, dazu die Wörter mit den meisten Fehlern |
+| **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben |
+| **Foto** | Foto einer Wortschatzseite im Browser erkennen und als Einreichung übernehmen |
+| **Bilder** | Bilder zu Vokabeln hochladen und zuordnen, mit Arbeitsliste "ohne Visualisierung" |
+
+Hochgeladene Bilder werden serverseitig nach WebP mit 256 Pixel Kantenlänge neu
+erzeugt und liegen in `img/auto/`. Der Ordner ist nicht im Repo und gehört in
+die Sicherung, siehe [docs/DEPLOY.md](docs/DEPLOY.md).
+
+Offen bleibt das Postfach für Einreichungen von Lehrkräften, siehe
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 **Wichtig dabei:** Eingereichte Dateien dürfen *nicht* direkt in `wordlists/` landen.
 Der Ordner liegt im Docroot, wird von `index.php` per `glob()` gelesen und wäre damit

@@ -290,3 +290,66 @@ input[type="text"]:focus-visible, textarea:focus-visible {
     outline: 3px solid var(--gruen);
     outline-offset: 1px;
 }
+
+/* ─── Bilderverwaltung ─── */
+select {
+    font: inherit;
+    padding: 10px 12px;
+    border: 2px solid var(--linie);
+    border-radius: var(--radius);
+    background: #fff;
+    max-width: 520px;
+    width: 100%;
+}
+
+select:focus-visible {
+    outline: 3px solid var(--gruen);
+    outline-offset: 1px;
+}
+
+form.reihe {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+form.reihe input[type="file"] {
+    max-width: 240px;
+    padding: 6px;
+    font-size: .82rem;
+}
+
+.bildraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+}
+
+.bildkachel {
+    margin: 0;
+    text-align: center;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    padding: 10px;
+    background: var(--grund);
+}
+
+.bildkachel img {
+    width: 100%;
+    max-width: 120px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    background: #fff;
+    border-radius: var(--radius);
+}
+
+.bildkachel figcaption {
+    font-size: .85rem;
+    font-weight: 600;
+    margin: 8px 0;
+    word-break: break-word;
+}
+
+.bildkachel small { font-weight: 400; color: #6c7a6c; }

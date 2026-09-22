@@ -266,6 +266,48 @@ braucht mehrere Gigabyte und eine Grafikkarte. Auf einer geteilten Plesk-Box
 mit weiteren Auftritten ist das keine Option. Gebraucht wird ohnehin nur OCR,
 und die ist klein genug für den Browser.
 
+## Bilderverwaltung, Stand nach WQ-7.5
+
+**Die hochgeladenen Bytes werden nie ausgeliefert.** GD erzeugt aus dem Bild
+ein neues WebP, und nur dieses wird gespeichert. Das ist der entscheidende
+Punkt, denn er macht die ganze Klasse der Polyglot-Angriffe gegenstandslos:
+Was hinter oder zwischen den Bilddaten steckt, überlebt das Neucodieren nicht.
+Getestet mit einem gültigen PNG, an das Fremddaten angehängt wurden, sie waren
+im Ergebnis restlos verschwunden.
+
+**Der Typ kommt aus dem Inhalt, nicht aus der Endung.** `finfo` liest die
+Datei, erlaubt sind JPEG, PNG, WebP und GIF. Eine Textdatei mit der Endung
+`.jpg` wird abgewiesen.
+
+**SVG ist ausgeschlossen, auch nach Typprüfung.** SVG ist ein Dokumentformat
+mit Skriptfähigkeit und würde beim direkten Aufruf im Ursprung der App laufen.
+Damit ist Punkt 6 der Liste weiter unten erledigt.
+
+**Der Dateiname kommt vom Server.** Gebildet wird er aus dem englischen Wort,
+reduziert auf Kleinbuchstaben, Ziffern und Bindestriche, auf 40 Zeichen
+gekürzt, bei Namensgleichheit durchnummeriert. Ein Wunschname wie
+`../../.htaccess` wird dadurch zu `htaccess.webp` und landet zwingend in
+`img/auto/`. Auch der Listenname und der Name beim Löschen laufen durch
+`basename()`.
+
+**Zwei Obergrenzen gegen Dekompressionsbomben:** 6 MB Eingangsgröße und
+40 Megapixel. Die zweite ist die wichtigere, denn ein kleines PNG kann sich
+beim Entpacken auf Gigabyte ausdehnen. Geprüft wird vor dem Laden, mit
+`getimagesize`.
+
+**Gelöscht wird nur, worauf keine Liste mehr zeigt.** Vor dem Löschen sucht
+der Server die Adresse der Datei in allen Wortlisten. Das verhindert die
+stille Bildleiche in einer veröffentlichten Liste.
+
+**Die App nimmt weiterhin nur Bilder aus dem eigenen Ursprung oder von
+`img.bildungssprit.de`.** `safeImgUrl()` weist `javascript:`, `data:` und
+fremde Hosts ab. Für den eigenen Ursprung ist die Prüfung auf `https`
+entfallen, weil eine gleichherkünftige Datei ohnehin so vertrauenswürdig ist
+wie die Seite selbst und sie sonst beim lokalen Entwickeln unsichtbar wäre.
+
+**`img/auto/` liegt nicht im Repository.** Die Dateien entstehen nur auf dem
+Server und gehören deshalb in die Sicherung, siehe `DEPLOY.md`.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.
@@ -275,7 +317,7 @@ Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehr
 3. **Freigabe-Workflow vom Auslieferungsverzeichnis trennen.** `index.php` listet mit `glob('*.json')` alles, was im Ordner liegt. Schreibt das Postfach dorthin, ist jede Einreichung sofort live. Einreichungen gehören in eine Quarantäne, die `index.php` nicht scannt.
 4. **Schema- und Größenprüfung serverseitig**, mit `json_decode` und `JSON_THROW_ON_ERROR`, danach Strukturprüfung gegen das Wortlistenschema.
 5. **Rate Limiting am öffentlichen Endpunkt.** Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Zähler pro Adresse. Die zur Begrenzung genutzte Adresse nicht dauerhaft speichern.
-6. **SVG gehört nicht auf die Positivliste erlaubter Bildformate**, auch nicht nach Typprüfung. SVG ist skriptfähig und wird bei direktem Aufruf in der App-Origin ausgeführt. Die geplante Umwandlung nach WebP löst das, solange sie verpflichtend ist.
+6. ~~**SVG gehört nicht auf die Positivliste erlaubter Bildformate.**~~ **Erledigt mit WQ-7.5:** SVG wird abgewiesen, und jedes angenommene Bild wird verpflichtend nach WebP neu codiert.
 7. **`'unsafe-inline'` aus der CSP entfernen.** Dafür muss das Anwendungsskript aus `index.html` in eine eigene Datei wandern und die `onclick`-Attribute müssen durch `addEventListener` ersetzt werden. Das Muster dafür ist im Code bereits vorhanden.
 
 ---

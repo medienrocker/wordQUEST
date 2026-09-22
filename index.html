@@ -1322,8 +1322,12 @@ const IMG_ALLOWED_HOSTS = new Set(['img.bildungssprit.de']);
 function safeImgUrl(raw) {
   try {
     const url = new URL(String(raw), location.href);
+    // Eigene Bilder (img/auto/… aus dem Admincenter) sind so vertrauenswürdig
+    // wie die Seite selbst und dürfen deshalb auch über http laufen, sonst
+    // wären sie beim lokalen Entwickeln unsichtbar.
+    if (url.origin === location.origin) return url.href;
     if (url.protocol !== 'https:') return null;
-    if (url.hostname !== location.hostname && !IMG_ALLOWED_HOSTS.has(url.hostname)) return null;
+    if (!IMG_ALLOWED_HOSTS.has(url.hostname)) return null;
     return url.href;
   } catch {
     return null;

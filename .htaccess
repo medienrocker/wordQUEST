@@ -12,6 +12,11 @@ RedirectMatch 404 (?i)/\.(git|env|ht)
 RedirectMatch 404 (?i)^/(docs|scripts|_RAW)/
 # Die Bibliothek der API wird nur eingebunden, nie direkt aufgerufen.
 RedirectMatch 404 (?i)^/api/lib/
+# Im Bildordner darf nur Bild liegen. Die Bilderverwaltung speichert ohnehin
+# ausschliesslich servergenerierte .webp-Namen, das hier ist die zweite Reihe:
+# Selbst wenn dort je etwas anderes landete, wird es nicht ausgefuehrt und
+# nicht als Dokument ausgeliefert.
+RedirectMatch 404 (?i)^/img/.*\.(php\d?|phtml|phar|pht|shtml|html?|svg|xml|js)$
 <FilesMatch "(?i)\.(ps1|md|bak|orig|log|sql|db|sqlite)$">
   Require all denied
 </FilesMatch>

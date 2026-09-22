@@ -21,7 +21,12 @@ Dazu WQ-7.3: Anmeldung mit Rollen, Admincenter mit Statistikübersicht.
 
 Dazu WQ-7.4: Wortlistenverwaltung mit Upload, Prüfung, Vorschau und Freigabe.
 
-Offen: WQ-6.4, WQ-7.5, Epic 8 bis 10.
+Dazu WQ-7.4b: Excel, CSV, eingefügte Tabellen und WQ-9.5: Foto einer Wortschatzseite,
+im Browser erkannt, als Einreichung übernommen.
+
+Dazu WQ-7.5: Bilderverwaltung im Admincenter.
+
+Offen: WQ-6.4, Epic 8, Epic 9 ohne WQ-9.5, Epic 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -330,12 +335,37 @@ Der letzte Punkt ist der wertvollste: Er zeigt dir, welche Vokabeln durchgängig
 
 ### WQ-7.5, Bilder verwalten
 
+**Umgesetzt.** `admin/bilder.php` mit `api/lib/bilder.php`.
+
 **Akzeptanz:**
 
-- [ ] Upload einzelner Bilder, Zuordnung zu einer Vokabel.
-- [ ] Serverseitige Prüfung des echten Bildtyps, nicht nur der Dateiendung. Umwandlung nach WebP, Begrenzung auf 256 Pixel Kantenlänge.
-- [ ] Übersicht "Vokabeln ohne Visualisierung" als Arbeitsliste.
-- [ ] Löschen entfernt Datei und Verweis gemeinsam.
+- [x] Upload einzelner Bilder, Zuordnung zu einer Vokabel.
+- [x] Serverseitige Prüfung des echten Bildtyps, nicht nur der Dateiendung. Umwandlung nach WebP, Begrenzung auf 256 Pixel Kantenlänge.
+- [x] Übersicht "Vokabeln ohne Visualisierung" als Arbeitsliste.
+- [x] Löschen entfernt Datei und Verweis gemeinsam.
+
+**So arbeitet die Seite:** Oben wird eine Wortliste gewählt. Darunter stehen
+alle Wörter ohne Bild und ohne Emoji mit je einem Uploadfeld, das ist die
+Arbeitsliste. Es folgen die Wörter mit Bild als Kachelraster, dort lässt sich
+eine Zuordnung wieder lösen. Ganz unten liegen alle abgelegten Dateien, dort
+wird gelöscht.
+
+**Wichtige Entscheidungen:**
+
+- **Die hochgeladenen Bytes werden nie ausgeliefert.** GD erzeugt aus dem Bild
+  ein neues WebP. Damit verschwinden EXIF-Reste, eingebettete Fremddaten und
+  Polyglot-Konstruktionen restlos, unabhängig davon, was jemand hochlädt.
+- **SVG ist ausgeschlossen.** SVG ist ein Dokumentformat mit Skriptfähigkeit
+  und würde beim direkten Aufruf im Ursprung der App laufen.
+- **Der Dateiname kommt vom Server**, gebildet aus dem englischen Wort, auf
+  Kleinbuchstaben, Ziffern und Bindestriche reduziert und bei Namensgleichheit
+  durchnummeriert.
+- **Emoji vor Bild.** Die Arbeitsliste zeigt nur Wörter ohne beides. Ein Emoji
+  kostet keine Ladezeit und trägt bei den meisten Alltagswörtern genauso weit.
+- **Gelöscht wird nur, worauf keine Liste mehr zeigt.** Vor dem Löschen prüft
+  der Server alle Wortlisten auf die Adresse der Datei.
+- **`img/auto/` liegt nicht im Repository** und gehört deshalb in die Sicherung
+  des Servers, siehe `DEPLOY.md`.
 
 **Abhängigkeiten:** WQ-7.4. **Verwandt:** Epic 9.
 
