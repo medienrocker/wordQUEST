@@ -44,6 +44,7 @@
     --orange-dark: #b45309;
     --red-dark: #c62828;
     --yellow-dark: #8a6100;
+    --lime-dark: #4a7c1f;
     --bg: #f0faf0;
     --card: #ffffff;
     --text: #2e2e2e;
@@ -83,7 +84,10 @@ body {
 
 /* ─── HEADER ─── */
 header {
-    background: linear-gradient(135deg, var(--green), var(--lime));
+    /* Dunklere Stufen, weil die Schrift darauf weiss ist. Auf dem hellen
+       Verlauf erreichte der App-Name nur 2,78:1 und der Untertitel 2,10:1.
+       Der Charakter bleibt grün, er wird nur satter. */
+    background: linear-gradient(135deg, var(--green-dark), var(--lime-dark));
     color: white;
     text-align: center;
     padding: 28px 20px 20px;
@@ -356,7 +360,7 @@ header p {
 #wordlist-meta {
     flex-basis: 100%;
     text-align: center;
-    color: #888;
+    color: #5c5c5c;
     font-weight: 500;
     font-size: .9rem;
     margin-top: 2px;
@@ -395,11 +399,13 @@ header p {
     font-family: 'Nunito', sans-serif;
     font-size: .95rem;
     font-weight: 800;
-    padding: 6px 14px;
+    /* Mindestens 44 Pixel hoch, sonst trifft ein Kinderfinger daneben. */
+    padding: 11px 16px;
+    min-height: 44px;
     border-radius: var(--r-pill);
     border: none;
     background: transparent;
-    color: #888;
+    color: #5c5c5c;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -412,9 +418,11 @@ header p {
 }
 
 #direction-bar .dir-btn.active {
-    background: var(--green);
+    /* Dunkles Grün, weil weisse Schrift darauf liegt: Auf dem hellen Grün
+       erreicht sie nur 2,78:1 und verfehlt die AA-Schwelle deutlich. */
+    background: var(--green-dark);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, .35);
+    box-shadow: 0 2px 8px rgba(46, 125, 50, .35);
 }
 
 #direction-bar .dir-btn .flag {
@@ -459,7 +467,8 @@ header p {
 }
 
 .score-item span {
-    color: var(--green);
+    /* Zahlen auf Weiss: das helle Grün erreicht nur 2,78:1. */
+    color: var(--green-dark);
     font-size: 1.25rem;
 }
 
@@ -495,10 +504,12 @@ header p {
     border: none;
     background: white;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    font-size: 1rem;
+    /* 44 Pixel sind die Untergrenze für einen Finger. Die Vorgängergrösse
+       von 32 traf auf einem kleinen Telefon oft daneben. */
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    font-size: 1.05rem;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, .14);
     transition: transform .15s ease;
@@ -527,7 +538,7 @@ header p {
     text-align: center;
     font-weight: 800;
     font-size: .92rem;
-    color: #6b7d6b;
+    color: #5d6e5d;
     margin-bottom: 8px;
 }
 
@@ -561,7 +572,7 @@ header p {
 .prog-value {
     font-size: .88rem;
     font-weight: 700;
-    color: #6b7d6b;
+    color: #5d6e5d;
     white-space: nowrap;
 }
 
@@ -812,6 +823,14 @@ nav {
 }
 
 .menu-card {
+    /* Echte Schaltflächen statt anklickbarer Kästen. Vorher waren das divs
+       mit onclick: mit der Maus bedienbar, mit der Tastatur nicht, und ein
+       Screenreader kündigte sie gar nicht erst als bedienbar an. Damit war
+       das Hauptmenü für einen Teil der Kinder unerreichbar. */
+    font: inherit;
+    color: inherit;
+    width: 100%;
+    display: block;
     background: white;
     border-radius: var(--r-card);
     padding: 30px 20px;
@@ -948,23 +967,28 @@ nav {
     transform: translateY(0);
 }
 
+/* Die Hauptknöpfe tragen weisse Schrift und brauchen deshalb die dunklen
+   Farbvarianten. Auf den hellen Palettenfarben erreichte die Schrift nur
+   2,16:1 bis 3,68:1 und lag damit durchweg unter der AA-Schwelle von 4,5:1.
+   Betroffen waren sieben von acht Regeln, darunter jeder Startknopf und die
+   Buchstabenkacheln von Word Scramble. */
 .btn-green {
-    background: var(--green);
+    background: var(--green-dark);
     color: white;
 }
 
 .btn-blue {
-    background: var(--blue);
+    background: var(--blue-dark);
     color: white;
 }
 
 .btn-orange {
-    background: var(--orange);
+    background: var(--orange-dark);
     color: white;
 }
 
 .btn-red {
-    background: var(--red);
+    background: var(--red-dark);
     color: white;
 }
 
@@ -1205,7 +1229,10 @@ img.word-visual {
 }
 
 .word-visual.is-fallback {
-    background: linear-gradient(135deg, var(--green), var(--lime));
+    /* Dunklere Stufen, weil die Schrift darauf weiss ist. Auf dem hellen
+       Verlauf erreichte der App-Name nur 2,78:1 und der Untertitel 2,10:1.
+       Der Charakter bleibt grün, er wird nur satter. */
+    background: linear-gradient(135deg, var(--green-dark), var(--lime-dark));
     color: white;
     border-radius: 50%;
     font-weight: 900;
@@ -1271,7 +1298,7 @@ img.word-visual {
 #quiz-hint {
     text-align: center;
     font-size: 1rem;
-    color: #888;
+    color: #5c5c5c;
     margin-bottom: 20px;
 }
 
@@ -1423,7 +1450,7 @@ img.word-visual {
 
 #scramble-hint {
     text-align: center;
-    color: #888;
+    color: #5c5c5c;
     font-size: .95rem;
     margin-bottom: 18px;
 }
@@ -1439,7 +1466,7 @@ img.word-visual {
 .letter-tile {
     width: 44px;
     height: 44px;
-    background: var(--orange);
+    background: var(--orange-dark);
     color: white;
     border-radius: var(--r-field);
     display: flex;
@@ -1587,7 +1614,7 @@ img.word-visual {
 .practice-privacy {
     margin-top: 10px;
     font-size: .85rem;
-    color: #888;
+    color: #5c5c5c;
 }
 
 .vocab-toolbar {
@@ -1657,7 +1684,7 @@ img.word-visual {
 
 .filter-btn.active,
 .filter-btn:hover {
-    background: var(--green);
+    background: var(--green-dark);
     color: white;
 }
 
@@ -1731,7 +1758,7 @@ img.word-visual {
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #888;
+    color: #5c5c5c;
     font-weight: 700;
 }
 
@@ -1828,7 +1855,7 @@ img.word-visual {
     display: inline-block;
     font-size: .82rem;
     font-weight: 700;
-    color: #6b7d6b;
+    color: #5d6e5d;
 }
 
 .practice-run-line {
@@ -1868,7 +1895,7 @@ img.word-visual {
     font-family: 'Nunito', sans-serif;
     font-size: .95rem;
     font-weight: 800;
-    background: var(--green);
+    background: var(--green-dark);
     color: #fff;
     border: none;
     border-radius: var(--r-pill);
@@ -1894,7 +1921,7 @@ img.word-visual {
     background: none;
     border: none;
     cursor: pointer;
-    color: #888;
+    color: #5c5c5c;
     padding: 6px 8px;
     border-radius: var(--r-field);
     min-width: 44px;
@@ -2058,7 +2085,9 @@ body.overlay-offen {
     height: 44px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, .75);
-    background: rgba(255, 255, 255, .22);
+    /* Dunkler Schleier statt hellem: Weisse Symbole auf einer aufgehellten
+       Fläche erreichten nur 1,77:1 bis 2,18:1. */
+    background: rgba(0, 0, 0, .22);
     color: #fff;
     font-family: 'Nunito', sans-serif;
     font-size: 1.4rem;
@@ -2142,7 +2171,7 @@ body.overlay-offen {
 
 .help-intro {
     font-size: .92rem;
-    color: #6b7d6b;
+    color: #5d6e5d;
     margin: 6px 0 14px;
 }
 
@@ -2711,4 +2740,67 @@ body.overlay-offen {
 .practice-privacy.warnung {
     color: #8a5300;
     font-weight: 600;
+}
+
+/* ═══════════════ BARRIEREFREIHEIT ═══════════════ */
+
+/* Bewegung vollständig abschalten, wenn das System es verlangt.
+   Es gab schon einzelne Regeln dafür, aber nur an vier Stellen, und bei
+   36 Animationen und Übergängen im Stylesheet ist das eine Lücke. Diese
+   Regel greift für alles, auch für später hinzukommende. */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ─── Lesehilfe ───
+   Kein Zusatzdownload und keine Sonderschrift. Was beim Lesen nachweislich
+   trägt, ist Luft: mehr Abstand zwischen Buchstaben, Wörtern und Zeilen.
+   Eine eigene Schriftart müsste erst geladen werden, und die Zielgruppe hat
+   knappes Datenvolumen. */
+:root[data-lesehilfe="an"] body {
+    letter-spacing: 0.055em;
+    word-spacing: 0.18em;
+    line-height: 1.85;
+}
+
+:root[data-lesehilfe="an"] {
+    font-size: 107%;
+}
+
+:root[data-lesehilfe="an"] p,
+:root[data-lesehilfe="an"] li,
+:root[data-lesehilfe="an"] .v-example-en,
+:root[data-lesehilfe="an"] .v-example-de,
+:root[data-lesehilfe="an"] .cloze-sentence {
+    max-width: 62ch;
+}
+
+/* Kursiv und Grossbuchstaben erschweren das Worterkennen. */
+:root[data-lesehilfe="an"] em,
+:root[data-lesehilfe="an"] i {
+    font-style: normal;
+    font-weight: 700;
+}
+
+:root[data-lesehilfe="an"] [style*="uppercase"],
+:root[data-lesehilfe="an"] .tab-btn,
+:root[data-lesehilfe="an"] th {
+    text-transform: none;
+}
+
+/* Die englischen Wörter selbst bekommen zusätzlich Luft, denn genau dort
+   wird Buchstabe für Buchstabe gelesen. */
+:root[data-lesehilfe="an"] .word-en,
+:root[data-lesehilfe="an"] .v-en,
+:root[data-lesehilfe="an"] .quiz-word,
+:root[data-lesehilfe="an"] .scramble-letters {
+    letter-spacing: 0.09em;
 }

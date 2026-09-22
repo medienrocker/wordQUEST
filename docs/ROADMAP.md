@@ -593,7 +593,17 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
 4. **Arbeitsblätter als PDF** aus jeder Liste erzeugen. Lehrkräfte arbeiten weiterhin viel auf Papier, und der vorhandene `pdf-creator` Skill deckt das ab.
 5. **Herkunftssprachen.** Nicht nur Englisch nach Deutsch, sondern auch Deutsch nach Türkisch, Arabisch, Ukrainisch. Für die Zielgruppe ist der Brückenschlag zur Familiensprache ein echter Mehrwert und ein Alleinstellungsmerkmal.
 6. **Lernstand mitnehmen ohne Konto.** Export und Import des Fortschritts als Datei oder QR-Code, damit ein Kind zwischen Schultablet und Handy wechseln kann.
-7. **Barrierefreiheitspaket.** Legasthenie-Modus mit größerer Laufweite und optionaler Schriftart, vollständige Tastaturbedienung, `prefers-reduced-motion`, Ansagen für Screenreader bei Spielereignissen.
+7. ~~**Barrierefreiheitspaket.**~~ **Umgesetzt.**
+
+   **Das Hauptmenü war mit der Tastatur nicht bedienbar.** Die neun Spielkarten waren `div`-Elemente mit `onclick`: mit der Maus bedienbar, mit der Tastatur nicht, und ein Screenreader kündigte sie gar nicht erst als bedienbar an. Damit war der Einstieg in jedes Spiel für einen Teil der Kinder verschlossen. Jetzt sind es echte Schaltflächen.
+
+   **Kontrast: 7 von 8 Regeln lagen unter der AA-Schwelle.** Weisse Schrift auf den hellen Palettenfarben erreicht 1,63:1 bis 3,68:1, gefordert sind 4,5:1. Betroffen war praktisch jede Hauptschaltfläche, dazu die Buchstabenkacheln von Word Scramble, die Reiterleiste, die Kopfleiste mit dem App-Namen und die Punktezahl. Es gibt jetzt dunkle Varianten der Palette, die überall dort greifen, wo weisse Schrift auf einer Fläche liegt. Gemessen am fertigen Stand: 170 Textelemente geprüft, keines mehr unter der Schwelle.
+
+   **Lesehilfe** statt Legasthenie-Schriftart: mehr Abstand zwischen Buchstaben, Wörtern und Zeilen, etwas grösserer Grundtext, kein Kursiv, keine Grossbuchstaben. Eine eigene Schriftart müsste erst geladen werden, und die Zielgruppe hat knappes Datenvolumen. Die Einstellung bleibt auf dem Gerät.
+
+   **`prefers-reduced-motion`** galt vorher nur an vier Stellen bei 36 Animationen. Jetzt greift eine Regel für alles, auch für später hinzukommende.
+
+   **Ansagen für Screenreader** waren bereits vorhanden: Alle fünf Spielrückmeldungen haben `aria-live`. Ergänzt wurden Mindestgrössen von 44 Pixeln bei den Richtungsknöpfen und dem Würfel.
 8. **Adaptive Schwierigkeit.** Zwei statt vier Antwortoptionen, wenn die Trefferquote einbricht. Zielkorridor 70 bis 80 Prozent Erfolg.
 9. ~~**Vollständiger Offlinebetrieb**~~ **Umgesetzt.** Der Service Worker hält Wortlisten und Bilder in einem eigenen, unversionierten Speicher, der ein Update überlebt. Wortlisten laufen nach "Netz zuerst, Speicher als Rückfall", damit eine frisch freigegebene Liste sofort erscheint; Bilder nach "Speicher zuerst", weil ein Bilddateiname stabil ist und erneutes Laden nur Datenvolumen kostet. Vorher startete die App offline zwar, fand aber keine einzige Vokabel und zeigte nur eine Fehlermeldung. Sie funktionierte damit genau dann nicht, wenn man sie sich gerade nicht leisten kann.
 

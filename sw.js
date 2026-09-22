@@ -18,7 +18,7 @@
    Nur wenn sich diese Datei unterscheidet, bemerkt der Browser überhaupt
    eine neue Fassung und der Update-Hinweis in index.html erscheint.
 */
-const CACHE_VERSION = 'v21';
+const CACHE_VERSION = 'v22';
 const CACHE_NAME = `wordquest-static-${CACHE_VERSION}`;
 const DATEN_CACHE = 'wordquest-daten';
 const ASSETS = ['./index.html', './style.css', './wordQUEST_icon.png', './favicon.ico', './manifest.webmanifest'];

@@ -161,51 +161,51 @@
 <section id="section-menu" class="section active">
   <h2 style="text-align:center; font-size:1.8rem; margin:10px 0 20px;">Wähle ein Spiel! 🎮</h2>
   <div class="menu-grid">
-    <div class="menu-card c-blue" onclick="openTab('quiz')">
+    <button type="button" class="menu-card c-blue" onclick="openTab('quiz')">
       <span class="icon">❓</span>
       <h3>Quiz</h3>
       <p>Wähle die richtige Antwort</p>
-    </div>
-    <div class="menu-card c-purple" onclick="openTab('memory')">
+    </button>
+    <button type="button" class="menu-card c-purple" onclick="openTab('memory')">
       <span class="icon">🃏</span>
       <h3>Memory</h3>
       <p>Finde zusammengehörige Paare</p>
-    </div>
-    <div class="menu-card c-orange" onclick="openTab('scramble')">
+    </button>
+    <button type="button" class="menu-card c-orange" onclick="openTab('scramble')">
       <span class="icon">🔀</span>
       <h3>Word Scramble</h3>
       <p>Bringe die Buchstaben in Ordnung</p>
-    </div>
-    <div class="menu-card c-red" onclick="openTab('spelling')">
+    </button>
+    <button type="button" class="menu-card c-red" onclick="openTab('spelling')">
       <span class="icon">✍️</span>
       <h3>Spelling Bee</h3>
       <p>Schreibe das Wort</p>
-    </div>
-    <div class="menu-card c-cloze" id="menu-card-cloze" onclick="openTab('cloze')" hidden>
+    </button>
+    <button type="button" class="menu-card c-cloze" id="menu-card-cloze" onclick="openTab('cloze')" hidden>
       <span class="icon">📝</span>
       <h3>Lückensatz</h3>
       <p>Das fehlende Wort im Satz finden</p>
-    </div>
-    <div class="menu-card c-listen" id="menu-card-listen" onclick="openTab('listen')" hidden>
+    </button>
+    <button type="button" class="menu-card c-listen" id="menu-card-listen" onclick="openTab('listen')" hidden>
       <span class="icon">🎧</span>
       <h3>Hören</h3>
       <p>Wort anhören und erkennen</p>
-    </div>
-    <div class="menu-card c-teal" onclick="openTab('practice')">
+    </button>
+    <button type="button" class="menu-card c-teal" onclick="openTab('practice')">
       <span class="icon">📈</span>
       <h3>Üben</h3>
       <p>Schwache Vokabeln gezielt trainieren</p>
-    </div>
-    <div class="menu-card c-yellow" onclick="openTab('vocab')">
+    </button>
+    <button type="button" class="menu-card c-yellow" onclick="openTab('vocab')">
       <span class="icon">📚</span>
       <h3>Vokabelliste</h3>
       <p>Alle Wörter auf einen Blick</p>
-    </div>
-    <div class="menu-card c-tafel" id="menu-card-tafel" onclick="openTab('tafel')" hidden>
+    </button>
+    <button type="button" class="menu-card c-tafel" id="menu-card-tafel" onclick="openTab('tafel')" hidden>
       <span class="icon">🏅</span>
       <h3>Ehrentafel</h3>
       <p>Wer hat eine Liste komplett geschafft?</p>
-    </div>
+    </button>
   </div>
 </section>
 
@@ -222,6 +222,14 @@
       <button type="button" class="btn btn-green" id="practice-start-btn" onclick="startPracticeQuiz()">❓ Übungs-Quiz starten</button>
     </div>
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <h3 class="karten-titel">👓 Lesehilfe</h3>
+    <label class="stats-toggle-label">
+      <input type="checkbox" id="lesehilfe-toggle" />
+      <span>Mehr Abstand zwischen Buchstaben und Zeilen</span>
+    </label>
+    <p class="practice-privacy" id="lesehilfe-hinweis"></p>
   </div>
   <div class="card practice-card" id="klasse-karte" style="margin-top:14px;">
     <h3 class="karten-titel">🏫 Mit deiner Klasse üben</h3>
@@ -1258,6 +1266,37 @@ function statsSenden() {
     }).catch(() => {});
   } catch {
     /* Statistik ist Beiwerk, ein Fehler hier darf nichts beeinflussen. */
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LESEHILFE
+
+   Kein Zusatzdownload und keine Sonderschrift. Was beim Lesen nachweislich
+   trägt, ist Luft zwischen Buchstaben, Wörtern und Zeilen. Eine eigene
+   Schriftart müsste erst geladen werden, und die Zielgruppe hat knappes
+   Datenvolumen. Die Einstellung bleibt auf dem Gerät erhalten, auch in der
+   installierten App.
+═══════════════════════════════════════════════ */
+function lesehilfeAn() {
+  try { return localStorage.getItem('wq.lesehilfe') === 'an'; } catch { return false; }
+}
+
+function lesehilfeSetzen(an) {
+  try { localStorage.setItem('wq.lesehilfe', an ? 'an' : 'aus'); } catch {}
+  syncLesehilfe();
+}
+
+function syncLesehilfe() {
+  const an = lesehilfeAn();
+  document.documentElement.setAttribute('data-lesehilfe', an ? 'an' : 'aus');
+  const box = document.getElementById('lesehilfe-toggle');
+  if (box) box.checked = an;
+  const zeile = document.getElementById('lesehilfe-hinweis');
+  if (zeile) {
+    zeile.textContent = an
+      ? 'Buchstaben, Wörter und Zeilen stehen weiter auseinander. Das hilft vielen beim Lesen.'
+      : 'Wenn dir Text zu eng erscheint, schalte das hier ein.';
   }
 }
 
@@ -3669,6 +3708,8 @@ const HILFE = [
       { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
       { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
       { sel: '#stats-toggle', name: 'Anonyme Nutzungsstatistik', text: 'Zählt mit, welche Listen und Spiele genutzt werden. Kein Name, keine Punkte, keine Adresse. Lässt sich unter Üben abschalten.' },
+      { sel: '#lesehilfe-toggle', name: 'Lesehilfe', text: 'Stellt Buchstaben, Wörter und Zeilen weiter auseinander. Das hilft vielen beim Lesen, besonders bei langen englischen Wörtern. Die Einstellung bleibt gespeichert.' },
+      { sel: '#klasse-code', name: 'Klassencode', text: 'Wenn deine Lehrkraft einen Code genannt hat, übst du damit dieselben Wörter wie der Rest der Klasse. Deine Lehrkraft sieht nur die Summe aller, nie dich einzeln.' },
       { sel: '#tafel-toggle', name: 'Ehrentafel', text: 'Wer eine Liste einmal ganz durchspielt, erscheint mit Würfelname und Tier auf der Tafel. Es zählt nur das Durchkommen, nicht die Geschwindigkeit. Übertragen werden Name und Tier, sonst nichts.' },
       { name: 'Keine Lautsprecher zu sehen?', text: 'Dann hat dein Gerät keine englische Stimme installiert. Die App funktioniert trotzdem vollständig, nur eben ohne Ton.' }
     ]
@@ -3768,6 +3809,10 @@ syncTafelKnopf();
 document.getElementById('tafel-toggle')?.addEventListener('change', e => tafelErlaubnisSetzen(e.target.checked));
 ladeTafel();
 syncNetzHinweis();
+
+/* Lesehilfe zuerst, damit die Seite nicht erst gesetzt und dann umspringt. */
+syncLesehilfe();
+document.getElementById('lesehilfe-toggle')?.addEventListener('change', e => lesehilfeSetzen(e.target.checked));
 
 /* Klassenmodus verdrahten. */
 syncKlasseKarte();
