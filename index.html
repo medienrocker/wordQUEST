@@ -312,6 +312,23 @@
   <div id="vocab-grid" class="vocab-grid"></div>
 </section>
 
+<!-- ══════════════ RUNDEN-ABSCHLUSS ══════════════
+     Ersetzt den System-alert(). Eine abgeschlossene Runde ist eine Belohnung
+     und soll sich auch so anfühlen, nicht wie eine Fehlermeldung. -->
+<div id="round-overlay" class="overlay" hidden>
+  <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="round-overlay-title">
+    <div class="overlay-emoji" id="round-overlay-emoji" aria-hidden="true">🎉</div>
+    <div class="overlay-stars" id="round-overlay-stars" aria-hidden="true"></div>
+    <h2 class="overlay-title" id="round-overlay-title"></h2>
+    <p class="overlay-score" id="round-overlay-score"></p>
+    <ul class="overlay-lines" id="round-overlay-lines"></ul>
+    <div class="overlay-actions">
+      <button type="button" class="btn btn-green" id="round-overlay-again">🔄 Nochmal</button>
+      <button type="button" class="btn btn-grey" id="round-overlay-menu">🏠 Menü</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ CREDITS ══════════════ -->
 <footer class="credits">
   <a class="credits-logo" href="https://bildungssprit.de" target="_blank" rel="noopener" aria-label="bildungssprit.de">
@@ -329,6 +346,29 @@
    wordQUEST – Application Script
    © 2026 Created by bildungssprit | Falk Szyba @medienrocker
 ═══════════════════════════════════════════════ */
+
+/* ─────────── Rundungsstil ───────────
+   Erlaubt den direkten Vergleich zwischen der weichen Standardvariante und
+   dem kantigeren bildungssprit-Hausstil, ohne CSS anzufassen:
+     ?design=brand  → 4px überall
+     ?design=weich  → zurück zum Standard
+   Die Wahl wird gemerkt, damit sie auch in der installierten App gilt.
+   Nur diese zwei Werte sind erlaubt, alles andere wird verworfen. */
+(function initDesign() {
+  const ERLAUBT = ['weich', 'brand'];
+  let stil = null;
+  try {
+    const gewaehlt = new URLSearchParams(location.search).get('design');
+    if (ERLAUBT.includes(gewaehlt)) {
+      stil = gewaehlt;
+      localStorage.setItem('wq.design', gewaehlt);
+    } else {
+      stil = localStorage.getItem('wq.design');
+    }
+  } catch {}
+  if (!ERLAUBT.includes(stil)) stil = 'weich';
+  document.documentElement.setAttribute('data-design', stil);
+})();
 
 /* ═══════════════════════════════════════════════
    STATE
@@ -819,15 +859,71 @@ function finishRound() {
   return { roundBonus, runBonus, progress: getRunProgress() };
 }
 
-/* Einheitlicher Abschlusstext für Runden, die noch mit alert() enden. */
-function roundSummary(title, correct, total, done) {
-  const lines = [title, `${correct} von ${total} richtig.`];
+/* ─────────── Runden-Abschluss als Overlay ───────────
+   Vorher ein System-alert(). Der riss die Belohnung aus dem Spiel heraus und
+   sah aus wie eine Fehlermeldung. Jetzt eine Karte im Design der App. */
+let overlayNochmalFn = null;
+let overlayLetzterFokus = null;
+
+function roundOverlayLines(done, extra) {
+  const lines = [];
   if (done) {
-    lines.push(`Runde geschafft: +${done.roundBonus} Punkte.`);
-    if (done.runBonus) lines.push(`Die ganze Liste ist durch: +${done.runBonus} Punkte! 🎉`);
-    lines.push(`${done.progress.seenCount} von ${done.progress.total} Wörtern waren schon dran, ${done.progress.mastered} sitzen sicher.`);
+    lines.push({ icon: '⭐', text: `Runde geschafft: <b>+${done.roundBonus} Punkte</b>` });
+    if (done.runBonus) {
+      lines.push({ icon: '🏆', text: `Die ganze Liste ist durch: <b>+${done.runBonus} Punkte!</b>`, stark: true });
+    }
+    const p = done.progress;
+    lines.push({ icon: '📍', text: `${p.seenCount} von ${p.total} Wörtern waren schon dran` });
+    lines.push({ icon: '✅', text: `${p.mastered} sicher, ${p.almost} fast sicher` });
+    if (p.durchlaeufe) {
+      lines.push({ icon: '💪', text: `${p.durchlaeufe}× komplett geschafft` });
+    }
   }
-  return lines.join('\n');
+  (extra || []).forEach(t => lines.push({ icon: '⏱️', text: t }));
+  return lines;
+}
+
+function showRoundOverlay(opts) {
+  const ov = document.getElementById('round-overlay');
+  if (!ov) return;
+  const quote = opts.total ? opts.correct / opts.total : 0;
+
+  document.getElementById('round-overlay-emoji').textContent = opts.emoji
+    || (quote >= .8 ? '🏆' : quote >= .5 ? '😊' : '💪');
+  // Mindestens ein Stern: Wer eine Runde zu Ende spielt, geht nie leer aus.
+  document.getElementById('round-overlay-stars').textContent = '⭐'.repeat(Math.max(1, Math.round(quote * 5)));
+  document.getElementById('round-overlay-title').textContent = opts.title;
+  document.getElementById('round-overlay-score').textContent = `${opts.correct} von ${opts.total} richtig`;
+
+  const list = document.getElementById('round-overlay-lines');
+  list.innerHTML = '';
+  roundOverlayLines(opts.done, opts.extra).forEach(z => {
+    const li = document.createElement('li');
+    if (z.stark) li.className = 'is-highlight';
+    const ic = document.createElement('span');
+    ic.className = 'overlay-line-icon';
+    ic.setAttribute('aria-hidden', 'true');
+    ic.textContent = z.icon;
+    const tx = document.createElement('span');
+    tx.innerHTML = z.text;   // nur eigene Konstanten und Zahlen, keine Wortlisteninhalte
+    li.append(ic, tx);
+    list.appendChild(li);
+  });
+
+  overlayNochmalFn = opts.onNochmal || null;
+  overlayLetzterFokus = document.activeElement;
+  ov.hidden = false;
+  document.body.classList.add('overlay-offen');
+  document.getElementById('round-overlay-again').focus();
+}
+
+function closeRoundOverlay() {
+  const ov = document.getElementById('round-overlay');
+  if (!ov || ov.hidden) return;
+  ov.hidden = true;
+  document.body.classList.remove('overlay-offen');
+  if (overlayLetzterFokus && document.contains(overlayLetzterFokus)) overlayLetzterFokus.focus();
+  overlayLetzterFokus = null;
 }
 
 function clearDiagnosis() {
@@ -1969,10 +2065,17 @@ function flipCard(idx) {
           celebrate();
           const done = finishRound();
           const zeit = document.getElementById('memory-time').textContent;
-          setTimeout(() => alert(
-            roundSummary('🎉 Alle Paare gefunden!', memMatched, total, done)
-            + `\nVersuche: ${memTries} | Zeit: ${zeit}`
-          ), 200);
+          const versuche = memTries;
+          const paare = total;
+          setTimeout(() => showRoundOverlay({
+            emoji: '🎉',
+            title: 'Alle Paare gefunden!',
+            correct: paare,
+            total: paare,
+            done,
+            extra: [`${versuche} Versuche · Zeit ${zeit}`],
+            onNochmal: () => startMemory(paare)
+          }), 250);
         }
       }, 500);
     } else {
@@ -2171,8 +2274,13 @@ function scrambleNext() {
   document.querySelectorAll('.letter-tile, .answer-slot').forEach(e => e.style.pointerEvents='');
   if (scrambleIdx >= scrambleItems.length) {
     const done = finishRound();
-    alert(roundSummary('🎉 Scramble beendet!', scrambleScore, scrambleItems.length, done));
-    startScramble();
+    showRoundOverlay({
+      title: 'Scramble geschafft!',
+      correct: scrambleScore,
+      total: scrambleItems.length,
+      done,
+      onNochmal: startScramble
+    });
   } else {
     showScrambleQuestion();
   }
@@ -2294,8 +2402,14 @@ function spellingNext() {
   spellingIdx++;
   if (spellingIdx >= spellingItems.length) {
     const done = finishRound();
-    alert(roundSummary('🐝 Spelling Bee beendet!', spellingScore, spellingItems.length, done));
-    startSpelling();
+    showRoundOverlay({
+      emoji: '🐝',
+      title: 'Spelling Bee geschafft!',
+      correct: spellingScore,
+      total: spellingItems.length,
+      done,
+      onNochmal: startSpelling
+    });
   } else {
     showSpellingQuestion();
   }
@@ -2491,6 +2605,33 @@ pruneOldRuns();
 renderPlayer();
 applyTooltips();
 document.getElementById('player-reroll')?.addEventListener('click', rerollPlayer);
+
+/* Runden-Overlay verdrahten: Knöpfe, Escape, Klick auf den Hintergrund.
+   Der Fokus bleibt im Dialog, solange er offen ist. */
+document.getElementById('round-overlay-again')?.addEventListener('click', () => {
+  const fn = overlayNochmalFn;
+  closeRoundOverlay();
+  if (fn) fn();
+});
+document.getElementById('round-overlay-menu')?.addEventListener('click', () => {
+  closeRoundOverlay();
+  openTab('menu');
+});
+document.getElementById('round-overlay')?.addEventListener('click', (e) => {
+  if (e.target.id === 'round-overlay') closeRoundOverlay();
+});
+document.addEventListener('keydown', (e) => {
+  const ov = document.getElementById('round-overlay');
+  if (!ov || ov.hidden) return;
+  if (e.key === 'Escape') { closeRoundOverlay(); return; }
+  if (e.key !== 'Tab') return;
+  const fokussierbar = ov.querySelectorAll('button');
+  if (!fokussierbar.length) return;
+  const erste = fokussierbar[0];
+  const letzte = fokussierbar[fokussierbar.length - 1];
+  if (e.shiftKey && document.activeElement === erste) { e.preventDefault(); letzte.focus(); }
+  else if (!e.shiftKey && document.activeElement === letzte) { e.preventDefault(); erste.focus(); }
+});
 
 // Visual-Hilfe-Buttons (Bild erst nach Entscheidung oder per Klick einblenden)
 document.getElementById('quiz-show-visual')?.addEventListener('click', () => {

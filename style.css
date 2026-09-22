@@ -3,6 +3,24 @@
        © 2026 Created by bildungssprit | Falk Szyba @medienrocker
     ═══════════════════════════════════════════════ */
 :root {
+    /* ─── Rundungen zentral ───
+       Ein Schalter für den gesamten Look. Standard ist die weiche Variante.
+       Zum Vergleich mit dem bildungssprit-Hausstil (4px) die Seite mit
+       ?design=brand aufrufen, zurück mit ?design=weich. Die Wahl wird
+       gemerkt, auch in der installierten App. */
+    --r-pill: 50px;
+    /* Buttons, Reiter, Chips */
+    --r-card: 18px;
+    /* Karten, Panels, Overlay */
+    --r-field: 12px;
+    /* Eingabefelder, kleine Flächen */
+    --r-mini: 10px;
+    /* Sehr kleine Elemente */
+    --r-bar: 999px;
+    /* Fortschrittsbalken */
+    --radius: var(--r-card);
+    /* Altname, bleibt als Alias */
+
     --green: #4caf50;
     --lime: #8bc34a;
     --orange: #ff9800;
@@ -13,8 +31,17 @@
     --bg: #f0faf0;
     --card: #ffffff;
     --text: #2e2e2e;
-    --radius: 18px;
     --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Markenvariante: kantiger, nüchterner, bildungssprit-Hausstil.
+   Wird über ?design=brand aktiviert und auf <html> gesetzt. */
+:root[data-design="brand"] {
+    --r-pill: 4px;
+    --r-card: 4px;
+    --r-field: 4px;
+    --r-mini: 4px;
+    --r-bar: 4px;
 }
 
 * {
@@ -112,7 +139,7 @@ header p {
     font-size: 1rem;
     font-weight: 800;
     padding: 8px 14px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     border: 2px solid var(--green);
     background: #fff;
     color: var(--text);
@@ -163,7 +190,7 @@ header p {
 .wl-panel-surface {
     width: min(720px, 100%);
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--r-card);
     box-shadow: 0 14px 44px rgba(0, 0, 0, .22);
     overflow: hidden;
 }
@@ -197,7 +224,7 @@ header p {
     font-size: 1.2rem;
     line-height: 1;
     padding: 6px 8px;
-    border-radius: 10px;
+    border-radius: var(--r-field);
 }
 
 .wl-panel-close:focus-visible {
@@ -217,7 +244,7 @@ header p {
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
     padding: 10px 12px;
-    border-radius: 12px;
+    border-radius: var(--r-field);
     border: 2px solid #e5e7df;
 }
 
@@ -247,7 +274,7 @@ header p {
     gap: 10px;
     align-items: flex-start;
     padding: 10px 10px;
-    border-radius: 14px;
+    border-radius: var(--r-card);
     cursor: pointer;
 }
 
@@ -284,7 +311,7 @@ header p {
 }
 
 .wl-panel-foot {
-    border-radius: 0 0 16px 16px;
+    border-radius: 0 0 var(--r-card) var(--r-card);
     display: flex;
     justify-content: flex-end;
 }
@@ -336,7 +363,7 @@ header p {
     gap: 0;
     padding: 3px;
     background: #f4f5f0;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     border: 1px solid #e5e7df;
 }
 
@@ -345,7 +372,7 @@ header p {
     font-size: .95rem;
     font-weight: 800;
     padding: 6px 14px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     border: none;
     background: transparent;
     color: #888;
@@ -420,7 +447,7 @@ header p {
     gap: 8px;
     background: var(--bg);
     border: 2px solid #e2ece2;
-    border-radius: 999px;
+    border-radius: var(--r-bar);
     padding: 4px 6px 4px 12px;
 }
 
@@ -517,7 +544,7 @@ header p {
 .prog-track {
     height: 10px;
     background: #e8f0e8;
-    border-radius: 999px;
+    border-radius: var(--r-bar);
     overflow: hidden;
     /* Flex, damit der Beherrschungsbalken zwei Abschnitte nebeneinander
        zeigen kann. Die runden Enden kommen von der Spur, nicht von den
@@ -570,7 +597,7 @@ nav {
 .tab-btn {
     background: white;
     border: 3px solid transparent;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     padding: 10px 22px;
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
@@ -715,7 +742,7 @@ nav {
 
 .menu-card {
     background: white;
-    border-radius: var(--radius);
+    border-radius: var(--r-card);
     padding: 30px 20px;
     text-align: center;
     cursor: pointer;
@@ -805,7 +832,7 @@ nav {
 
 .game-badge {
     padding: 5px 16px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     font-weight: 800;
     font-size: .9rem;
     color: white;
@@ -831,7 +858,7 @@ nav {
 .btn {
     display: inline-block;
     padding: 12px 28px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     border: none;
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
@@ -878,7 +905,7 @@ nav {
 /* ─── PROGRESS BAR ─── */
 .progress-wrap {
     background: #e0e0e0;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     height: 12px;
     margin-bottom: 18px;
     overflow: hidden;
@@ -886,7 +913,7 @@ nav {
 
 .progress-bar {
     height: 100%;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     background: linear-gradient(90deg, var(--green), var(--lime));
     transition: width .4s ease;
 }
@@ -919,7 +946,7 @@ nav {
     min-height: 0;
     font-size: 1rem;
     padding: 6px 14px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     line-height: 1.2;
     white-space: nowrap;
     opacity: 0;
@@ -1062,7 +1089,7 @@ nav {
 /* ─── CARD ─── */
 .card {
     background: white;
-    border-radius: var(--radius);
+    border-radius: var(--r-card);
     padding: 24px;
     box-shadow: var(--shadow);
     margin-bottom: 18px;
@@ -1083,7 +1110,7 @@ nav {
 img.word-visual {
     object-fit: contain;
     background: #fafafa;
-    border-radius: 12px;
+    border-radius: var(--r-field);
     padding: 4px;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04);
 }
@@ -1187,7 +1214,7 @@ img.word-visual {
     background: #fafafa;
     padding: 1px 10px;
     border: 1px solid #cfcfcf;
-    border-radius: 8px;
+    border-radius: var(--r-mini);
     white-space: nowrap;
     /* Etwas größer, damit es trotz #888-Umgebungstext heraussticht */
     font-size: 1.05em;
@@ -1202,7 +1229,7 @@ img.word-visual {
 .choice-btn {
     background: white;
     border: 3px solid #e0e0e0;
-    border-radius: var(--radius);
+    border-radius: var(--r-card);
     padding: 16px 12px;
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
@@ -1248,7 +1275,7 @@ img.word-visual {
 
 .mem-card {
     background: linear-gradient(135deg, var(--purple), #7b1fa2);
-    border-radius: 14px;
+    border-radius: var(--r-card);
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -1343,7 +1370,7 @@ img.word-visual {
     height: 44px;
     background: var(--orange);
     color: white;
-    border-radius: 10px;
+    border-radius: var(--r-field);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1378,7 +1405,7 @@ img.word-visual {
     width: 44px;
     height: 44px;
     border: 3px dashed var(--orange);
-    border-radius: 10px;
+    border-radius: var(--r-field);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1434,7 +1461,7 @@ img.word-visual {
     font-size: 1.4rem;
     font-weight: 700;
     border: 3px solid #ccc;
-    border-radius: var(--radius);
+    border-radius: var(--r-card);
     text-align: center;
     outline: none;
     transition: border-color .2s;
@@ -1547,7 +1574,7 @@ img.word-visual {
 
 .filter-btn {
     padding: 8px 20px;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     border: 2px solid var(--green);
     background: white;
     font-family: 'Nunito', sans-serif;
@@ -1571,7 +1598,7 @@ img.word-visual {
 
 .vocab-card {
     background: white;
-    border-radius: 14px;
+    border-radius: var(--r-card);
     padding: 14px;
     text-align: center;
     box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
@@ -1666,7 +1693,7 @@ img.word-visual {
     gap: 5px;
     margin-top: 8px;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--r-bar);
     font-size: .76rem;
     font-weight: 800;
     border: 2px solid transparent;
@@ -1757,7 +1784,7 @@ img.word-visual {
     background: var(--card);
     color: var(--text);
     border: 2px solid var(--green);
-    border-radius: 14px;
+    border-radius: var(--r-card);
     box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
     font-size: .95rem;
 }
@@ -1773,7 +1800,7 @@ img.word-visual {
     background: var(--green);
     color: #fff;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--r-pill);
     padding: 10px 16px;
     cursor: pointer;
     white-space: nowrap;
@@ -1798,7 +1825,7 @@ img.word-visual {
     cursor: pointer;
     color: #888;
     padding: 6px 8px;
-    border-radius: 10px;
+    border-radius: var(--r-field);
     min-width: 44px;
     min-height: 44px;
 }
@@ -1835,4 +1862,131 @@ img.word-visual {
 
 .prog-erklaerung strong {
     color: #4a5a4a;
+}
+
+/* ═══════════════════════════════════════════════
+   RUNDEN-ABSCHLUSS (Overlay)
+   Ersetzt den System-alert(). Eine geschaffte Runde ist eine Belohnung und
+   soll sich auch so anfühlen, nicht wie eine Fehlermeldung.
+═══════════════════════════════════════════════ */
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(24, 48, 26, .55);
+    backdrop-filter: blur(3px);
+    animation: overlay-ein .2s ease both;
+}
+
+.overlay[hidden] {
+    display: none;
+}
+
+body.overlay-offen {
+    overflow: hidden;
+}
+
+.overlay-card {
+    width: min(420px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    background: var(--card);
+    border-radius: var(--r-card);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
+    border-top: 8px solid var(--green);
+    padding: 22px 22px 18px;
+    text-align: center;
+    animation: overlay-karte .32s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.overlay-emoji {
+    font-size: 3.2rem;
+    line-height: 1;
+}
+
+.overlay-stars {
+    font-size: 1.6rem;
+    letter-spacing: 3px;
+    margin-top: 6px;
+}
+
+.overlay-title {
+    font-size: 1.45rem;
+    font-weight: 900;
+    margin-top: 8px;
+    color: var(--text);
+}
+
+.overlay-score {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--green);
+    margin-top: 4px;
+}
+
+.overlay-lines {
+    list-style: none;
+    margin: 16px 0 20px;
+    padding: 0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.overlay-lines li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    background: var(--bg);
+    border-radius: var(--r-field);
+    padding: 8px 12px;
+    font-size: .94rem;
+    font-weight: 600;
+}
+
+.overlay-lines li.is-highlight {
+    background: #fff6d8;
+    border: 2px solid var(--yellow);
+    font-weight: 800;
+}
+
+.overlay-line-icon {
+    flex: 0 0 auto;
+    line-height: 1.4;
+}
+
+.overlay-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@keyframes overlay-ein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes overlay-karte {
+    from { opacity: 0; transform: translateY(16px) scale(.94); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .overlay,
+    .overlay-card {
+        animation: none;
+    }
+}
+
+@media (max-width: 420px) {
+    .overlay-actions .btn {
+        flex: 1 1 100%;
+    }
 }
