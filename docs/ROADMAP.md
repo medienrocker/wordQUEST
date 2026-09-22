@@ -35,6 +35,19 @@ Offen: WQ-6.4, WQ-8.3, Epic 9 ohne WQ-9.5, Epic 10.
 
 **KI-Anbindung aus blackOUT: nicht übernehmbar.** blackOUT ist bewusst netzwerkfrei gebaut und nutzt ausschließlich lokale ONNX- und WASM-Modelle im Browser. Es gibt dort keinen Anbieter, keinen Endpunkt, kein SDK, keinen Schlüssel und keinen Proxy. Für die Bilderzeugung ist also nichts vorhanden, was sich übertragen ließe. Das bestätigt aber die Architekturentscheidung in Epic 9: Wenn Bilder ohnehin vorab per lokalem Skript entstehen, entfallen Proxy, Schlüsselschutz und Kostendeckel zur Laufzeit komplett.
 
+**Nachtrag aus dem Betrieb (Umlaute):** Der häufigste Eingang ist nicht das
+Foto einer Buchseite, sondern ein **Bildschirmfoto im Dunkelmodus**, also helle
+Schrift auf dunklem Grund. Texterkennung ist auf den umgekehrten Fall
+ausgelegt, und darunter leiden zuerst die feinen Teile der Zeichen: die
+Pünktchen über den Umlauten. Aus "bürsten" wurde "birsten", aus "Hände" wurde
+"Hande". `ocr.js` erkennt dunkle Vorlagen deshalb am Histogramm und kehrt sie
+um, rechnet kleine Vorlagen auf Lesegrösse hoch und spreizt den Kontrast.
+Zusätzlich liest ein zweiter Durchgang die deutsche Spalte allein mit dem
+deutschen Modell: Im gemeinsamen Modell konkurriert Englisch mit, und Englisch
+kennt keine Umlaute. Gemessen an einem nachgebauten Dunkelmodus-Screenshot mit
+20 Zeilen: vorher vier falsche Wörter und eine Kopfzeile zu viel, nachher
+fehlerfrei.
+
 **Für WQ-9.5 (Foto zu Liste) ist blackOUT dagegen ein Treffer:** `blackOUT/web/src/core/ocr.js` liefert eine fertige, kostenfreie Browser-OCR auf Tesseract-Basis, die Wörter samt Rechtecken zurückgibt. Damit lassen sich zweispaltige Wortschatzseiten anhand der X-Koordinate in Englisch und Deutsch trennen. Zusätzlicher Vorteil: Fotos aus Lehrwerken verlassen das Gerät nicht, was beim Urheberrecht die deutlich ruhigere Lösung ist. Grenze: Handschrift und schlechte Scans liest Tesseract nicht zuverlässig.
 
 **Adminbereich: Website_Maria_2026 ist die Vorlage, taskFLOW nicht.** taskFLOW ist React plus Supabase plus Deno Edge Functions, also ein inkompatibler Stack, von dem sich auf einem Plesk-Server nichts betreiben lässt. Website_Maria_2026 dagegen nutzt exakt den geplanten Stack (PHP 8, SQLite über PDO, kein Framework, kein Build) und ist bereits durch einen Sicherheitsdurchgang gegangen.
