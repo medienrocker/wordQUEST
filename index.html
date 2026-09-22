@@ -223,6 +223,16 @@
     </div>
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
   </div>
+  <div class="card practice-card" id="bruecke-karte" style="margin-top:14px;" hidden>
+    <h3 class="karten-titel">🌍 Sprache von zu Hause</h3>
+    <label class="klasse-label" for="bruecke-wahl">Zusätzlich anzeigen</label>
+    <select id="bruecke-wahl"></select>
+    <p class="practice-privacy" id="bruecke-hinweis"></p>
+    <p class="practice-privacy">
+      Das englische Wort steht dann neben dem deutschen <em>und</em> dem Wort
+      aus deiner Sprache. Gelernt wird weiter Deutsch zu Englisch.
+    </p>
+  </div>
   <div class="card practice-card" style="margin-top:14px;">
     <h3 class="karten-titel">👓 Lesehilfe</h3>
     <label class="stats-toggle-label">
@@ -1270,6 +1280,115 @@ function statsSenden() {
 }
 
 /* ═══════════════════════════════════════════════
+   SPRACHBRÜCKE
+
+   Für viele Kinder ist Deutsch nicht die erste Sprache. Steht neben "apple"
+   und "der Apfel" auch "elma", hängt sich das neue englische Wort an etwas
+   an, das längst sitzt, statt an eine zweite Fremdsprache.
+
+   Bewusst eine Brücke und kein zweiter Lernweg: Gelernt wird weiter Deutsch
+   zu Englisch, denn das verlangt die Schule. Die Familiensprache steht
+   daneben, sichtbar in der Vokabelliste und nach der Antwort.
+═══════════════════════════════════════════════ */
+const BRUECKE_SPRACHEN = {
+  tr: { name: 'Türkisch',    eigen: 'Türkçe',     rtl: false },
+  ar: { name: 'Arabisch',    eigen: 'العربية',     rtl: true  },
+  uk: { name: 'Ukrainisch',  eigen: 'Українська', rtl: false },
+  ru: { name: 'Russisch',    eigen: 'Русский',    rtl: false },
+  pl: { name: 'Polnisch',    eigen: 'Polski',     rtl: false },
+  ro: { name: 'Rumänisch',   eigen: 'Română',     rtl: false },
+  bg: { name: 'Bulgarisch',  eigen: 'Български',  rtl: false },
+  sq: { name: 'Albanisch',   eigen: 'Shqip',      rtl: false },
+  sr: { name: 'Serbisch',    eigen: 'Српски',     rtl: false },
+  hr: { name: 'Kroatisch',   eigen: 'Hrvatski',   rtl: false },
+  fa: { name: 'Persisch',    eigen: 'فارسی',       rtl: true  },
+  ku: { name: 'Kurdisch',    eigen: 'Kurdî',      rtl: false },
+  ti: { name: 'Tigrinya',    eigen: 'ትግርኛ',        rtl: false },
+  so: { name: 'Somali',      eigen: 'Soomaali',   rtl: false },
+  es: { name: 'Spanisch',    eigen: 'Español',    rtl: false },
+  it: { name: 'Italienisch', eigen: 'Italiano',   rtl: false },
+  fr: { name: 'Französisch', eigen: 'Français',   rtl: false },
+  en: { name: 'Englisch',    eigen: 'English',    rtl: false }
+};
+
+function getBruecke() {
+  try {
+    const b = localStorage.getItem('wq.bruecke') || '';
+    return BRUECKE_SPRACHEN[b] ? b : '';
+  } catch { return ''; }
+}
+
+function setzeBruecke(code) {
+  try {
+    if (BRUECKE_SPRACHEN[code]) localStorage.setItem('wq.bruecke', code);
+    else localStorage.removeItem('wq.bruecke');
+  } catch {}
+  syncBrueckeWahl();
+  if (LAST_TAB === 'vocab') renderVocab(VOCAB_FILTER);
+}
+
+/** Das Wort in der Familiensprache, oder null. */
+function brueckenWort(item) {
+  const code = getBruecke();
+  if (!code || !item || !item.trans) return null;
+  const wert = item.trans[code];
+  return wert ? { text: wert, code, rtl: !!BRUECKE_SPRACHEN[code].rtl } : null;
+}
+
+/** Fertiges Markup für die Zeile in der Familiensprache. */
+function brueckeHtml(item, klasse) {
+  const b = brueckenWort(item);
+  if (!b) return '';
+  return `<span class="bruecke ${klasse || ''}" lang="${b.code}"${b.rtl ? ' dir="rtl"' : ''}>${escapeHtml(b.text)}</span>`;
+}
+
+/** Wie viele Wörter der aktuellen Auswahl haben diese Sprache? */
+function brueckeAbdeckung(code) {
+  if (!code) return 0;
+  return VOCAB.filter(v => v.trans && v.trans[code]).length;
+}
+
+function syncBrueckeWahl() {
+  const wahl = document.getElementById('bruecke-wahl');
+  if (!wahl) return;
+  const code = getBruecke();
+
+  // Nur Sprachen anbieten, die in den geladenen Listen wirklich vorkommen.
+  const vorhanden = new Set();
+  VOCAB.forEach(v => { if (v.trans) Object.keys(v.trans).forEach(k => vorhanden.add(k)); });
+
+  wahl.innerHTML = '';
+  const keine = document.createElement('option');
+  keine.value = '';
+  keine.textContent = '– keine –';
+  wahl.appendChild(keine);
+  [...vorhanden].sort((a, b) => BRUECKE_SPRACHEN[a].name.localeCompare(BRUECKE_SPRACHEN[b].name, 'de'))
+    .forEach(k => {
+      const o = document.createElement('option');
+      o.value = k;
+      o.textContent = BRUECKE_SPRACHEN[k].eigen + ' (' + BRUECKE_SPRACHEN[k].name + ')';
+      wahl.appendChild(o);
+    });
+  wahl.value = vorhanden.has(code) ? code : '';
+
+  const karte = document.getElementById('bruecke-karte');
+  if (karte) karte.hidden = vorhanden.size === 0;
+
+  const hinweis = document.getElementById('bruecke-hinweis');
+  if (hinweis) {
+    if (!wahl.value) {
+      hinweis.textContent = vorhanden.size
+        ? 'Wenn du zu Hause eine andere Sprache sprichst, wähle sie hier. Das Wort steht dann zusätzlich daneben.'
+        : '';
+    } else {
+      const n = brueckeAbdeckung(wahl.value);
+      hinweis.textContent = n + ' von ' + VOCAB.length + ' Wörtern haben eine Übersetzung in '
+        + BRUECKE_SPRACHEN[wahl.value].eigen + '.';
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════
    LESEHILFE
 
    Kein Zusatzdownload und keine Sonderschrift. Was beim Lesen nachweislich
@@ -1718,6 +1837,11 @@ function normalizeWordEntry(w, file, catKey) {
     img:   typeof w.img   === 'string' && w.img.trim()   ? w.img.trim()   : null,
     example:   kurzerText(w.example),
     exampleDe: kurzerText(w.exampleDe),
+    trans: (w.trans && typeof w.trans === 'object' && !Array.isArray(w.trans))
+      ? Object.fromEntries(Object.entries(w.trans)
+          .filter(([k, v]) => BRUECKE_SPRACHEN[k] && typeof v === 'string' && v.trim() && v.length <= MAX_EXAMPLE_LEN)
+          .map(([k, v]) => [k, v.trim()]))
+      : null,
     cat:   catKey,
     _srcFile: file,
     _wqId: makeWqId(file, en, de)
@@ -1835,6 +1959,7 @@ async function loadWordlists(files) {
       showError('Einige Listen fehlen: ' + errors.join(' · '));
     }
     updateWordlistMeta();
+    syncBrueckeWahl();
     updatePracticePanel();
     updateProgressStrip();
     syncClozeUi();
@@ -3618,6 +3743,7 @@ function renderVocab(filter) {
       <div class="v-visual">${visual(v, 'sm')}</div>
       <div class="v-en">${escapeHtml(v.en)}${speakerBtnHtml(v.en, 'en')}</div>
       <div class="v-de">${escapeHtml(v.de)}</div>
+      ${brueckeHtml(v, 'bruecke-karte-zeile')}
       ${v.example ? `<div class="v-example">
         <span class="v-example-en">${escapeHtml(v.example)}${speakerBtnHtml(v.example, 'en')}</span>
         ${v.exampleDe ? `<span class="v-example-de">${escapeHtml(v.exampleDe)}</span>` : ''}
@@ -3708,6 +3834,7 @@ const HILFE = [
       { sel: '#sound-btn', name: 'Ton an und aus', text: 'Schaltet die Aussprache stumm. Die Einstellung bleibt gespeichert.' },
       { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
       { sel: '#stats-toggle', name: 'Anonyme Nutzungsstatistik', text: 'Zählt mit, welche Listen und Spiele genutzt werden. Kein Name, keine Punkte, keine Adresse. Lässt sich unter Üben abschalten.' },
+      { sel: '#bruecke-wahl', name: 'Sprache von zu Hause', text: 'Sprichst du zu Hause eine andere Sprache? Dann steht das Wort zusätzlich in dieser Sprache neben dem deutschen. Das hilft, weil sich das neue englische Wort an etwas hängt, das du längst kannst.' },
       { sel: '#lesehilfe-toggle', name: 'Lesehilfe', text: 'Stellt Buchstaben, Wörter und Zeilen weiter auseinander. Das hilft vielen beim Lesen, besonders bei langen englischen Wörtern. Die Einstellung bleibt gespeichert.' },
       { sel: '#klasse-code', name: 'Klassencode', text: 'Wenn deine Lehrkraft einen Code genannt hat, übst du damit dieselben Wörter wie der Rest der Klasse. Deine Lehrkraft sieht nur die Summe aller, nie dich einzeln.' },
       { sel: '#tafel-toggle', name: 'Ehrentafel', text: 'Wer eine Liste einmal ganz durchspielt, erscheint mit Würfelname und Tier auf der Tafel. Es zählt nur das Durchkommen, nicht die Geschwindigkeit. Übertragen werden Name und Tier, sonst nichts.' },
@@ -3813,6 +3940,12 @@ syncNetzHinweis();
 /* Lesehilfe zuerst, damit die Seite nicht erst gesetzt und dann umspringt. */
 syncLesehilfe();
 document.getElementById('lesehilfe-toggle')?.addEventListener('change', e => lesehilfeSetzen(e.target.checked));
+
+/* Sprachbrücke. Die Auswahl hängt davon ab, welche Sprachen in den geladenen
+   Listen überhaupt vorkommen, deshalb wird sie bei jedem Listenwechsel neu
+   aufgebaut. */
+syncBrueckeWahl();
+document.getElementById('bruecke-wahl')?.addEventListener('change', e => setzeBruecke(e.target.value));
 
 /* Klassenmodus verdrahten. */
 syncKlasseKarte();

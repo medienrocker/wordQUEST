@@ -26,6 +26,16 @@ const WQ_LISTE_MAX_EMOJI     = 16;
    Zaehlpixel auf dem Geraet jedes Kindes. */
 const WQ_BILD_HOSTS = ['img.bildungssprit.de'];
 
+/* ─── Sprachbrücke ───
+   Zusätzliche Übersetzungen in die Familiensprache, als Feld `trans`.
+
+   Bewusst eine feste Liste erlaubter Sprachkürzel: Das Feld landet als
+   Schlüssel in der App und in der Anzeige. Ohne Liste könnte eine Einreichung
+   beliebige Schlüssel unterbringen. Die Auswahl deckt die häufigsten
+   Herkunftssprachen an deutschen Schulen ab und lässt sich hier erweitern. */
+const WQ_SPRACHEN = ['tr', 'ar', 'uk', 'ru', 'pl', 'ro', 'bg', 'sq', 'sr', 'hr', 'fa', 'ku', 'ti', 'so', 'es', 'it', 'fr', 'en'];
+const WQ_SPRACHE_MAX = 120;
+
 function wq_einreichungen_schema(PDO $pdo): void
 {
     $pdo->exec('
@@ -162,6 +172,22 @@ function wq_wortliste_pruefen(string $roh): array
         }
         if (isset($w['exampleDe']) && wq_text_ok($w['exampleDe'], WQ_LISTE_MAX_BEISPIEL)) {
             $eintrag['exampleDe'] = trim((string) $w['exampleDe']);
+        }
+        if (isset($w['trans']) && is_array($w['trans'])) {
+            $bruecke = [];
+            foreach ($w['trans'] as $sprache => $wert) {
+                $sprache = is_string($sprache) ? strtolower(trim($sprache)) : '';
+                if (!in_array($sprache, WQ_SPRACHEN, true)) {
+                    $hinweise[] = 'Unbekanntes Sprachkürzel bei "' . $eintrag['en'] . '" verworfen.';
+                    continue;
+                }
+                if (wq_text_ok($wert, WQ_SPRACHE_MAX)) {
+                    $bruecke[$sprache] = trim((string) $wert);
+                }
+            }
+            if ($bruecke) {
+                $eintrag['trans'] = $bruecke;
+            }
         }
         $woerter[] = $eintrag;
     }

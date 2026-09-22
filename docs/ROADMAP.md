@@ -505,6 +505,22 @@ in der App, Verwaltung in der Übersicht des Admincenters.
 
 **Nicht jedes Wort ist darstellbar.** Funktionswörter wie "so", "their", "really", "not", "away" ergeben als Bild bestenfalls Rätsel. Dafür ist der Beispielsatz aus WQ-6.3 die bessere Antwort, nicht ein erzwungenes Bild.
 
+### Zwischenstand statt Pipeline
+
+**Epic 9 ist vorerst zurückgestellt**, und zwar aus einer Messung heraus: Von
+199 Wörtern haben 82 Prozent bereits ein Emoji oder ein Bild. Von den 35 ohne
+Visualisierung sind 18 Funktionswörter, für die dieses Epic selbst festhält,
+dass ein Bild dort bestenfalls Rätsel ergibt. Übrig bleiben rund fünfzehn
+Begriffe. Dafür lohnen Klassifizierungsfeld, Erzeugungsskript,
+Schlüsselverwaltung, Kostendeckel und eine laufende Rechnung nicht.
+
+Stattdessen gibt es `BILD-PROMPTS.md`: einen festen Hausstil-Prompt, die
+Ausschlussliste und fertige Einzelprompts für genau die Wörter, bei denen ein
+Bild trägt. Die Bilder entstehen von Hand mit einem beliebigen Werkzeug und
+gehen über die Bilderverwaltung in die App. Sollte der Bestand an Listen stark
+wachsen, wird die Pipeline wieder interessant, dann aber mit echten Zahlen als
+Grundlage.
+
 ### WQ-9.1, Wortklassifizierung
 
 **Akzeptanz:**
@@ -591,7 +607,15 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
 
    Die Summen einer Klasse liegen in eigenen Tabellen. Löscht eine Lehrkraft ihre Klasse, verschwinden deren Zahlen restlos, ohne die Gesamtstatistik anzurühren.
 4. **Arbeitsblätter als PDF** aus jeder Liste erzeugen. Lehrkräfte arbeiten weiterhin viel auf Papier, und der vorhandene `pdf-creator` Skill deckt das ab.
-5. **Herkunftssprachen.** Nicht nur Englisch nach Deutsch, sondern auch Deutsch nach Türkisch, Arabisch, Ukrainisch. Für die Zielgruppe ist der Brückenschlag zur Familiensprache ein echter Mehrwert und ein Alleinstellungsmerkmal.
+5. ~~**Herkunftssprachen.**~~ **Umgesetzt als Sprachbrücke.**
+
+   Bewusst **keine zweite Lernrichtung.** Gelernt wird weiter Deutsch zu Englisch, denn das verlangt die Schule. Die Familiensprache steht daneben: Sieht ein Kind neben „apple" und „der Apfel" auch „elma", hängt sich das neue englische Wort an etwas an, das längst sitzt, statt an eine zweite Fremdsprache.
+
+   Im Schema gibt es das Feld `trans` je Wort, mit einer festen Liste von 18 erlaubten Sprachkürzeln. In der App wird unter **Üben** eine Sprache gewählt, angeboten werden nur die, die in den geladenen Listen wirklich vorkommen. Arabisch und Persisch laufen mit `dir="rtl"`. Im Editor wird immer genau eine Sprache bearbeitet, die übrigen bleiben beim Speichern unverändert.
+
+   Gefüllt sind die vier konkreten Listen mit Türkisch, Arabisch und Ukrainisch, also 60 Wörter mal drei Sprachen. **Diese Übersetzungen sind nicht von Muttersprachlerinnen geprüft** und gehören vor dem Einsatz durchgesehen; der Editor ist genau dafür da. Bei den Stockwerken steht bewusst keine wörtliche Übersetzung: Im Türkischen und Ukrainischen zählt das Erdgeschoss selbst als erster Stock.
+
+   Nicht gefüllt sind die Funktionswörter der Lehrwerkslisten. Für „so" oder „of" gibt es keine Eins-zu-eins-Entsprechung, da trägt nur der Beispielsatz.
 6. **Lernstand mitnehmen ohne Konto.** Export und Import des Fortschritts als Datei oder QR-Code, damit ein Kind zwischen Schultablet und Handy wechseln kann.
 7. ~~**Barrierefreiheitspaket.**~~ **Umgesetzt.**
 

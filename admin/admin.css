@@ -462,3 +462,7 @@ button.klein.gefaehrlich {
 button.klein.gefaehrlich:hover { background: var(--rot); color: #fff; }
 
 .karte h3 { font-size: 1rem; margin: 22px 0 8px; }
+
+.sprachwahl { margin-bottom: 4px; }
+.sprachwahl label { margin: 0; }
+.wortliste input[dir="rtl"] { text-align: right; font-size: 1rem; }

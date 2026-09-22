@@ -12,7 +12,12 @@
       "emoji": "🍎",
       "cat": "fruit",
       "example": "I eat an apple every morning.",
-      "exampleDe": "Ich esse jeden Morgen einen Apfel."
+      "exampleDe": "Ich esse jeden Morgen einen Apfel.",
+      "trans": {
+        "tr": "elma",
+        "ar": "تفاحة",
+        "uk": "яблуко"
+      }
     },
     {
       "en": "strawberry",
@@ -20,7 +25,12 @@
       "emoji": "🍓",
       "cat": "fruit",
       "example": "This strawberry is sweet and red.",
-      "exampleDe": "Diese Erdbeere ist süß und rot."
+      "exampleDe": "Diese Erdbeere ist süß und rot.",
+      "trans": {
+        "tr": "çilek",
+        "ar": "فراولة",
+        "uk": "полуниця"
+      }
     },
     {
       "en": "pear",
@@ -28,7 +38,12 @@
       "emoji": "🍐",
       "cat": "fruit",
       "example": "Would you like a pear or an apple?",
-      "exampleDe": "Möchtest du eine Birne oder einen Apfel?"
+      "exampleDe": "Möchtest du eine Birne oder einen Apfel?",
+      "trans": {
+        "tr": "armut",
+        "ar": "كمثرى",
+        "uk": "груша"
+      }
     },
     {
       "en": "tomato",
@@ -36,7 +51,12 @@
       "emoji": "🍅",
       "cat": "fruit",
       "example": "There is one tomato left in the fridge.",
-      "exampleDe": "Im Kühlschrank ist noch eine Tomate."
+      "exampleDe": "Im Kühlschrank ist noch eine Tomate.",
+      "trans": {
+        "tr": "domates",
+        "ar": "طماطم",
+        "uk": "помідор"
+      }
     },
     {
       "en": "banana",
@@ -44,7 +64,12 @@
       "emoji": "🍌",
       "cat": "fruit",
       "example": "I take a banana to school every day.",
-      "exampleDe": "Ich nehme jeden Tag eine Banane mit in die Schule."
+      "exampleDe": "Ich nehme jeden Tag eine Banane mit in die Schule.",
+      "trans": {
+        "tr": "muz",
+        "ar": "موز",
+        "uk": "банан"
+      }
     },
     {
       "en": "kiwi",
@@ -52,7 +77,12 @@
       "emoji": "🥝",
       "cat": "fruit",
       "example": "A kiwi is green inside.",
-      "exampleDe": "Eine Kiwi ist innen grün."
+      "exampleDe": "Eine Kiwi ist innen grün.",
+      "trans": {
+        "tr": "kivi",
+        "ar": "كيوي",
+        "uk": "ківі"
+      }
     },
     {
       "en": "pineapple",
@@ -60,7 +90,12 @@
       "emoji": "🍍",
       "cat": "fruit",
       "example": "A pineapple is too big for my lunch box.",
-      "exampleDe": "Eine Ananas ist zu groß für meine Brotdose."
+      "exampleDe": "Eine Ananas ist zu groß für meine Brotdose.",
+      "trans": {
+        "tr": "ananas",
+        "ar": "أناناس",
+        "uk": "ананас"
+      }
     },
     {
       "en": "cherry",
@@ -68,7 +103,12 @@
       "emoji": "🍒",
       "cat": "fruit",
       "example": "There is one cherry on the cake.",
-      "exampleDe": "Auf dem Kuchen ist eine Kirsche."
+      "exampleDe": "Auf dem Kuchen ist eine Kirsche.",
+      "trans": {
+        "tr": "kiraz",
+        "ar": "كرز",
+        "uk": "вишня"
+      }
     },
     {
       "en": "orange",
@@ -76,7 +116,12 @@
       "emoji": "🍊",
       "cat": "fruit",
       "example": "My brother drinks orange juice for breakfast.",
-      "exampleDe": "Mein Bruder trinkt Orangensaft zum Frühstück."
+      "exampleDe": "Mein Bruder trinkt Orangensaft zum Frühstück.",
+      "trans": {
+        "tr": "portakal",
+        "ar": "برتقال",
+        "uk": "апельсин"
+      }
     },
     {
       "en": "lemon",
@@ -84,7 +129,12 @@
       "emoji": "🍋",
       "cat": "fruit",
       "example": "A lemon tastes very sour.",
-      "exampleDe": "Eine Zitrone schmeckt sehr sauer."
+      "exampleDe": "Eine Zitrone schmeckt sehr sauer.",
+      "trans": {
+        "tr": "limon",
+        "ar": "ليمون",
+        "uk": "лимон"
+      }
     },
     {
       "en": "plum",
@@ -92,7 +142,12 @@
       "emoji": "🍑",
       "cat": "fruit",
       "example": "This plum is small and purple.",
-      "exampleDe": "Diese Pflaume ist klein und lila."
+      "exampleDe": "Diese Pflaume ist klein und lila.",
+      "trans": {
+        "tr": "erik",
+        "ar": "برقوق",
+        "uk": "слива"
+      }
     },
     {
       "en": "watermelon",
@@ -100,7 +155,12 @@
       "emoji": "🍉",
       "cat": "fruit",
       "example": "We eat watermelon on hot days.",
-      "exampleDe": "An heißen Tagen essen wir Wassermelone."
+      "exampleDe": "An heißen Tagen essen wir Wassermelone.",
+      "trans": {
+        "tr": "karpuz",
+        "ar": "بطيخ",
+        "uk": "кавун"
+      }
     },
     {
       "en": "grape",
@@ -108,7 +168,12 @@
       "emoji": "🍇",
       "cat": "fruit",
       "example": "Can I have a grape, please?",
-      "exampleDe": "Kann ich bitte eine Traube haben?"
+      "exampleDe": "Kann ich bitte eine Traube haben?",
+      "trans": {
+        "tr": "üzüm",
+        "ar": "عنب",
+        "uk": "виноград"
+      }
     },
     {
       "en": "peach",
@@ -116,7 +181,12 @@
       "emoji": "🍑",
       "cat": "fruit",
       "example": "The peach is soft and sweet.",
-      "exampleDe": "Der Pfirsich ist weich und süß."
+      "exampleDe": "Der Pfirsich ist weich und süß.",
+      "trans": {
+        "tr": "şeftali",
+        "ar": "خوخ",
+        "uk": "персик"
+      }
     },
     {
       "en": "raspberry",
@@ -124,7 +194,12 @@
       "emoji": "🫐",
       "cat": "fruit",
       "example": "I put a raspberry on my yoghurt.",
-      "exampleDe": "Ich lege eine Himbeere auf meinen Joghurt."
+      "exampleDe": "Ich lege eine Himbeere auf meinen Joghurt.",
+      "trans": {
+        "tr": "ahududu",
+        "ar": "توت العليق",
+        "uk": "малина"
+      }
     },
     {
       "en": "blueberry",
@@ -132,7 +207,12 @@
       "emoji": "🫐",
       "cat": "fruit",
       "example": "One blueberry fell under the table.",
-      "exampleDe": "Eine Blaubeere ist unter den Tisch gefallen."
+      "exampleDe": "Eine Blaubeere ist unter den Tisch gefallen.",
+      "trans": {
+        "tr": "yaban mersini",
+        "ar": "توت أزرق",
+        "uk": "чорниця"
+      }
     },
     {
       "en": "corn",
@@ -140,7 +220,12 @@
       "emoji": "🌽",
       "cat": "veggie",
       "example": "We eat corn with butter and salt.",
-      "exampleDe": "Wir essen Mais mit Butter und Salz."
+      "exampleDe": "Wir essen Mais mit Butter und Salz.",
+      "trans": {
+        "tr": "mısır",
+        "ar": "ذرة",
+        "uk": "кукурудза"
+      }
     },
     {
       "en": "pea",
@@ -148,7 +233,12 @@
       "emoji": "🫛",
       "cat": "veggie",
       "example": "There is one pea left on my plate.",
-      "exampleDe": "Auf meinem Teller ist noch eine Erbse."
+      "exampleDe": "Auf meinem Teller ist noch eine Erbse.",
+      "trans": {
+        "tr": "bezelye",
+        "ar": "بازلاء",
+        "uk": "горох"
+      }
     },
     {
       "en": "onion",
@@ -156,7 +246,12 @@
       "emoji": "🧅",
       "cat": "veggie",
       "example": "My eyes hurt when I cut an onion.",
-      "exampleDe": "Meine Augen brennen, wenn ich eine Zwiebel schneide."
+      "exampleDe": "Meine Augen brennen, wenn ich eine Zwiebel schneide.",
+      "trans": {
+        "tr": "soğan",
+        "ar": "بصل",
+        "uk": "цибуля"
+      }
     },
     {
       "en": "pepper",
@@ -164,7 +259,12 @@
       "emoji": "🫑",
       "cat": "veggie",
       "example": "The red pepper is sweet, the green one is not.",
-      "exampleDe": "Die rote Paprika ist süß, die grüne nicht."
+      "exampleDe": "Die rote Paprika ist süß, die grüne nicht.",
+      "trans": {
+        "tr": "biber",
+        "ar": "فلفل",
+        "uk": "перець"
+      }
     },
     {
       "en": "pumpkin",
@@ -172,7 +272,12 @@
       "emoji": "🎃",
       "cat": "veggie",
       "example": "We make a face in the pumpkin in October.",
-      "exampleDe": "Im Oktober schnitzen wir ein Gesicht in den Kürbis."
+      "exampleDe": "Im Oktober schnitzen wir ein Gesicht in den Kürbis.",
+      "trans": {
+        "tr": "balkabağı",
+        "ar": "يقطين",
+        "uk": "гарбуз"
+      }
     },
     {
       "en": "potato",
@@ -180,7 +285,12 @@
       "emoji": "🥔",
       "cat": "veggie",
       "example": "My grandma cooks potato soup on Sundays.",
-      "exampleDe": "Meine Oma kocht sonntags Kartoffelsuppe."
+      "exampleDe": "Meine Oma kocht sonntags Kartoffelsuppe.",
+      "trans": {
+        "tr": "patates",
+        "ar": "بطاطس",
+        "uk": "картопля"
+      }
     },
     {
       "en": "cucumber",
@@ -188,7 +298,12 @@
       "emoji": "🥒",
       "cat": "veggie",
       "example": "I like cucumber in my salad.",
-      "exampleDe": "Ich mag Gurke im Salat."
+      "exampleDe": "Ich mag Gurke im Salat.",
+      "trans": {
+        "tr": "salatalık",
+        "ar": "خيار",
+        "uk": "огірок"
+      }
     },
     {
       "en": "mushroom",
@@ -196,7 +311,12 @@
       "emoji": "🍄",
       "cat": "veggie",
       "example": "Do not eat a mushroom from the forest.",
-      "exampleDe": "Iss keinen Pilz aus dem Wald."
+      "exampleDe": "Iss keinen Pilz aus dem Wald.",
+      "trans": {
+        "tr": "mantar",
+        "ar": "فطر",
+        "uk": "гриб"
+      }
     },
     {
       "en": "broccoli",
@@ -204,7 +324,12 @@
       "emoji": "🥦",
       "cat": "veggie",
       "example": "My sister never eats broccoli.",
-      "exampleDe": "Meine Schwester isst nie Brokkoli."
+      "exampleDe": "Meine Schwester isst nie Brokkoli.",
+      "trans": {
+        "tr": "brokoli",
+        "ar": "بروكلي",
+        "uk": "броколі"
+      }
     },
     {
       "en": "carrot",
@@ -212,7 +337,12 @@
       "emoji": "🥕",
       "cat": "veggie",
       "example": "The rabbit wants my carrot.",
-      "exampleDe": "Der Hase will meine Karotte."
+      "exampleDe": "Der Hase will meine Karotte.",
+      "trans": {
+        "tr": "havuç",
+        "ar": "جزر",
+        "uk": "морква"
+      }
     }
   ]
 }

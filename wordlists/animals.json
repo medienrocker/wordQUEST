@@ -12,7 +12,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_cat.png",
       "cat": "pet",
       "example": "Our cat sleeps on my bed all day.",
-      "exampleDe": "Unsere Katze schläft den ganzen Tag auf meinem Bett."
+      "exampleDe": "Unsere Katze schläft den ganzen Tag auf meinem Bett.",
+      "trans": {
+        "tr": "kedi",
+        "ar": "قطة",
+        "uk": "кіт"
+      }
     },
     {
       "en": "dog",
@@ -20,7 +25,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_dog.png",
       "cat": "pet",
       "example": "My dog runs to the door when I come home.",
-      "exampleDe": "Mein Hund rennt zur Tür, wenn ich nach Hause komme."
+      "exampleDe": "Mein Hund rennt zur Tür, wenn ich nach Hause komme.",
+      "trans": {
+        "tr": "köpek",
+        "ar": "كلب",
+        "uk": "собака"
+      }
     },
     {
       "en": "rabbit",
@@ -28,7 +38,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_rabbit.png",
       "cat": "pet",
       "example": "The rabbit eats a carrot in the garden.",
-      "exampleDe": "Der Hase frisst eine Karotte im Garten."
+      "exampleDe": "Der Hase frisst eine Karotte im Garten.",
+      "trans": {
+        "tr": "tavşan",
+        "ar": "أرنب",
+        "uk": "кролик"
+      }
     },
     {
       "en": "hamster",
@@ -36,7 +51,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_hamster.png",
       "cat": "pet",
       "example": "My hamster sleeps all day and runs all night.",
-      "exampleDe": "Mein Hamster schläft den ganzen Tag und rennt die ganze Nacht."
+      "exampleDe": "Mein Hamster schläft den ganzen Tag und rennt die ganze Nacht.",
+      "trans": {
+        "tr": "hamster",
+        "ar": "هامستر",
+        "uk": "хом'як"
+      }
     },
     {
       "en": "lion",
@@ -44,7 +64,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_lion.png",
       "cat": "wild",
       "example": "The lion is sleeping in the sun.",
-      "exampleDe": "Der Löwe schläft in der Sonne."
+      "exampleDe": "Der Löwe schläft in der Sonne.",
+      "trans": {
+        "tr": "aslan",
+        "ar": "أسد",
+        "uk": "лев"
+      }
     },
     {
       "en": "tiger",
@@ -52,7 +77,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_tiger.png",
       "cat": "wild",
       "example": "A tiger has black and orange stripes.",
-      "exampleDe": "Ein Tiger hat schwarze und orange Streifen."
+      "exampleDe": "Ein Tiger hat schwarze und orange Streifen.",
+      "trans": {
+        "tr": "kaplan",
+        "ar": "نمر",
+        "uk": "тигр"
+      }
     },
     {
       "en": "elephant",
@@ -60,7 +90,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_elephant.png",
       "cat": "wild",
       "example": "The elephant drinks water with its trunk.",
-      "exampleDe": "Der Elefant trinkt Wasser mit seinem Rüssel."
+      "exampleDe": "Der Elefant trinkt Wasser mit seinem Rüssel.",
+      "trans": {
+        "tr": "fil",
+        "ar": "فيل",
+        "uk": "слон"
+      }
     },
     {
       "en": "giraffe",
@@ -68,7 +103,12 @@
       "img": "https://img.bildungssprit.de/wordquest/animals/wq_giraffe.png",
       "cat": "wild",
       "example": "A giraffe can eat leaves from tall trees.",
-      "exampleDe": "Eine Giraffe kann Blätter von hohen Bäumen fressen."
+      "exampleDe": "Eine Giraffe kann Blätter von hohen Bäumen fressen.",
+      "trans": {
+        "tr": "zürafa",
+        "ar": "زرافة",
+        "uk": "жирафа"
+      }
     }
   ]
 }

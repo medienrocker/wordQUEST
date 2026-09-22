@@ -12,7 +12,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_attic.png",
       "cat": "room",
       "example": "Our old toys are in the attic.",
-      "exampleDe": "Unser altes Spielzeug ist auf dem Dachboden."
+      "exampleDe": "Unser altes Spielzeug ist auf dem Dachboden.",
+      "trans": {
+        "tr": "çatı katı",
+        "ar": "عِلِّية",
+        "uk": "горище"
+      }
     },
     {
       "en": "bedroom",
@@ -20,7 +25,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bedroom.png",
       "cat": "room",
       "example": "My parents' bedroom is very quiet.",
-      "exampleDe": "Das Schlafzimmer meiner Eltern ist sehr ruhig."
+      "exampleDe": "Das Schlafzimmer meiner Eltern ist sehr ruhig.",
+      "trans": {
+        "tr": "yatak odası",
+        "ar": "غرفة نوم",
+        "uk": "спальня"
+      }
     },
     {
       "en": "children's room",
@@ -28,7 +38,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_childrens-room.png",
       "cat": "room",
       "example": "We play in the children's room.",
-      "exampleDe": "Wir spielen im Kinderzimmer."
+      "exampleDe": "Wir spielen im Kinderzimmer.",
+      "trans": {
+        "tr": "çocuk odası",
+        "ar": "غرفة الأطفال",
+        "uk": "дитяча кімната"
+      }
     },
     {
       "en": "bathroom",
@@ -36,7 +51,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_bathroom.png",
       "cat": "room",
       "example": "I brush my teeth in the bathroom.",
-      "exampleDe": "Ich putze mir im Badezimmer die Zähne."
+      "exampleDe": "Ich putze mir im Badezimmer die Zähne.",
+      "trans": {
+        "tr": "banyo",
+        "ar": "حمام",
+        "uk": "ванна кімната"
+      }
     },
     {
       "en": "living room",
@@ -44,7 +64,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_living-room.png",
       "cat": "room",
       "example": "The TV is in the living room.",
-      "exampleDe": "Der Fernseher steht im Wohnzimmer."
+      "exampleDe": "Der Fernseher steht im Wohnzimmer.",
+      "trans": {
+        "tr": "oturma odası",
+        "ar": "غرفة المعيشة",
+        "uk": "вітальня"
+      }
     },
     {
       "en": "kitchen",
@@ -52,7 +77,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_kitchen.png",
       "cat": "room",
       "example": "It smells good in the kitchen.",
-      "exampleDe": "In der Küche riecht es gut."
+      "exampleDe": "In der Küche riecht es gut.",
+      "trans": {
+        "tr": "mutfak",
+        "ar": "مطبخ",
+        "uk": "кухня"
+      }
     },
     {
       "en": "dining room",
@@ -60,7 +90,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_dining-room.png",
       "cat": "room",
       "example": "We only use the dining room at Christmas.",
-      "exampleDe": "Das Esszimmer benutzen wir nur an Weihnachten."
+      "exampleDe": "Das Esszimmer benutzen wir nur an Weihnachten.",
+      "trans": {
+        "tr": "yemek odası",
+        "ar": "غرفة الطعام",
+        "uk": "їдальня"
+      }
     },
     {
       "en": "garden",
@@ -68,7 +103,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garden.png",
       "cat": "room",
       "example": "Our garden is small but green.",
-      "exampleDe": "Unser Garten ist klein, aber grün."
+      "exampleDe": "Unser Garten ist klein, aber grün.",
+      "trans": {
+        "tr": "bahçe",
+        "ar": "حديقة",
+        "uk": "сад"
+      }
     },
     {
       "en": "garage",
@@ -76,7 +116,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors/wq_garage.png",
       "cat": "room",
       "example": "My bike is in the garage.",
-      "exampleDe": "Mein Fahrrad steht in der Garage."
+      "exampleDe": "Mein Fahrrad steht in der Garage.",
+      "trans": {
+        "tr": "garaj",
+        "ar": "مرآب",
+        "uk": "гараж"
+      }
     },
     {
       "en": "floors",
@@ -84,7 +129,12 @@
       "emoji": "🏢",
       "cat": "floor",
       "example": "Our house has three floors.",
-      "exampleDe": "Unser Haus hat drei Stockwerke."
+      "exampleDe": "Unser Haus hat drei Stockwerke.",
+      "trans": {
+        "tr": "katlar",
+        "ar": "طوابق",
+        "uk": "поверхи"
+      }
     },
     {
       "en": "ground floor",
@@ -92,7 +142,12 @@
       "emoji": "🏠",
       "cat": "floor",
       "example": "The kitchen is on the ground floor.",
-      "exampleDe": "Die Küche ist im Erdgeschoss."
+      "exampleDe": "Die Küche ist im Erdgeschoss.",
+      "trans": {
+        "tr": "zemin kat",
+        "ar": "الطابق الأرضي",
+        "uk": "перший поверх"
+      }
     },
     {
       "en": "first floor",
@@ -100,7 +155,12 @@
       "emoji": "1️⃣",
       "cat": "floor",
       "example": "My room is on the first floor.",
-      "exampleDe": "Mein Zimmer ist im ersten Stock."
+      "exampleDe": "Mein Zimmer ist im ersten Stock.",
+      "trans": {
+        "tr": "birinci kat",
+        "ar": "الطابق الأول",
+        "uk": "другий поверх"
+      }
     },
     {
       "en": "second floor",
@@ -108,7 +168,12 @@
       "emoji": "2️⃣",
       "cat": "floor",
       "example": "Grandma lives on the second floor.",
-      "exampleDe": "Oma wohnt im zweiten Stock."
+      "exampleDe": "Oma wohnt im zweiten Stock.",
+      "trans": {
+        "tr": "ikinci kat",
+        "ar": "الطابق الثاني",
+        "uk": "третій поверх"
+      }
     },
     {
       "en": "third floor",
@@ -116,7 +181,12 @@
       "emoji": "3️⃣",
       "cat": "floor",
       "example": "There is no lift to the third floor.",
-      "exampleDe": "Zum dritten Stock gibt es keinen Aufzug."
+      "exampleDe": "Zum dritten Stock gibt es keinen Aufzug.",
+      "trans": {
+        "tr": "üçüncü kat",
+        "ar": "الطابق الثالث",
+        "uk": "четвертий поверх"
+      }
     }
   ]
 }

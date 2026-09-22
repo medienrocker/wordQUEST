@@ -11,7 +11,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_bed.png",
       "cat": "furniture",
       "example": "My bed is next to the window.",
-      "exampleDe": "Mein Bett steht neben dem Fenster."
+      "exampleDe": "Mein Bett steht neben dem Fenster.",
+      "trans": {
+        "tr": "yatak",
+        "ar": "سرير",
+        "uk": "ліжко"
+      }
     },
     {
       "en": "sofa",
@@ -19,7 +24,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_sofa.png",
       "cat": "furniture",
       "example": "We watch films on the sofa.",
-      "exampleDe": "Wir schauen Filme auf dem Sofa."
+      "exampleDe": "Wir schauen Filme auf dem Sofa.",
+      "trans": {
+        "tr": "koltuk",
+        "ar": "أريكة",
+        "uk": "диван"
+      }
     },
     {
       "en": "chair",
@@ -27,7 +37,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_chair.png",
       "cat": "furniture",
       "example": "Please put the chair back under the table.",
-      "exampleDe": "Stell den Stuhl bitte wieder unter den Tisch."
+      "exampleDe": "Stell den Stuhl bitte wieder unter den Tisch.",
+      "trans": {
+        "tr": "sandalye",
+        "ar": "كرسي",
+        "uk": "стілець"
+      }
     },
     {
       "en": "shelf",
@@ -35,7 +50,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shelf.png",
       "cat": "furniture",
       "example": "My books are on the top shelf.",
-      "exampleDe": "Meine Bücher stehen im obersten Regal."
+      "exampleDe": "Meine Bücher stehen im obersten Regal.",
+      "trans": {
+        "tr": "raf",
+        "ar": "رف",
+        "uk": "полиця"
+      }
     },
     {
       "en": "fridge",
@@ -43,7 +63,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_fridge.png",
       "cat": "furniture",
       "example": "The milk is in the fridge.",
-      "exampleDe": "Die Milch ist im Kühlschrank."
+      "exampleDe": "Die Milch ist im Kühlschrank.",
+      "trans": {
+        "tr": "buzdolabı",
+        "ar": "ثلاجة",
+        "uk": "холодильник"
+      }
     },
     {
       "en": "toilet",
@@ -51,7 +76,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_toilet.png",
       "cat": "furniture",
       "example": "The toilet is next to the bathroom.",
-      "exampleDe": "Die Toilette ist neben dem Badezimmer."
+      "exampleDe": "Die Toilette ist neben dem Badezimmer.",
+      "trans": {
+        "tr": "tuvalet",
+        "ar": "مرحاض",
+        "uk": "туалет"
+      }
     },
     {
       "en": "shower",
@@ -59,7 +89,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_shower.png",
       "cat": "furniture",
       "example": "I sing in the shower every morning.",
-      "exampleDe": "Ich singe jeden Morgen unter der Dusche."
+      "exampleDe": "Ich singe jeden Morgen unter der Dusche.",
+      "trans": {
+        "tr": "duş",
+        "ar": "دش",
+        "uk": "душ"
+      }
     },
     {
       "en": "cooker",
@@ -67,7 +102,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_cooker.png",
       "cat": "furniture",
       "example": "Dad makes pasta on the cooker.",
-      "exampleDe": "Papa macht Nudeln auf dem Herd."
+      "exampleDe": "Papa macht Nudeln auf dem Herd.",
+      "trans": {
+        "tr": "ocak",
+        "ar": "موقد",
+        "uk": "плита"
+      }
     },
     {
       "en": "wardrobe",
@@ -75,7 +115,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_wardrobe.png",
       "cat": "furniture",
       "example": "All my clothes are in the wardrobe.",
-      "exampleDe": "Meine ganzen Klamotten sind im Kleiderschrank."
+      "exampleDe": "Meine ganzen Klamotten sind im Kleiderschrank.",
+      "trans": {
+        "tr": "gardırop",
+        "ar": "خزانة ملابس",
+        "uk": "шафа"
+      }
     },
     {
       "en": "table",
@@ -83,7 +128,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_table.png",
       "cat": "furniture",
       "example": "We eat dinner at the table together.",
-      "exampleDe": "Wir essen gemeinsam am Tisch zu Abend."
+      "exampleDe": "Wir essen gemeinsam am Tisch zu Abend.",
+      "trans": {
+        "tr": "masa",
+        "ar": "طاولة",
+        "uk": "стіл"
+      }
     },
     {
       "en": "lamp",
@@ -91,7 +141,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_lamp.png",
       "cat": "furniture",
       "example": "Please turn off the lamp.",
-      "exampleDe": "Mach bitte die Lampe aus."
+      "exampleDe": "Mach bitte die Lampe aus.",
+      "trans": {
+        "tr": "lamba",
+        "ar": "مصباح",
+        "uk": "лампа"
+      }
     },
     {
       "en": "plant",
@@ -99,7 +154,12 @@
       "img": "https://img.bildungssprit.de/wordquest/rooms-floors-furniture/wq_plant.png",
       "cat": "furniture",
       "example": "The plant needs water every week.",
-      "exampleDe": "Die Pflanze braucht jede Woche Wasser."
+      "exampleDe": "Die Pflanze braucht jede Woche Wasser.",
+      "trans": {
+        "tr": "bitki",
+        "ar": "نبات",
+        "uk": "рослина"
+      }
     }
   ]
 }

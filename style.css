@@ -2804,3 +2804,40 @@ body.overlay-offen {
 :root[data-lesehilfe="an"] .scramble-letters {
     letter-spacing: 0.09em;
 }
+
+/* ─── Sprachbrücke ─── */
+.bruecke {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--teal-dark);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.bruecke[dir="rtl"] {
+    text-align: right;
+    font-size: 1.05rem;
+}
+
+.bruecke-karte-zeile::before {
+    content: "🌍 ";
+    font-size: 0.85em;
+}
+
+#bruecke-wahl {
+    font: inherit;
+    font-size: 0.98rem;
+    padding: 11px 12px;
+    min-height: 48px;
+    width: 100%;
+    max-width: 340px;
+    border: 2px solid #d5e3d5;
+    border-radius: var(--r-field);
+    background: #fff;
+    color: var(--text);
+}
+
+#bruecke-wahl:focus-visible {
+    outline: 3px solid var(--teal-dark);
+    outline-offset: 2px;
+}

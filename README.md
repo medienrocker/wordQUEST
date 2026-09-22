@@ -88,7 +88,12 @@ Tabelle zum Korrigieren bereit, erst die bestätigte Fassung wird übernommen.
     { "en": "sports",  "de": "Sport",
       "img": "https://example.com/sport.jpg",           "cat": "sport" },
 
-    { "en": "art",     "de": "Kunst" }
+    { "en": "art",     "de": "Kunst" },
+
+    { "en": "apple",   "de": "der Apfel", "emoji": "🍎",
+      "example": "I eat an apple every morning.",
+      "exampleDe": "Ich esse jeden Morgen einen Apfel.",
+      "trans": { "tr": "elma", "ar": "تفاحة", "uk": "яблуко" } }
   ]
 }
 ```
@@ -108,6 +113,7 @@ Tabelle zum Korrigieren bereit, erst die bestätigte Fassung wird übernommen.
 | `words[].cat` | optional | Kategorie-Key (für Filter). Ohne Angabe → `"default"` |
 | `words[].example` | optional | Beispielsatz auf Englisch. Speist den Modus **Lückensatz** |
 | `words[].exampleDe` | optional | Übersetzung des Beispielsatzes |
+| `words[].trans` | optional | Sprachbrücke: Objekt aus Sprachkürzel und Wort, etwa `{"tr": "elma", "ar": "تفاحة"}`. Erlaubt sind 18 Kürzel, siehe `WQ_SPRACHEN` in `api/lib/wortlisten.php` |
 
 ### Wichtige Regeln
 
@@ -115,6 +121,8 @@ Tabelle zum Korrigieren bereit, erst die bestätigte Fassung wird übernommen.
 - **Bilder werden in ein festes Quadrat gezwungen** (via `object-fit: contain`). Egal ob Hoch-, Quer- oder Quadratformat: das Seitenverhältnis bleibt erhalten, es wird nichts abgeschnitten.
 - **Bild-URLs sollten HTTPS** sein, sonst blockiert der Browser sie (Mixed Content).
 - **Kategorien sind optional.** Ohne Kategorien wird in der Vokabelliste nur der „Alle"-Filter gezeigt.
+- **Die Sprachbrücke ist optional und rein zusätzlich.** Sie ersetzt nie das Deutsche, sondern steht daneben. Arabisch und Persisch werden von rechts nach links gesetzt.
+- **Lücken unter drei Buchstaben** werden im Lückensatz übersprungen, weil dort meist mehrere Wörter passen. Der Satz bleibt trotzdem in der Vokabelliste stehen.
 - **Beispielsätze lohnen sich.** Kommt das Wort im Satz wörtlich vor, entsteht daraus
   automatisch eine Lückensatz-Aufgabe. Steht im Satz nur eine gebeugte Form (`chase`
   gegen `chasing`, `friend` gegen `friends`), wird der Eintrag für diesen Modus still
@@ -149,6 +157,19 @@ Dann `http://localhost:8080/` aufrufen. `wordlists/index.json` wird als Liste ve
 Beim Hinzufügen neuer Listen lokal: auch `wordlists/index.json` aktualisieren (auf dem Plesk-Server nicht nötig, dort übernimmt `index.php` die Auto-Erkennung).
 
 ---
+
+## Sprache von zu Hause
+
+Für viele Kinder ist Deutsch nicht die erste Sprache. Unter **Üben** lässt sich
+eine Familiensprache wählen, dann steht das Wort zusätzlich darin neben dem
+deutschen. Gelernt wird weiter Deutsch zu Englisch, die Familiensprache ist
+eine Brücke, kein zweiter Lernweg.
+
+Im Schema heisst das Feld `trans`, siehe unten. Gefüllt sind bisher die vier
+konkreten Listen mit Türkisch, Arabisch und Ukrainisch. **Diese Übersetzungen
+sind noch nicht von Muttersprachlerinnen geprüft**, sie gehören vor dem
+Unterrichtseinsatz durchgesehen. Das geht im Admincenter unter **Bearbeiten**,
+dort wird immer eine Sprache als eigene Spalte eingeblendet.
 
 ## Mit einer Klasse üben
 

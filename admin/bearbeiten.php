@@ -29,6 +29,17 @@ $admin = wq_verlange_login();
 const WQ_SEITE_GROESSE = 40;
 const WQ_NEUE_ZEILEN   = 5;
 
+/* Sprachbrücke: Die Tabelle hat schon sieben Spalten. Alle Sprachen zugleich
+   wären unbedienbar, deshalb wird immer genau eine bearbeitet. */
+const WQ_SPRACHNAMEN = [
+    'tr' => 'Türkisch', 'ar' => 'Arabisch', 'uk' => 'Ukrainisch', 'ru' => 'Russisch',
+    'pl' => 'Polnisch', 'ro' => 'Rumänisch', 'bg' => 'Bulgarisch', 'sq' => 'Albanisch',
+    'sr' => 'Serbisch', 'hr' => 'Kroatisch', 'fa' => 'Persisch', 'ku' => 'Kurdisch',
+    'ti' => 'Tigrinya', 'so' => 'Somali', 'es' => 'Spanisch', 'it' => 'Italienisch',
+    'fr' => 'Französisch',
+];
+const WQ_RECHTSLAEUFIG = ['ar', 'fa'];
+
 function wq_h(?string $s): string
 {
     return htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -41,7 +52,7 @@ function wq_zeilen_aus_post(): array
     if (!is_array($roh)) {
         return [];
     }
-    $felder = ['en', 'de', 'emoji', 'cat', 'example', 'exampleDe'];
+    $felder = ['en', 'de', 'emoji', 'cat', 'example', 'exampleDe', 'bruecke'];
     $zeilen = [];
     foreach ($roh as $i => $z) {
         if (!is_array($z)) {
@@ -57,8 +68,14 @@ function wq_zeilen_aus_post(): array
     return $zeilen;
 }
 
-/** Baut aus einem Formulareintrag ein Wort für die Liste. */
-function wq_wort_aus_zeile(array $z): ?array
+/**
+ * Baut aus einem Formulareintrag ein Wort für die Liste.
+ *
+ * `$alt` ist der bisherige Stand. Er wird für die Sprachbrücke gebraucht:
+ * Bearbeitet wird immer nur eine Sprache, alle anderen müssen unverändert
+ * erhalten bleiben. Ohne das löschte jedes Speichern die übrigen Sprachen.
+ */
+function wq_wort_aus_zeile(array $z, array $alt = [], string $sprache = ''): ?array
 {
     if ($z['en'] === '' || $z['de'] === '') {
         return null;
@@ -68,6 +85,18 @@ function wq_wort_aus_zeile(array $z): ?array
         if ($z[$f] !== '') {
             $wort[$f] = $z[$f];
         }
+    }
+
+    $bruecke = isset($alt['trans']) && is_array($alt['trans']) ? $alt['trans'] : [];
+    if ($sprache !== '') {
+        if (($z['bruecke'] ?? '') !== '') {
+            $bruecke[$sprache] = $z['bruecke'];
+        } else {
+            unset($bruecke[$sprache]);
+        }
+    }
+    if ($bruecke) {
+        $wort['trans'] = $bruecke;
     }
     return $wort;
 }
@@ -161,6 +190,10 @@ if ($datei !== '' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $meldungArt = !empty($ergebnis['ok']) ? 'ok' : 'fehler';
 
     } elseif ($aktion === 'woerter' || $aktion === 'emoji') {
+        $sprache = (string) ($_POST['sprache'] ?? '');
+        if (!isset(WQ_SPRACHNAMEN[$sprache])) {
+            $sprache = '';
+        }
         $zeilen = wq_zeilen_aus_post();
         $erwartet = (int) ($_POST['anzahl'] ?? 0);
 
@@ -185,7 +218,9 @@ if ($datei !== '' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 if ($z['weg']) {
                     continue;
                 }
-                $wort = wq_wort_aus_zeile($z);
+                $bisher = ($i < WQ_SEITE_GROESSE && isset($woerter[$von + $i]) && is_array($woerter[$von + $i]))
+                    ? $woerter[$von + $i] : [];
+                $wort = wq_wort_aus_zeile($z, $bisher, $sprache);
                 if ($wort === null) {
                     continue;
                 }
@@ -253,6 +288,12 @@ foreach ($woerter as $w) {
         $ohneVisualisierung++;
     }
 }
+
+$sprache = (string) ($_POST['sprache'] ?? $_GET['sprache'] ?? '');
+if (!isset(WQ_SPRACHNAMEN[$sprache])) {
+    $sprache = '';
+}
+$rtl = in_array($sprache, WQ_RECHTSLAEUFIG, true);
 
 $fassungen = $datei !== '' ? wq_versionen($datei) : [];
 $istArchiviert = $datei !== '' && in_array($datei, wq_archivierte(), true);
@@ -388,7 +429,7 @@ require __DIR__ . '/kopf.php';
         <?php if ($s === $seite): ?>
           <strong><?= $s ?></strong>
         <?php else: ?>
-          <a href="?liste=<?= urlencode($datei) ?>&amp;seite=<?= $s ?>"><?= $s ?></a>
+          <a href="?liste=<?= urlencode($datei) ?>&amp;seite=<?= $s ?><?= $sprache !== '' ? '&amp;sprache=' . urlencode($sprache) : '' ?>"><?= $s ?></a>
         <?php endif; ?>
       <?php endfor; ?>
     </p>
@@ -396,6 +437,32 @@ require __DIR__ . '/kopf.php';
       Jede Seite wird für sich gespeichert. Bitte vor dem Blättern speichern.
     </p>
   <?php endif; ?>
+
+  <form method="get" class="reihe sprachwahl">
+    <input type="hidden" name="liste" value="<?= wq_h($datei) ?>" />
+    <input type="hidden" name="seite" value="<?= $seite ?>" />
+    <label for="sprache">Sprachbrücke bearbeiten</label>
+    <select id="sprache" name="sprache">
+      <option value="">– keine –</option>
+      <?php foreach (WQ_SPRACHNAMEN as $kuerzel => $name): ?>
+        <?php
+        $wieViele = 0;
+        foreach ($woerter as $w) {
+            if (!empty($w['trans'][$kuerzel])) { $wieViele++; }
+        }
+        ?>
+        <option value="<?= wq_h($kuerzel) ?>"<?= $sprache === $kuerzel ? ' selected' : '' ?>>
+          <?= wq_h($name) ?><?= $wieViele ? ' (' . $wieViele . ')' : '' ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+    <button type="submit" class="klein">anzeigen</button>
+  </form>
+  <p class="hinweis">
+    Es wird immer nur eine Sprache bearbeitet, sonst hätte die Tabelle zwanzig
+    Spalten. Die übrigen Sprachen bleiben beim Speichern unverändert. Die Zahl
+    in Klammern sagt, wie viele Wörter diese Sprache schon haben.
+  </p>
 
   <datalist id="emoji-auswahl">
     <?php foreach (wq_emoji_auswahl() as $e): ?>
@@ -409,12 +476,14 @@ require __DIR__ . '/kopf.php';
     <input type="hidden" name="seite" value="<?= $seite ?>" />
     <input type="hidden" name="von" value="<?= $von ?>" />
     <input type="hidden" name="anzahl" value="<?= count($ausschnitt) + WQ_NEUE_ZEILEN ?>" />
+    <input type="hidden" name="sprache" value="<?= wq_h($sprache) ?>" />
 
     <div class="tabellen-rahmen rahmen-gross">
     <table class="wortliste">
       <thead>
         <tr>
           <th>Englisch</th><th>Deutsch</th><th>Emoji</th><th>Kategorie</th>
+          <?php if ($sprache !== ''): ?><th><?= wq_h(WQ_SPRACHNAMEN[$sprache]) ?></th><?php endif; ?>
           <th>Beispielsatz</th><th>Satz deutsch</th><th>weg</th>
         </tr>
       </thead>
@@ -446,6 +515,12 @@ require __DIR__ . '/kopf.php';
               <?php endforeach; ?>
             </select>
           </td>
+          <?php if ($sprache !== ''): ?>
+            <td><input type="text" name="w[<?= $i ?>][bruecke]" maxlength="120"
+                       value="<?= wq_h((string) ($w['trans'][$sprache] ?? '')) ?>"
+                       <?= $rtl ? 'dir="rtl" ' : '' ?>lang="<?= wq_h($sprache) ?>"
+                       aria-label="<?= wq_h(WQ_SPRACHNAMEN[$sprache]) ?>, Zeile <?= $nr ?>" /></td>
+          <?php endif; ?>
           <td><input type="text" name="w[<?= $i ?>][example]" maxlength="200" value="<?= wq_h((string) ($w['example'] ?? '')) ?>"
                      aria-label="Beispielsatz englisch, Zeile <?= $nr ?>" /></td>
           <td><input type="text" name="w[<?= $i ?>][exampleDe]" maxlength="200" value="<?= wq_h((string) ($w['exampleDe'] ?? '')) ?>"
@@ -472,6 +547,11 @@ require __DIR__ . '/kopf.php';
               <?php endforeach; ?>
             </select>
           </td>
+          <?php if ($sprache !== ''): ?>
+            <td><input type="text" name="w[<?= $i ?>][bruecke]" maxlength="120"
+                       <?= $rtl ? 'dir="rtl" ' : '' ?>lang="<?= wq_h($sprache) ?>"
+                       aria-label="<?= wq_h(WQ_SPRACHNAMEN[$sprache]) ?>, neue Zeile <?= $n + 1 ?>" /></td>
+          <?php endif; ?>
           <td><input type="text" name="w[<?= $i ?>][example]" maxlength="200"
                      aria-label="Beispielsatz englisch, neue Zeile <?= $n + 1 ?>" /></td>
           <td><input type="text" name="w[<?= $i ?>][exampleDe]" maxlength="200"
