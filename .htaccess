@@ -45,6 +45,15 @@ RedirectMatch 404 (?i)^/img/.*\.(php\d?|phtml|phar|pht|shtml|html?|svg|xml|js)$
   Header always set Referrer-Policy "no-referrer"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()"
 
+  # Die Einreichungsseite bietet die Texterkennung im Browser an und braucht
+  # dafür WebAssembly, einen Worker aus einem Blob und die Sprachdaten. Sie
+  # setzt ihre Richtlinie selbst aus PHP. Der hier gesetzte Header muss dafür
+  # weichen, denn mehrere CSP-Header gelten immer als Schnittmenge und können
+  # eine Richtlinie nur verschärfen, nie erweitern.
+  <Files "einreichen.php">
+    Header always unset Content-Security-Policy
+  </Files>
+
   # Kurzes Caching für die HTML-Shell, kein Caching für Wortlisten
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, must-revalidate"

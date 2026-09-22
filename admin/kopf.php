@@ -25,6 +25,21 @@ if (!headers_sent()) {
     header('Cache-Control: no-store');
 }
 $wqAdmin = function_exists('wq_aktueller_admin') ? wq_aktueller_admin() : null;
+
+/* Zähler offener Einreichungen in der Navigation.
+   Bewusst unabhängig von der Benachrichtigung per E-Mail: Fällt die aus,
+   sieht man trotzdem sofort, dass etwas wartet. Ein Fehler beim Zählen darf
+   das Admincenter nie unbenutzbar machen, deshalb still abgefangen. */
+$wqOffen = 0;
+if ($wqAdmin && function_exists('wq_db')) {
+    try {
+        $wqOffen = (int) wq_db()
+            ->query('SELECT COUNT(*) FROM einreichungen WHERE status = "neu"')
+            ->fetchColumn();
+    } catch (Throwable $e) {
+        $wqOffen = 0;
+    }
+}
 ?><!DOCTYPE html>
 <html lang="de">
 <head>
@@ -44,7 +59,7 @@ $wqAdmin = function_exists('wq_aktueller_admin') ? wq_aktueller_admin() : null;
   </span>
   <nav>
     <a href="dashboard.php">Übersicht</a>
-    <a href="listen.php">Wortlisten</a>
+    <a href="listen.php">Wortlisten<?php if ($wqOffen > 0): ?><span class="zaehler"><?= $wqOffen ?><span class="sr-only"> offene Einreichungen</span></span><?php endif; ?></a>
     <a href="foto.php">Foto</a>
     <a href="bilder.php">Bilder</a>
     <?php if ($wqAdmin['rolle'] === 'superadmin'): ?>

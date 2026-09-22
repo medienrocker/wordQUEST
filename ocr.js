@@ -9,6 +9,12 @@
  * jedes Wort mit einem Rechteck. Daraus lässt sich die englische Spalte links
  * von der deutschen rechts trennen. Ein reiner Textauswurf ohne Positionen
  * wäre für zweispaltige Seiten unbrauchbar.
+ *
+ * Diese Datei wird von zwei Seiten genutzt: `admin/foto.php` und der
+ * öffentlichen `einreichen.php`. Beide bringen dieselben Element-Kennungen
+ * mit, und das Ergebnis landet in beiden Fällen im Feld `eingefuegt`. Damit
+ * läuft die Einreichung durch denselben Weg wie eine von Hand eingefügte
+ * Tabelle, es gibt keinen zweiten Pfad in den Server.
  */
 (function () {
   'use strict';
@@ -25,6 +31,12 @@
   const tabelle    = el('foto-tabelle');
   const ausgabe    = el('eingefuegt');
   const zaehler    = el('foto-zaehler');
+
+  // Fehlt ein Baustein, passiert hier gar nichts. So lässt sich die Datei
+  // gefahrlos auf Seiten einbinden, die den Fotoweg nicht anbieten.
+  if (!bildFeld || !leinwand || !startKnopf || !stand || !ergebnis || !tabelle || !ausgabe || !zaehler) {
+    return;
+  }
 
   let worker = null;
 

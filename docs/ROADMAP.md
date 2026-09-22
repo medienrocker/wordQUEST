@@ -26,7 +26,10 @@ im Browser erkannt, als Einreichung übernommen.
 
 Dazu WQ-7.5: Bilderverwaltung im Admincenter.
 
-Offen: WQ-6.4, Epic 8, Epic 9 ohne WQ-9.5, Epic 10.
+Dazu WQ-8.1 und WQ-8.2: öffentliche Seite "Wortliste einreichen" mit
+Spamschutz und Warteschlange im Admincenter.
+
+Offen: WQ-6.4, WQ-8.3, Epic 9 ohne WQ-9.5, Epic 10.
 
 ### Entscheidungen aus der Wiederverwendungsprüfung
 
@@ -373,31 +376,64 @@ wird gelöscht.
 
 ## Epic 8, Einreichungen und Gemeinschaft
 
-### WQ-8.1, Einreichung per E-Mail (Stufe 1, sofort umsetzbar)
+### WQ-8.1, Einreichung per E-Mail (Stufe 1)
 
-**Ziel:** Lehrkräfte können Listen einreichen, bevor irgendeine Serverfunktion existiert.
+**Umgesetzt, aber anders als geplant: aufgegangen in WQ-8.2.**
 
-**Akzeptanz:**
+Der E-Mail-Weg war als Überbrückung gedacht, für die Zeit, in der es noch
+keine Serverfunktion gab. Die gibt es inzwischen. Ein Formular ist an jeder
+Stelle besser: Es prüft sofort, es führt durch die Formate, es erzeugt eine
+Warteschlange statt eines Postfachs, und es zwingt uns nicht, eine
+Kontaktadresse öffentlich auf eine Seite zu schreiben, die Maschinen absuchen.
 
-- [ ] Öffentliche Seite "Liste einreichen" mit Formatbeschreibung, Vorlage zum Herunterladen (JSON und CSV) und einer E-Mail-Adresse.
-- [ ] Hinweis, dass auch ein Foto der Buchseite genügt.
-- [ ] Verlinkt aus dem Fussbereich der App.
+Aus dem Ticket übernommen und erledigt:
 
-**Abhängigkeiten:** keine. Kann vor allen Serverarbeiten erledigt werden.
+- [x] Öffentliche Seite "Wortliste einreichen" mit Formatbeschreibung und
+      Vorlagen zum Herunterladen (JSON und CSV), siehe `vorlagen/`.
+- [x] Hinweis, dass auch ein Foto der Buchseite genügt, samt Erkennung direkt
+      auf der Seite.
+- [x] Verlinkt aus dem Fussbereich der App.
+
+**Abhängigkeiten:** keine.
 
 ### WQ-8.2, Einreichungs-Postfach im Admincenter (Stufe 2)
 
 **Ziel:** Formular auf der Website, Eingang landet in einer Warteschlange, du bekommst Bescheid.
 
+**Umgesetzt.** `einreichen.php` mit `api/lib/einreichung.php`.
+
 **Akzeptanz:**
 
-- [ ] Öffentliches Formular ohne Anmeldung: Name (freiwillig), Kontakt (freiwillig), Datei oder Foto, Bemerkung.
-- [ ] Angenommen werden JSON, CSV, XLSX und Bilddateien. Prüfung von Typ und Größe serverseitig.
-- [ ] Dateien landen in einem Verzeichnis ohne PHP-Ausführung und ohne direkten Zugriff von aussen.
-- [ ] Spamschutz ohne CAPTCHA: verstecktes Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Rate Limit pro Adresse. Die zur Begrenzung genutzte Adresse wird nicht dauerhaft gespeichert.
-- [ ] Benachrichtigung per E-Mail an den Superadmin über authentifiziertes SMTP, nicht über `mail()`.
-- [ ] Unabhängig von der E-Mail zeigt das Admincenter einen Zähler offener Einreichungen. Die Benachrichtigung darf ausfallen, ohne dass etwas verloren geht.
-- [ ] Ablauf im Admincenter: ansehen, bearbeiten, veröffentlichen oder ablehnen.
+- [x] Öffentliches Formular ohne Anmeldung: Name (freiwillig), Kontakt (freiwillig), Datei oder Foto, Bemerkung.
+- [x] Angenommen werden JSON, CSV, XLSX und Fotos. Prüfung von Typ und Größe serverseitig.
+- [x] Keine Datei bleibt liegen: Eingereichtes wird sofort in die Datenbank überführt, Fotos verlassen das Gerät gar nicht erst.
+- [x] Spamschutz ohne CAPTCHA: verstecktes Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Taktbremse pro Adresse. Die zur Begrenzung genutzte Adresse wird nicht dauerhaft gespeichert.
+- [x] Unabhängig von der E-Mail zeigt das Admincenter einen Zähler offener Einreichungen. Die Benachrichtigung darf ausfallen, ohne dass etwas verloren geht.
+- [x] Ablauf im Admincenter: ansehen, bearbeiten, veröffentlichen oder ablehnen.
+
+**Wichtige Entscheidungen:**
+
+- **Kein Ablageverzeichnis für Uploads.** Das ursprüngliche Ticket sah ein
+  Verzeichnis ohne PHP-Ausführung vor. Gebraucht wird es nicht: Eine
+  hochgeladene Tabelle wird sofort gelesen, geprüft und als Einreichung in die
+  Datenbank geschrieben. Die hochgeladene Datei selbst überlebt die Anfrage
+  nicht. Damit entfallen Dateirechte, Pfadprüfungen und Aufräumarbeit, und es
+  gibt nichts, was jemand später direkt aufrufen könnte.
+- **Fotos werden nicht hochgeladen.** Die Texterkennung läuft im Browser, wie
+  schon bei WQ-9.5. Abgeschickt wird nur die Tabelle, die der Mensch bestätigt
+  hat. `ocr.js` liegt deshalb jetzt im Wurzelverzeichnis und wird von beiden
+  Seiten genutzt, der öffentlichen und der im Admincenter.
+- **Kein CSRF-Token.** Ein Token bräuchte eine Sitzung und damit ein Cookie für
+  jede Besucherin, was der cookiefreien Auslegung der öffentlichen Seiten
+  widerspricht. Es gibt hier auch keine Anmeldung und keinen Zustand, den ein
+  fremder Absender missbrauchen könnte. Was wirklich droht, ist Spam, und
+  dagegen wirken Honigtopf, Mindestzeit und Taktbremse.
+- **Die Adresse der Absenderin wird nie gespeichert**, nur ein HMAC, dessen
+  Schlüssel den Tag enthält, und auch der fliegt nach 24 Stunden raus.
+
+**Noch offen:** Benachrichtigung per E-Mail an den Superadmin über
+authentifiziertes SMTP. Der Zähler in der Navigation macht sie entbehrlich,
+nicht überflüssig.
 
 **Abhängigkeiten:** WQ-7.1, WQ-7.3, WQ-7.4.
 

@@ -42,7 +42,10 @@ installierte Geräte ihre alte Fassung.
 
 ## Wortlisten einreichen: welche Formate gehen?
 
-Im Admincenter unter **Wortlisten**:
+Zwei Wege führen hinein: die öffentliche Seite **[einreichen.php](einreichen.php)**,
+die aus dem Fussbereich der App verlinkt ist und keine Anmeldung braucht, und
+das Admincenter unter **Wortlisten**. Beide nehmen dieselben Formate an und
+laufen durch dieselbe Prüfung:
 
 | Format | Hinweis |
 |--------|---------|
@@ -58,6 +61,9 @@ und zugeordnet. Ohne Kopfzeile gilt: erste Spalte englisch, zweite deutsch.
 
 Alles läuft anschließend durch dieselbe Prüfung wie eine JSON-Datei und landet
 als Einreichung. Erst die Freigabe macht eine Liste in der App sichtbar.
+
+Vorlagen zum Weiterarbeiten liegen in [`vorlagen/`](vorlagen/), als CSV und als
+JSON. Die öffentliche Seite bietet sie zum Herunterladen an.
 
 **Fotos von Buchseiten** gehen im Admincenter unter **Foto**. Die Texterkennung
 läuft im Browser, das Foto wird nicht hochgeladen. Nach dem Erkennen steht die
@@ -160,8 +166,8 @@ Hochgeladene Bilder werden serverseitig nach WebP mit 256 Pixel Kantenlänge neu
 erzeugt und liegen in `img/auto/`. Der Ordner ist nicht im Repo und gehört in
 die Sicherung, siehe [docs/DEPLOY.md](docs/DEPLOY.md).
 
-Offen bleibt das Postfach für Einreichungen von Lehrkräften, siehe
-[docs/ROADMAP.md](docs/ROADMAP.md).
+Einreichungen von der öffentlichen Seite landen in derselben Warteschlange. Ein
+Zähler neben **Wortlisten** zeigt, wie viele offen sind.
 
 **Wichtig dabei:** Eingereichte Dateien dürfen *nicht* direkt in `wordlists/` landen.
 Der Ordner liegt im Docroot, wird von `index.php` per `glob()` gelesen und wäre damit

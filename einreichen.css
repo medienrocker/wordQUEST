@@ -1,0 +1,257 @@
+/* wordQUEST – öffentliche Seite "Wortliste einreichen".
+   Eigenes, kleines Stylesheet statt des App-Stylesheets: Die App bringt viel
+   Spielmechanik mit, die hier nichts zu suchen hat, und die Seite soll auch
+   über eine langsame Mobilverbindung sofort stehen. Aus demselben Grund keine
+   Webschrift.
+   Farbwerte sind bewusst dieselben wie in der App. */
+:root {
+    --gruen: #4caf50;
+    --gruen-dunkel: #2e7d32;
+    --dunkel: #2e3a2e;
+    --grund: #f0faf0;
+    --karte: #ffffff;
+    --linie: #dde6dd;
+    --rot: #c62828;
+    --radius: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--grund);
+    color: var(--dunkel);
+    line-height: 1.55;
+}
+
+/* ─── Kopf ─── */
+.kopf {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--dunkel);
+    color: #fff;
+    padding: 12px 16px;
+}
+
+.kopf .marke {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #fff;
+    text-decoration: none;
+}
+
+.kopf .marke img { width: 34px; height: 34px; object-fit: contain; }
+
+.kopf .zurueck {
+    margin-left: auto;
+    color: #cfe6cf;
+    text-decoration: none;
+    border: 1px solid #6d836d;
+    border-radius: var(--radius);
+    padding: 8px 14px;
+}
+
+.kopf .zurueck:hover,
+.kopf .zurueck:focus-visible { color: #fff; background: #3c4c3c; }
+
+/* ─── Grundgerüst ─── */
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+
+h1 { font-size: 1.7rem; margin-bottom: 12px; }
+h2 { font-size: 1.15rem; margin-bottom: 10px; }
+h3 { font-size: 1rem; margin: 22px 0 6px; }
+
+.vorspann { font-size: 1.05rem; margin-bottom: 20px; }
+
+p + p { margin-top: 10px; }
+
+a { color: var(--gruen-dunkel); }
+
+.karte {
+    background: var(--karte);
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.gut-karte { border-color: var(--gruen); border-width: 2px; }
+
+.hinweis { font-size: .92rem; color: #5a6a5a; margin-top: 8px; }
+
+ul { margin: 6px 0 0 20px; }
+li { margin-bottom: 6px; }
+
+code {
+    background: var(--grund);
+    border: 1px solid var(--linie);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: .9em;
+}
+
+/* ─── Meldungen ─── */
+.meldung {
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-left: 5px solid var(--gruen);
+    background: #eef7ee;
+}
+
+.meldung.fehler { border-left-color: var(--rot); background: #fdecea; color: #8c1d16; }
+.meldung.hinweis-meldung { border-left-color: #b0c4b0; background: var(--grund); font-size: .92rem; }
+
+/* ─── Tabellen ─── */
+table { border-collapse: collapse; width: 100%; }
+
+th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--linie);
+    vertical-align: top;
+}
+
+th { font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; color: #5a6a5a; }
+
+.formate td:first-child { white-space: nowrap; }
+
+.tabellen-rahmen { max-height: 460px; overflow: auto; border: 1px solid var(--linie); border-radius: var(--radius); }
+
+.foto-tabelle input {
+    width: 100%;
+    min-width: 120px;
+    padding: 7px 8px;
+    font: inherit;
+    border: 1px solid var(--linie);
+    border-radius: 4px;
+}
+
+.foto-leinwand {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 12px;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+}
+
+/* ─── Formular ─── */
+label {
+    display: block;
+    font-weight: 600;
+    margin: 14px 0 5px;
+}
+
+input[type="text"],
+input[type="file"],
+textarea {
+    width: 100%;
+    font: inherit;
+    padding: 11px 12px;
+    border: 2px solid var(--linie);
+    border-radius: var(--radius);
+    background: #fff;
+    color: inherit;
+}
+
+textarea { resize: vertical; min-height: 96px; }
+
+input[type="file"] { padding: 9px; }
+
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--gruen-dunkel);
+    outline-offset: 2px;
+}
+
+.knopf {
+    display: inline-block;
+    font: inherit;
+    font-weight: 700;
+    color: #fff;
+    background: var(--gruen-dunkel);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 22px;
+    min-height: 48px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.knopf:hover { background: #1b5e20; }
+.knopf[disabled] { background: #9db29d; cursor: not-allowed; }
+.knopf.schmal { padding: 11px 16px; font-size: .95rem; }
+.knopf.gross { font-size: 1.1rem; padding: 15px 28px; width: 100%; }
+
+.absenden { margin: 22px 0 8px; }
+
+button.klein {
+    font: inherit;
+    font-size: .85rem;
+    padding: 7px 10px;
+    min-height: 40px;
+    border: 1px solid var(--linie);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--dunkel);
+    cursor: pointer;
+}
+
+button.klein:hover { background: var(--grund); }
+
+/* ─── Honigtopf ───
+   Aus dem Fluss genommen statt display:none, weil manche einfachen Bots
+   Felder mit display:none überspringen. Für Menschen bleibt es unerreichbar:
+   ausserhalb des Sichtfelds, nicht anklickbar, nicht per Tabulator erreichbar
+   und im Markup mit aria-hidden versehen. */
+.honigtopf {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Nur für Screenreader. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ─── Fuss ─── */
+.fuss {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 22px 16px 34px;
+    font-size: .85rem;
+    color: #5a6a5a;
+    border-top: 1px solid var(--linie);
+}
+
+.fuss-logo img { height: 26px; width: auto; display: block; }
+.fuss a { color: inherit; }
+
+@media (max-width: 520px) {
+    main { padding: 18px 16px 48px; }
+    h1 { font-size: 1.45rem; }
+    .karte { padding: 14px; }
+}

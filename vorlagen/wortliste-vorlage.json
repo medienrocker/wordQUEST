@@ -1,0 +1,58 @@
+{
+  "title": "Beispielliste, bitte umbenennen",
+  "description": "Kurze Beschreibung, was in der Liste steckt. Freiwillig.",
+  "categories": {
+    "Essen": "Essen und Trinken",
+    "Alltag": "Schule und Alltag",
+    "Menschen": "Menschen"
+  },
+  "words": [
+    {
+      "en": "apple",
+      "de": "der Apfel",
+      "emoji": "🍎",
+      "cat": "Essen",
+      "example": "I eat an apple every morning.",
+      "exampleDe": "Ich esse jeden Morgen einen Apfel."
+    },
+    {
+      "en": "bread",
+      "de": "das Brot",
+      "emoji": "🍞",
+      "cat": "Essen",
+      "example": "We need bread for breakfast.",
+      "exampleDe": "Wir brauchen Brot zum Frühstück."
+    },
+    {
+      "en": "school",
+      "de": "die Schule",
+      "emoji": "🏫",
+      "cat": "Alltag",
+      "example": "My school starts at eight.",
+      "exampleDe": "Meine Schule beginnt um acht."
+    },
+    {
+      "en": "to learn",
+      "de": "lernen",
+      "emoji": "📚",
+      "cat": "Alltag",
+      "example": "I learn ten new words a day.",
+      "exampleDe": "Ich lerne zehn neue Wörter am Tag."
+    },
+    {
+      "en": "friend",
+      "de": "die Freundin, der Freund",
+      "emoji": "🧑‍🤝‍🧑",
+      "cat": "Menschen",
+      "example": "She is my best friend.",
+      "exampleDe": "Sie ist meine beste Freundin."
+    },
+    {
+      "en": "to bring up",
+      "de": "ansprechen",
+      "cat": "Alltag",
+      "example": "Please bring it up in class.",
+      "exampleDe": "Sprich es bitte im Unterricht an."
+    }
+  ]
+}

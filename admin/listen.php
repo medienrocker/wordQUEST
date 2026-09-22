@@ -16,10 +16,11 @@ require __DIR__ . '/../api/lib/db.php';
 require __DIR__ . '/../api/lib/auth.php';
 require __DIR__ . '/../api/lib/wortlisten.php';
 require __DIR__ . '/../api/lib/import.php';
+require __DIR__ . '/../api/lib/einreichung.php';
 
 $admin = wq_verlange_login();
 $pdo = wq_db();
-wq_einreichungen_schema($pdo);
+wq_einreichung_felder_ergaenzen($pdo);
 
 function wq_h(?string $s): string
 {
@@ -182,6 +183,25 @@ require __DIR__ . '/kopf.php';
     Datei <?= wq_h((string) ($vorschau['originalname'] ?? 'unbekannt')) ?>,
     <?= (int) $vorschau['anzahl_woerter'] ?> Wörter.
   </p>
+  <?php
+  /* Begleitangaben aus dem öffentlichen Formular. Alles davon kommt von
+     aussen und wird deshalb escaped ausgegeben, nie als Markup. */
+  $hatBegleitung = ($vorschau['absender'] ?? '') !== '' || ($vorschau['kontakt'] ?? '') !== ''
+                || ($vorschau['bemerkung'] ?? '') !== '';
+  ?>
+  <?php if ($hatBegleitung): ?>
+    <dl class="begleitung">
+      <?php if (($vorschau['absender'] ?? '') !== ''): ?>
+        <dt>Eingereicht von</dt><dd><?= wq_h((string) $vorschau['absender']) ?></dd>
+      <?php endif; ?>
+      <?php if (($vorschau['kontakt'] ?? '') !== ''): ?>
+        <dt>Kontakt</dt><dd><?= wq_h((string) $vorschau['kontakt']) ?></dd>
+      <?php endif; ?>
+      <?php if (($vorschau['bemerkung'] ?? '') !== ''): ?>
+        <dt>Bemerkung</dt><dd><?= nl2br(wq_h((string) $vorschau['bemerkung'])) ?></dd>
+      <?php endif; ?>
+    </dl>
+  <?php endif; ?>
   <?php foreach ($vorschauPruefung['hinweise'] as $h): ?>
     <p class="meldung hinweis-meldung"><?= wq_h($h) ?></p>
   <?php endforeach; ?>
@@ -212,13 +232,14 @@ require __DIR__ . '/kopf.php';
     <p class="leer">Nichts offen.</p>
   <?php else: ?>
     <table>
-      <thead><tr><th>Nr.</th><th>Titel</th><th class="zahl">Wörter</th><th>Eingereicht</th><th>Aktion</th></tr></thead>
+      <thead><tr><th>Nr.</th><th>Titel</th><th class="zahl">Wörter</th><th>Von</th><th>Eingereicht</th><th>Aktion</th></tr></thead>
       <tbody>
       <?php foreach ($offen as $e): ?>
         <tr>
           <td><?= (int) $e['id'] ?></td>
           <td><strong><?= wq_h((string) ($e['titel'] ?? 'ohne Titel')) ?></strong></td>
           <td class="zahl"><?= (int) $e['anzahl_woerter'] ?></td>
+          <td><?= wq_h((string) ($e['absender'] ?? '')) ?: '<span class="leer">anonym</span>' ?></td>
           <td><?= wq_h((string) $e['eingereicht_am']) ?></td>
           <td class="aktionen">
             <a class="klein-link" href="?ansehen=<?= (int) $e['id'] ?>">ansehen</a>

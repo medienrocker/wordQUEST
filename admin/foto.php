@@ -134,5 +134,5 @@ require __DIR__ . '/kopf.php';
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="foto.js"></script>
+<script src="../ocr.js"></script>
 <?php require __DIR__ . '/fuss.php'; ?>

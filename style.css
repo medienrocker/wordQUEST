@@ -754,6 +754,16 @@ nav {
     display: block;
 }
 
+/* Einladung an Lehrkräfte, eigene Listen einzureichen. Eigene Zeile, damit
+   sie auf dem Telefon nicht zwischen die Urheberangaben rutscht. */
+.credits-einreichen {
+    flex-basis: 100%;
+}
+
+.credits-einreichen a {
+    border-bottom-style: solid;
+}
+
 /* ─── MENU GRID ─── */
 .menu-grid {
     display: grid;

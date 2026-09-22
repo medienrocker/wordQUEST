@@ -308,15 +308,73 @@ wie die Seite selbst und sie sonst beim lokalen Entwickeln unsichtbar wäre.
 **`img/auto/` liegt nicht im Repository.** Die Dateien entstehen nur auf dem
 Server und gehören deshalb in die Sicherung, siehe `DEPLOY.md`.
 
+## Öffentliche Einreichungen, Stand nach WQ-8.1 und WQ-8.2
+
+Mit `einreichen.php` gibt es zum ersten Mal einen Weg in den Server, der ohne
+Anmeldung offensteht. Entsprechend eng ist er gefasst.
+
+**Es entsteht keine Datei auf dem Server.** Eine hochgeladene Tabelle wird
+gelesen, geprüft und als Einreichung in die Datenbank geschrieben. Die
+hochgeladene Datei überlebt die Anfrage nicht. Damit gibt es nichts, was
+jemand später direkt aufrufen könnte, und die Punkte 1 bis 3 der Liste weiter
+unten sind gegenstandslos geworden.
+
+**Es gibt keinen zweiten Weg hinein.** Eine öffentliche Einreichung läuft
+durch genau dieselbe Import- und Schemaprüfung wie ein Upload im Admincenter
+und landet mit Status "neu". Veröffentlicht wird ausschliesslich von Hand, und
+auch dann nicht der eingereichte Text, sondern eine neu erzeugte Datei aus den
+geprüften Werten.
+
+**Spamschutz in drei Stufen, ohne CAPTCHA:**
+
+1. **Honigtopf.** Ein Feld, das für Menschen unerreichbar ist: aus dem Fluss
+   genommen, nicht per Tabulator erreichbar, `aria-hidden`. Ist es ausgefüllt,
+   wird abgelehnt, ohne zu verraten, was aufgefallen ist.
+2. **Mindestzeit.** Der Zeitpunkt des Seitenaufrufs steht signiert im Formular
+   und wird mit HMAC geprüft. Ohne Signatur ist die Mindestzeit wertlos, weil
+   sich der Zeitstempel sonst einfach zurückdatieren liesse. Unter vier
+   Sekunden gilt als Maschine, nach zwei Stunden ist das Formular abgelaufen.
+3. **Taktbremse.** Fünf Einreichungen je Stunde und zwanzig je Tag pro
+   Anschluss.
+
+**Die Adresse der Absenderin wird nie gespeichert.** Für die Taktbremse
+gespeichert wird ein HMAC, dessen Schlüssel den Tag enthält. Damit ist eine
+Kennung am Folgetag keiner Adresse mehr zuzuordnen, auch nicht mit dem
+Serverschlüssel. Zusätzlich werden Einträge älter als 24 Stunden bei jeder
+Prüfung gelöscht.
+
+**Der Serverschlüssel liegt neben der Datenbank**, also ausserhalb des
+Docroots, wird beim ersten Bedarf aus `random_bytes(32)` erzeugt und mit
+Rechten 0600 abgelegt.
+
+**Bewusst ohne CSRF-Token.** Ein Token bräuchte eine Sitzung und damit ein
+Cookie für jede Besucherin, was der cookiefreien Auslegung der öffentlichen
+Seiten widerspricht. Sinnvoll wäre es auch nicht: Es gibt hier keine Anmeldung
+und keinen Zustand, den ein fremder Absender missbrauchen könnte. Was wirklich
+droht, ist Spam, und dagegen wirken die drei Stufen oben. Die signierte
+Zeitmarke ist zusätzlich ein schwaches Formularmerkmal, denn ohne einen Aufruf
+der Seite lässt sie sich nicht erzeugen.
+
+**Alles, was von aussen kommt, wird im Admincenter escaped ausgegeben.** Name,
+Kontakt, Bemerkung und Titel sind Freitext von Fremden. Geprüft mit
+`<script>`, `<img onerror>` und einem Anführungszeichen-Ausbruch im
+Attributkontext: alles landet als Text auf der Seite, nichts als Markup.
+Zusätzlich werden Steuerzeichen beim Annehmen entfernt und die Länge begrenzt.
+
+**Die Seite braucht eine eigene Richtlinie**, weil die Texterkennung Skript,
+WebAssembly, einen Worker aus einem Blob und die Sprachdaten benötigt. Sie
+setzt sie aus PHP, und die `.htaccess` entfernt für genau diese Datei den
+geerbten Header, denn mehrere CSP-Header gelten immer als Schnittmenge.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.
 
-1. **Uploads außerhalb der Document Root.** Das Verzeichnis `httpdocs/wordlists/` ist per HTTP erreichbar und PHP ist aktiv. Eine hochgeladene `.php` wäre Codeausführung, eine `.html` oder `.svg` wäre gespeichertes XSS in der App-Origin, eine `.htaccess` würde jede Schutzmaßnahme aufheben. Einreichungen gehören nach `…/private/`, ausgeliefert wird über einen PHP-Reader mit festem `Content-Type`.
-2. **Dateinamen serverseitig erzeugen**, etwa `bin2hex(random_bytes(8)) . '.json'`. Der Originalname nur als Metadatum.
-3. **Freigabe-Workflow vom Auslieferungsverzeichnis trennen.** `index.php` listet mit `glob('*.json')` alles, was im Ordner liegt. Schreibt das Postfach dorthin, ist jede Einreichung sofort live. Einreichungen gehören in eine Quarantäne, die `index.php` nicht scannt.
-4. **Schema- und Größenprüfung serverseitig**, mit `json_decode` und `JSON_THROW_ON_ERROR`, danach Strukturprüfung gegen das Wortlistenschema.
-5. **Rate Limiting am öffentlichen Endpunkt.** Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Zähler pro Adresse. Die zur Begrenzung genutzte Adresse nicht dauerhaft speichern.
+1. ~~**Uploads außerhalb der Document Root.**~~ **Gegenstandslos mit WQ-8.2:** Es entsteht gar keine Datei, Eingereichtes geht sofort in die Datenbank. Ursprünglicher Punkt: Das Verzeichnis `httpdocs/wordlists/` ist per HTTP erreichbar und PHP ist aktiv. Eine hochgeladene `.php` wäre Codeausführung, eine `.html` oder `.svg` wäre gespeichertes XSS in der App-Origin, eine `.htaccess` würde jede Schutzmaßnahme aufheben. Einreichungen gehören nach `…/private/`, ausgeliefert wird über einen PHP-Reader mit festem `Content-Type`.
+2. ~~**Dateinamen serverseitig erzeugen**~~ **Erledigt:** Veröffentlichte Dateinamen erzeugt `wq_dateiname_aus_titel()`, Bilddateinamen `wq_bild_dateiname()`. Ursprünglicher Punkt:, etwa `bin2hex(random_bytes(8)) . '.json'`. Der Originalname nur als Metadatum.
+3. ~~**Freigabe-Workflow vom Auslieferungsverzeichnis trennen.**~~ **Erledigt mit WQ-7.4:** Einreichungen liegen in der Datenbank, `wordlists/` sieht sie nie. Ursprünglicher Punkt: `index.php` listet mit `glob('*.json')` alles, was im Ordner liegt. Schreibt das Postfach dorthin, ist jede Einreichung sofort live. Einreichungen gehören in eine Quarantäne, die `index.php` nicht scannt.
+4. ~~**Schema- und Größenprüfung serverseitig**~~ **Erledigt mit WQ-7.4:** `wq_wortliste_pruefen()` mit `JSON_THROW_ON_ERROR` und begrenzter Tiefe. Ursprünglicher Punkt:, mit `json_decode` und `JSON_THROW_ON_ERROR`, danach Strukturprüfung gegen das Wortlistenschema.
+5. ~~**Rate Limiting am öffentlichen Endpunkt.**~~ **Erledigt mit WQ-8.2**, siehe oben. Ursprünglicher Punkt: Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Zähler pro Adresse. Die zur Begrenzung genutzte Adresse nicht dauerhaft speichern.
 6. ~~**SVG gehört nicht auf die Positivliste erlaubter Bildformate.**~~ **Erledigt mit WQ-7.5:** SVG wird abgewiesen, und jedes angenommene Bild wird verpflichtend nach WebP neu codiert.
 7. **`'unsafe-inline'` aus der CSP entfernen.** Dafür muss das Anwendungsskript aus `index.html` in eine eigene Datei wandern und die `onclick`-Attribute müssen durch `addEventListener` ersetzt werden. Das Muster dafür ist im Code bereits vorhanden.
 
