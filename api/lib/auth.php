@@ -105,6 +105,18 @@ function wq_login(string $name, string $passwort): array
         return ['ok' => false, 'fehler' => 'Zu viele Fehlversuche. Bitte in ' . $rest . ' Minuten erneut versuchen.'];
     }
 
+    /* Abgelaufene Sperre vollständig zurücksetzen.
+       Ohne das bleibt der Fehlerzähler auf 10 stehen, und der nächste
+       Fehlversuch löst sofort wieder eine Sperre aus. Das Konto wäre damit
+       praktisch dauerhaft zu, obwohl die Sperre nur 15 Minuten gelten soll.
+       Genau das ist im Betrieb passiert. */
+    if ($admin && (int) $admin['gesperrt_bis'] > 0) {
+        $pdo->prepare('UPDATE admins SET fehlversuche = 0, gesperrt_bis = 0 WHERE id = :id')
+            ->execute([':id' => $admin['id']]);
+        $admin['fehlversuche'] = 0;
+        $admin['gesperrt_bis'] = 0;
+    }
+
     // Gegen Dummy prüfen, wenn es den Benutzer nicht gibt: gleiche Laufzeit.
     $hash = ($admin && !empty($admin['passwort_hash'])) ? (string) $admin['passwort_hash'] : WQ_DUMMY_HASH;
     $passt = password_verify($passwort, $hash);

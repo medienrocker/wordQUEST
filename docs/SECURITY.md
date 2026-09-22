@@ -138,7 +138,14 @@ immer dieselbe, und eine zufällige Verzögerung von 150 bis 400 Millisekunden
 überdeckt den Rest. Gemessener Unterschied zwischen unbekanntem Benutzer und
 falschem Passwort: 59 Millisekunden, also deutlich innerhalb des Rauschens.
 
-**Kontosperre** nach 10 Fehlversuchen für 15 Minuten. Während der Sperre wird
+**Kontosperre** nach 10 Fehlversuchen für 15 Minuten. Läuft die Sperre ab, wird
+der Fehlerzähler vollständig zurückgesetzt. Ohne das bliebe er auf 10 stehen,
+und der nächste Fehlversuch löste sofort eine neue Sperre aus, das Konto wäre
+praktisch dauerhaft zu. Genau das ist bei der Ersteinrichtung passiert und hat
+eine Weile wie ein falsches Passwort ausgesehen. Der Zustand ist jetzt in
+`admin-anlegen.php liste` sichtbar.
+
+Während der Sperre wird
 auch das richtige Passwort abgewiesen.
 
 **Sitzung:** eigener Name `wqadmin`, Cookie mit `httponly`, `samesite=Strict`

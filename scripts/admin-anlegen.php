@@ -67,15 +67,24 @@ wq_auth_schema($pdo);
 
 switch ($befehl) {
     case 'liste':
-        $zeilen = $pdo->query('SELECT benutzername, rolle, aktiv, zuletzt_am FROM admins ORDER BY benutzername')->fetchAll();
+        $zeilen = $pdo->query('SELECT benutzername, rolle, aktiv, fehlversuche, gesperrt_bis, zuletzt_am FROM admins ORDER BY benutzername')->fetchAll();
         if (!$zeilen) {
             echo "Noch keine Admins angelegt.\n";
             break;
         }
-        printf("%-24s %-12s %-7s %s\n", 'Benutzer', 'Rolle', 'Aktiv', 'Zuletzt angemeldet');
+        printf("%-20s %-12s %-7s %-22s %s\n", "Benutzer", "Rolle", "Aktiv", "Sperre", "Zuletzt angemeldet");
         foreach ($zeilen as $z) {
-            printf("%-24s %-12s %-7s %s\n", $z['benutzername'], $z['rolle'],
-                ((int) $z['aktiv'] === 1 ? 'ja' : 'nein'), $z['zuletzt_am'] ?? '-');
+            $bis = (int) $z['gesperrt_bis'];
+            $fehl = (int) $z['fehlversuche'];
+            if ($bis > time()) {
+                $sperre = 'JA, noch ' . (int) ceil(($bis - time()) / 60) . ' Min';
+            } elseif ($fehl > 0) {
+                $sperre = 'nein (' . $fehl . ' Fehlversuche)';
+            } else {
+                $sperre = 'nein';
+            }
+            printf("%-20s %-12s %-7s %-22s %s\n", $z["benutzername"], $z["rolle"],
+                ((int) $z['aktiv'] === 1 ? 'ja' : 'nein'), $sperre, $z['zuletzt_am'] ?? '-');
         }
         break;
 
