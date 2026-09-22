@@ -408,6 +408,7 @@ Aus dem Ticket übernommen und erledigt:
 - [x] Angenommen werden JSON, CSV, XLSX und Fotos. Prüfung von Typ und Größe serverseitig.
 - [x] Keine Datei bleibt liegen: Eingereichtes wird sofort in die Datenbank überführt, Fotos verlassen das Gerät gar nicht erst.
 - [x] Spamschutz ohne CAPTCHA: verstecktes Honeypot-Feld, Mindestzeit zwischen Formularaufruf und Absenden, Taktbremse pro Adresse. Die zur Begrenzung genutzte Adresse wird nicht dauerhaft gespeichert.
+- [x] Benachrichtigung per E-Mail an den Betreiber über authentifiziertes SMTP, nicht über `mail()`.
 - [x] Unabhängig von der E-Mail zeigt das Admincenter einen Zähler offener Einreichungen. Die Benachrichtigung darf ausfallen, ohne dass etwas verloren geht.
 - [x] Ablauf im Admincenter: ansehen, bearbeiten, veröffentlichen oder ablehnen.
 
@@ -431,9 +432,15 @@ Aus dem Ticket übernommen und erledigt:
 - **Die Adresse der Absenderin wird nie gespeichert**, nur ein HMAC, dessen
   Schlüssel den Tag enthält, und auch der fliegt nach 24 Stunden raus.
 
-**Noch offen:** Benachrichtigung per E-Mail an den Superadmin über
-authentifiziertes SMTP. Der Zähler in der Navigation macht sie entbehrlich,
-nicht überflüssig.
+- **SMTP statt `mail()`.** `mail()` übergibt an ein lokales Sendeprogramm,
+  dessen Absenderadresse nicht zur Domain passt. Das landet zuverlässig im
+  Spamordner und liefert im Fehlerfall nichts Brauchbares zurück. Der Versand
+  über einen angemeldeten Mailserver ist nachvollziehbar und scheitert laut.
+- **Die Mail ist absichtlich karg:** Nummer, Titel, Umfang, Anzahl offener
+  Einreichungen. Name, Kontakt und Bemerkung bleiben im Admincenter und gehen
+  nicht über fremde Server.
+- **Ohne Zugangsdaten passiert einfach nichts.** Der Versand ist dann kein
+  Fehlerfall, sondern abgeschaltet. Die Einrichtung steht in `DEPLOY.md`.
 
 **Abhängigkeiten:** WQ-7.1, WQ-7.3, WQ-7.4.
 

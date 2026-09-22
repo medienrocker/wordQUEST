@@ -17,6 +17,7 @@ require __DIR__ . '/api/lib/db.php';
 require __DIR__ . '/api/lib/wortlisten.php';
 require __DIR__ . '/api/lib/import.php';
 require __DIR__ . '/api/lib/einreichung.php';
+require __DIR__ . '/api/lib/mail.php';
 
 function wq_h(?string $s): string
 {
@@ -100,6 +101,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                             'quelle'    => wq_format_name($import['format']),
                         ]);
                         wq_takt_merken($pdo);
+
+                        /* Benachrichtigung ist Beiwerk. Die Einreichung ist
+                           bereits gespeichert, und ein stummer Mailserver darf
+                           weder die Rückmeldung verfälschen noch die Seite
+                           aufhalten. Scheitert der Versand, steht es nur im
+                           Protokoll, und der Zähler im Admincenter zeigt die
+                           offene Einreichung ohnehin. */
+                        $versand = wq_einreichung_melden(
+                            $id,
+                            (string) ($pruefung['daten']['title'] ?? ''),
+                            count($pruefung['daten']['words']),
+                            wq_offene_einreichungen($pdo)
+                        );
+                        if (empty($versand['ok'])) {
+                            error_log('wordQUEST: Benachrichtigung nicht verschickt: ' . ($versand['fehler'] ?? '?'));
+                        }
+
                         $geschafft = true;
                         $meldungArt = 'ok';
                         $meldung = 'Vielen Dank. ' . count($pruefung['daten']['words'])

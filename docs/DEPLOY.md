@@ -89,7 +89,44 @@ ls -l "$D/private"
 Erwartet: `{"ok":true,"uebernommen":1}` und danach eine Datei `wordquest.sqlite`.
 
 **Sicherung:** Die Datenbank ist eine einzelne Datei. `cp` genügt, am besten im
-selben Lauf wie die übrigen Sicherungen.
+selben Lauf wie die übrigen Sicherungen. In `private/` liegt ausserdem
+`secret.key`, der Schlüssel für die signierten Formularmarken. Geht er
+verloren, ist das kein Drama: Es wird ein neuer erzeugt, und offene Formulare
+müssen einmal neu geladen werden.
+
+## Optional: Benachrichtigung bei neuen Einreichungen
+
+Ohne diese Einstellung verschickt der Server nichts, und das ist kein
+Fehlerfall. Offene Einreichungen zeigt das Admincenter als Zähler neben
+**Wortlisten**.
+
+Die Zugangsdaten gehören in `api/lib/config.local.php`. Diese Datei ist in
+`.gitignore` und kommt nie ins Repo:
+
+```php
+<?php
+return [
+    'smtp' => [
+        'host'       => 'smtp.example.org',
+        'port'       => 465,
+        'sicherheit' => 'tls',          // 'tls' für Port 465, 'starttls' für 587
+        'benutzer'   => 'wordquest@example.org',
+        'passwort'   => 'das-Postfachpasswort',
+        'von'        => 'wordquest@example.org',
+        'von_name'   => 'wordQUEST',
+        'an'         => 'betreiber@example.org',
+    ],
+];
+```
+
+Die Absenderadresse muss zu der Domain gehören, über die verschickt wird, sonst
+sortieren die Empfänger die Nachricht aus. In Plesk dafür ein eigenes Postfach
+anlegen und dessen Zugangsdaten eintragen, nicht die eines persönlichen
+Postfachs.
+
+Prüfen lässt sich das mit einer Testeinreichung über
+`https://wordquest.bildungssprit.de/einreichen.php`. Kommt keine Mail an, steht
+der Grund in `private/php-error.log`.
 
 ## Einmalig: ersten Superadmin anlegen
 

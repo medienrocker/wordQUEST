@@ -25,4 +25,10 @@ return [
 
     // Fehlerprotokoll landet neben der Datenbank, nie im Docroot.
     'error_log'       => $vhost . '/private/php-error.log',
+
+    /* Benachrichtigung bei neuen Einreichungen. Ohne Eintrag wird nichts
+       verschickt, und das ist kein Fehlerfall: Der Zähler im Admincenter zeigt
+       offene Einreichungen unabhängig davon. Zugangsdaten gehören in
+       `config.local.php`, nie hierher, siehe mail.php. */
+    'smtp'            => null,
 ];

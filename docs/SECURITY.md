@@ -361,6 +361,24 @@ Kontakt, Bemerkung und Titel sind Freitext von Fremden. Geprüft mit
 Attributkontext: alles landet als Text auf der Seite, nichts als Markup.
 Zusätzlich werden Steuerzeichen beim Annehmen entfernt und die Länge begrenzt.
 
+**Die Benachrichtigung geht über angemeldetes SMTP, nie über `mail()`.**
+Verschlüsselt wird immer, entweder von Anfang an oder über STARTTLS, und das
+Zertifikat wird geprüft. Betreff und Adressen laufen durch einen Filter, der
+Zeilenumbrüche und Nullbytes entfernt: Ohne den liesse sich über einen
+Zeilenumbruch im Betreff eine eigene Empfängerzeile einschmuggeln. Der
+Nachrichtentext geht als Base64 hinaus, womit die Zeilenlängengrenze und die
+Punktregel am Zeilenanfang zugleich erledigt sind. Scheitert die Anmeldung,
+steht das Passwort in keiner Meldung und in keinem Protokoll.
+
+**Die Mail enthält keine personenbezogenen Angaben.** Nummer, Titel und Umfang
+genügen. Name, Kontakt und Bemerkung bleiben im Admincenter, denn eine Mail
+läuft über fremde Server.
+
+**Ein stummer Mailserver bricht nichts.** Die Einreichung ist gespeichert,
+bevor der Versand überhaupt beginnt. Scheitert er, steht das im Protokoll
+ausserhalb des Docroots, die Absenderin bekommt trotzdem ihre Bestätigung, und
+der Zähler im Admincenter zeigt die offene Einreichung.
+
 **Die Seite braucht eine eigene Richtlinie**, weil die Texterkennung Skript,
 WebAssembly, einen Worker aus einem Blob und die Sprachdaten benötigt. Sie
 setzt sie aus PHP, und die `.htaccess` entfernt für genau diese Datei den
