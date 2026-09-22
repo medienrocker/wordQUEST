@@ -412,25 +412,26 @@
 ═══════════════════════════════════════════════ */
 
 /* ─────────── Rundungsstil ───────────
-   Erlaubt den direkten Vergleich zwischen der weichen Standardvariante und
-   dem kantigeren bildungssprit-Hausstil, ohne CSS anzufassen:
-     ?design=brand  → 4px überall
-     ?design=weich  → zurück zum Standard
+   Standard sind 8px. Zum Vergleich lassen sich zwei Alternativen aufrufen,
+   ohne CSS anzufassen:
+     ?design=weich     → runde Pillenform, die ursprüngliche Variante
+     ?design=brand     → kantiger Hausstil mit 4px
+     ?design=standard  → zurück zu 8px
    Die Wahl wird gemerkt, damit sie auch in der installierten App gilt.
-   Nur diese zwei Werte sind erlaubt, alles andere wird verworfen. */
+   Nur diese drei Werte sind erlaubt, alles andere wird verworfen. */
 (function initDesign() {
-  const ERLAUBT = ['weich', 'brand'];
+  const ERLAUBT = ['standard', 'weich', 'brand'];
   let stil = null;
   try {
     const gewaehlt = new URLSearchParams(location.search).get('design');
     if (ERLAUBT.includes(gewaehlt)) {
       stil = gewaehlt;
-      localStorage.setItem('wq.design', gewaehlt);
+      localStorage.setItem('wq.design2', gewaehlt);
     } else {
-      stil = localStorage.getItem('wq.design');
+      stil = localStorage.getItem('wq.design2');
     }
   } catch {}
-  if (!ERLAUBT.includes(stil)) stil = 'weich';
+  if (!ERLAUBT.includes(stil)) stil = 'standard';
   document.documentElement.setAttribute('data-design', stil);
 })();
 
@@ -946,7 +947,9 @@ let overlayLetzterFokus = null;
 function roundOverlayLines(done, extra) {
   const lines = [];
   if (done) {
-    lines.push({ icon: '⭐', text: `Runde geschafft: <b>+${done.roundBonus} Punkte</b>` });
+    const n = done.progress.durchlaeufe;
+    const fleiss = n ? ` <span class="fleiss-marke">×${n} ${fleissEmoji(n)}</span>` : '';
+    lines.push({ icon: '🎉', text: `Runde geschafft: <b>+${done.roundBonus} Punkte</b>${fleiss}` });
     if (done.runBonus) {
       lines.push({ icon: '🏆', text: `Die ganze Liste ist durch: <b>+${done.runBonus} Punkte!</b>`, stark: true });
     }
@@ -954,9 +957,13 @@ function roundOverlayLines(done, extra) {
     lines.push({ icon: '📍', text: `${p.seenCount} von ${p.total} Wörtern waren schon dran` });
     lines.push({ icon: '✅', text: `${p.mastered} sicher, ${p.almost} fast sicher` });
     if (p.durchlaeufe) {
-      lines.push({ icon: '💪', text: p.durchlaeufe === 1
-        ? '<b>1 kompletter Durchlauf</b> geschafft'
-        : `<b>${p.durchlaeufe} komplette Durchläufe</b> geschafft` });
+      const stufe = FLEISS_STUFEN.find(s => p.durchlaeufe >= s.ab);
+      const naechste = [...FLEISS_STUFEN].reverse().find(s => s.ab > p.durchlaeufe);
+      const ausblick = naechste
+        ? ` Noch ${naechste.ab - p.durchlaeufe} bis ${naechste.emoji}`
+        : '';
+      lines.push({ icon: stufe ? stufe.emoji : '💪',
+        text: `Komplett geschafft: <b>×${p.durchlaeufe}</b>.${ausblick}` });
     }
   }
   (extra || []).forEach(t => lines.push({ icon: '⏱️', text: t }));
@@ -1875,13 +1882,33 @@ function updateProgressStrip() {
       : `Runde ${Math.min(p.round, p.totalRounds)} von ${p.totalRounds}`;
     // Fleißzähler: macht die geleistete Arbeit sichtbar, unabhängig vom
     // Ergebnis. Er zählt nur hoch und wird auch beim Neustart nicht gelöscht.
-    // Bewusst ohne "×": Die Schreibweise "3× komplett" liest sich sonst wie
-    // ein Multiplikator auf die Punkte, was es nicht ist.
-    const fleiss = p.durchlaeufe === 1
-      ? '💪 1 kompletter Durchlauf'
-      : `💪 ${p.durchlaeufe} komplette Durchläufe`;
-    roundEl.textContent = p.durchlaeufe ? `${stand} · ${fleiss}` : stand;
+    roundEl.textContent = p.durchlaeufe
+      ? `${stand} ×${p.durchlaeufe} ${fleissEmoji(p.durchlaeufe)}`
+      : stand;
   }
+}
+
+/* ─────────── Fleiß-Stufen ───────────
+   Das Zeichen neben dem Zähler steigt mit der Zahl der komplett geschafften
+   Durchläufe. Bewusst rein aufwandsbasiert: Es zählt allein, wie oft eine
+   Liste ganz durchgespielt wurde, nicht wie gut. Damit kann jedes Kind jede
+   Stufe erreichen, es dauert nur unterschiedlich lange. Erreichte Stufen
+   gehen nie wieder verloren. */
+const FLEISS_STUFEN = [
+  { ab: 30, emoji: '💎', name: 'Diamant'  },
+  { ab: 20, emoji: '👑', name: 'Krone'    },
+  { ab: 15, emoji: '🏆', name: 'Pokal'    },
+  { ab: 10, emoji: '🏅', name: 'Medaille' },
+  { ab:  7, emoji: '🚀', name: 'Rakete'   },
+  { ab:  5, emoji: '⭐', name: 'Stern'    },
+  { ab:  3, emoji: '🔥', name: 'Feuer'    },
+  { ab:  2, emoji: '💪', name: 'Arm'      },
+  { ab:  1, emoji: '🌱', name: 'Keimling' }
+];
+
+function fleissEmoji(n) {
+  const stufe = FLEISS_STUFEN.find(s => n >= s.ab);
+  return stufe ? stufe.emoji : '';
 }
 
 /* Reifegrad einer Vokabel: Farbe UND Text, damit die Farbe nie allein
@@ -2939,7 +2966,8 @@ const HILFE = [
     eintraege: [
       { sel: '#prog-coverage-value', name: 'Schon dran', text: 'Wie viele Wörter der Liste in diesem Durchlauf schon einmal abgefragt wurden. Der Balken ist voll, wenn wirklich jedes Wort dran war.' },
       { sel: '#prog-mastery-value',  name: 'Gelernt',    text: 'Zwei Stufen: „fast sicher" heißt mindestens einmal richtig beantwortet, „sicher" heißt viermal richtig. Sicher ist absichtlich schwerer, es soll heißen: sitzt auch nach Tagen noch.' },
-      { sel: '#prog-round',          name: 'Runde und Fleißzähler', text: 'Zeigt die aktuelle Runde und wie oft du diese Liste schon komplett geschafft hast. Der Fleißzähler geht nie zurück.' }
+      { sel: '#prog-round',          name: 'Runde und Fleißzähler', text: 'Zeigt die aktuelle Runde und mit „×" dahinter, wie oft du diese Liste schon komplett geschafft hast. Der Zähler geht nie zurück.' },
+      { name: 'Die Zeichen am Zähler', text: 'Sie steigen mit der Zahl der komplett geschafften Durchläufe: 1 🌱, 2 💪, 3 🔥, 5 ⭐, 7 🚀, 10 🏅, 15 🏆, 20 👑, 30 💎. Es zählt nur, wie oft du durchkommst, nicht wie gut. Jede Stufe ist also für jeden erreichbar.' }
     ]
   },
   {
