@@ -2498,7 +2498,7 @@ function zeigeUpdateHinweis(wartender) {
   jetzt.addEventListener('click', () => {
     jetzt.disabled = true;
     jetzt.textContent = UPDATE_TEXTE.laeuft;
-    // Der wartende Worker übernimmt. Das Neuladen löst anschliessend
+    // Der wartende Worker übernimmt. Das Neuladen löst anschließend
     // controllerchange aus, nicht dieser Knopf.
     wartender.postMessage({ type: 'SKIP_WARTEN' });
   });
