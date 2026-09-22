@@ -41,6 +41,9 @@
     <span>wordQUEST</span>
   </h1>
   <p>Vokabeln spielend lernen</p>
+  <button type="button" id="help-btn" class="help-btn"
+          title="Hilfe: Was bedeuten die Knöpfe und Balken?"
+          aria-label="Hilfe öffnen: Erklärungen zu allen Knöpfen und Anzeigen">?</button>
 </header>
 
 <div id="wordlist-bar">
@@ -131,12 +134,6 @@
       </div>
     </div>
   </div>
-  <!-- Dauerhaft sichtbar, weil title-Tooltips auf dem Smartphone nicht
-       erscheinen und genau dort die Zielgruppe spielt. -->
-  <p class="prog-erklaerung">
-    <strong>Schon dran</strong> zeigt, wie viel der Liste du in diesem Durchlauf abgefragt hast.
-    <strong>Fast sicher</strong> heißt: mindestens einmal richtig. <strong>Sicher</strong> heißt: viermal richtig.
-  </p>
 </div>
 
 <nav>
@@ -325,6 +322,23 @@
     <div class="overlay-actions">
       <button type="button" class="btn btn-green" id="round-overlay-again">🔄 Nochmal</button>
       <button type="button" class="btn btn-grey" id="round-overlay-menu">🏠 Menü</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HILFE ══════════════
+     Sammelt alle Erklärungen an einem Ort. Auf Touchgeräten gibt es keine
+     title-Tooltips, dort ist dieses Fenster der einzige Weg zur Erklärung. -->
+<div id="help-overlay" class="overlay" hidden>
+  <div class="overlay-card help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="help-head">
+      <h2 class="overlay-title" id="help-title">❓ Hilfe</h2>
+      <button type="button" class="help-close" id="help-close" aria-label="Hilfe schließen">✕</button>
+    </div>
+    <p class="help-intro">Kurz erklärt, was die Knöpfe machen und was die Anzeigen bedeuten.</p>
+    <div id="help-body"></div>
+    <div class="overlay-actions">
+      <button type="button" class="btn btn-green" id="help-ok">Alles klar</button>
     </div>
   </div>
 </div>
@@ -911,19 +925,39 @@ function showRoundOverlay(opts) {
   });
 
   overlayNochmalFn = opts.onNochmal || null;
-  overlayLetzterFokus = document.activeElement;
-  ov.hidden = false;
-  document.body.classList.add('overlay-offen');
-  document.getElementById('round-overlay-again').focus();
+  openOverlay(ov, document.getElementById('round-overlay-again'));
 }
 
 function closeRoundOverlay() {
-  const ov = document.getElementById('round-overlay');
+  closeOverlay(document.getElementById('round-overlay'));
+}
+
+/* Gemeinsame Mechanik für alle Overlays: Fokus merken, Körper sperren,
+   beim Schließen den Fokus dorthin zurückgeben, wo er herkam. */
+function openOverlay(ov, ersterFokus) {
+  if (!ov) return;
+  overlayLetzterFokus = document.activeElement;
+  ov.hidden = false;
+  document.body.classList.add('overlay-offen');
+  (ersterFokus || ov.querySelector('button'))?.focus();
+}
+
+function closeOverlay(ov) {
   if (!ov || ov.hidden) return;
   ov.hidden = true;
-  document.body.classList.remove('overlay-offen');
+  if (!document.querySelector('.overlay:not([hidden])')) {
+    document.body.classList.remove('overlay-offen');
+  }
   if (overlayLetzterFokus && document.contains(overlayLetzterFokus)) overlayLetzterFokus.focus();
   overlayLetzterFokus = null;
+}
+
+function openHelp() {
+  renderHilfe();
+  const ov = document.getElementById('help-overlay');
+  openOverlay(ov, document.getElementById('help-close'));
+  const body = document.getElementById('help-body');
+  if (body) body.scrollTop = 0;
 }
 
 function clearDiagnosis() {
@@ -2548,47 +2582,105 @@ function filterVocab(cat, btn) {
    dauerhaft sichtbare Erklärzeile, und die Beschriftungen selbst bleiben
    so eindeutig, dass der Tooltip nur Zusatz ist, nie die einzige Quelle.
 ═══════════════════════════════════════════════ */
-const TOOLTIPS = {
-  '[data-tab="menu"]':     'Zurück zur Spielauswahl.',
-  '[data-tab="quiz"]':     'Quiz: Aus vier Antworten die richtige auswählen.',
-  '[data-tab="memory"]':   'Memory: Bild und Wort als Paar zusammenfinden.',
-  '[data-tab="scramble"]': 'Scramble: Aus durcheinandergewürfelten Buchstaben das Wort bauen.',
-  '[data-tab="spelling"]': 'Spelling: Das Wort selbst schreiben. Bringt die meisten Punkte.',
-  '[data-tab="practice"]': 'Üben: Nur die Wörter, die noch wackeln oder heute fällig sind.',
-  '[data-tab="vocab"]':    'Alle Vokabeln ansehen, einzeln an- und abwählen, Lernstand prüfen.',
-  '#wordlist-picker-btn':  'Wortlisten auswählen. Mehrere Listen lassen sich kombinieren.',
-  '#wl-select-all':        'Alle Listen auswählen.',
-  '#wl-select-none':       'Auswahl aufheben.',
-  '#wl-apply':             'Auswahl übernehmen und Fenster schließen.',
-  '#player-reroll':        'Neuen Spielernamen würfeln.',
-  '#quiz-next-top':        'Zur nächsten Frage.',
-  '#scramble-next-top':    'Zum nächsten Wort.',
-  '#spelling-next-top':    'Zum nächsten Wort.',
-  '#practice-start-btn':   'Übungsrunde nur mit den schwierigen Wörtern starten.'
-};
+/* Eine einzige Quelle für alle Erklärtexte. Daraus entstehen sowohl die
+   title-Tooltips als auch der Inhalt des Hilfe-Fensters. So kann keine
+   Erklärung an einer Stelle veralten, während sie woanders noch stimmt.
 
-const TOOLTIPS_TEXT = {
-  '#prog-coverage-value': 'Wie viele Wörter der Liste in diesem Durchlauf schon einmal abgefragt wurden.',
-  '#prog-mastery-value':  'Sicher heißt: viermal richtig beantwortet. Fast sicher heißt: mindestens einmal richtig.',
-  '#prog-round':          'Aktuelle Runde und wie oft du diese Liste schon komplett geschafft hast.'
-};
+   `sel` ist optional: Einträge ohne Selektor erscheinen nur in der Hilfe,
+   etwa Erklärungen zu Anzeigen statt zu Knöpfen. */
+const HILFE = [
+  {
+    titel: '📚 Wortlisten und Lernrichtung',
+    eintraege: [
+      { sel: '#wordlist-picker-btn', name: 'Listen auswählen', text: 'Öffnet die Liste aller Wortsammlungen. Du kannst mehrere gleichzeitig ankreuzen, dann werden sie zusammen geübt.' },
+      { sel: '#wl-select-all',  name: 'Alle',   text: 'Kreuzt alle Listen auf einmal an.' },
+      { sel: '#wl-select-none', name: 'Keine',  text: 'Entfernt alle Kreuze.' },
+      { sel: '#wl-apply',       name: 'Fertig', text: 'Übernimmt die Auswahl und schließt das Fenster.' },
+      { name: 'DE → EN und EN → DE', text: 'Legt fest, welche Sprache du siehst und welche du selbst herausfinden musst. Beide Richtungen haben einen eigenen Fortschritt.' }
+    ]
+  },
+  {
+    titel: '📊 Die Balken',
+    eintraege: [
+      { sel: '#prog-coverage-value', name: 'Schon dran', text: 'Wie viele Wörter der Liste in diesem Durchlauf schon einmal abgefragt wurden. Der Balken ist voll, wenn wirklich jedes Wort dran war.' },
+      { sel: '#prog-mastery-value',  name: 'Gelernt',    text: 'Zwei Stufen: „fast sicher" heißt mindestens einmal richtig beantwortet, „sicher" heißt viermal richtig. Sicher ist absichtlich schwerer, es soll heißen: sitzt auch nach Tagen noch.' },
+      { sel: '#prog-round',          name: 'Runde und Fleißzähler', text: 'Zeigt die aktuelle Runde und wie oft du diese Liste schon komplett geschafft hast. Der Fleißzähler geht nie zurück.' }
+    ]
+  },
+  {
+    titel: '⭐ Punkte und Name',
+    eintraege: [
+      { name: 'Punkte', text: 'Es gibt nie Abzüge, nur Zuschläge. Schwerere Spiele bringen mehr. Den größten Bonus gibt es, wenn du ein Wort schaffst, das du vorher falsch hattest.' },
+      { name: 'Bestleistung', text: 'Deine eigene beste Punktzahl. Verglichen wird nur mit dir selbst, nie mit anderen.' },
+      { sel: '#player-reroll', name: 'Würfel', text: 'Würfelt dir einen neuen Spielernamen. Namen werden immer ausgewürfelt, damit niemand seinen echten Namen einträgt.' }
+    ]
+  },
+  {
+    titel: '🎮 Die Spiele',
+    eintraege: [
+      { sel: '[data-tab="quiz"]',     name: 'Quiz',      text: 'Aus vier Antworten die richtige auswählen.' },
+      { sel: '[data-tab="memory"]',   name: 'Memory',    text: 'Bild und Wort als Paar zusammenfinden.' },
+      { sel: '[data-tab="scramble"]', name: 'Scramble',  text: 'Aus durcheinandergewürfelten Buchstaben das Wort bauen.' },
+      { sel: '[data-tab="spelling"]', name: 'Spelling',  text: 'Das Wort selbst schreiben. Bringt die meisten Punkte, weil es am schwersten ist.' },
+      { sel: '[data-tab="practice"]', name: 'Üben',      text: 'Übt nur die Wörter, die noch wackeln oder heute wieder fällig sind.' },
+      { sel: '[data-tab="vocab"]',    name: 'Vokabeln',  text: 'Alle Wörter auf einen Blick. Hier siehst du deinen Lernstand und kannst einzelne Wörter für die Spiele abwählen.' },
+      { sel: '[data-tab="menu"]',     name: 'Menü',      text: 'Zurück zur Spielauswahl.' }
+    ]
+  },
+  {
+    titel: '🏷️ Kennzeichen in der Vokabelliste',
+    eintraege: [
+      { name: '○ neu',          text: 'Dieses Wort war noch nicht dran.' },
+      { name: '◔ wackelig',     text: 'Schon dran, sitzt aber noch nicht.' },
+      { name: '◍ fast sicher',  text: 'Auf dem besten Weg.' },
+      { name: '✓ sicher',       text: 'Viermal richtig beantwortet.' },
+      { name: '🔧 Knackpunkt',  text: 'Ein Wort, das oft danebengeht. Es kommt dann seltener und leichter dran, mit Bild und nur zwei Antworten, damit du nicht daran hängen bleibst.' }
+    ]
+  }
+];
 
 function applyTooltips() {
-  Object.entries(TOOLTIPS).forEach(([sel, text]) => {
-    document.querySelectorAll(sel).forEach(el => {
-      el.title = text;
-      // Sichtbare Beschriftung bleibt der Name, der Tooltip beschreibt ihn.
-      if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', `${el.textContent.trim()}. ${text}`);
+  HILFE.forEach(gruppe => {
+    gruppe.eintraege.forEach(e => {
+      if (!e.sel) return;
+      document.querySelectorAll(e.sel).forEach(el => {
+        el.title = e.text;
+        if (!el.hasAttribute('aria-label')) {
+          el.setAttribute('aria-label', `${el.textContent.trim()}. ${e.text}`);
+        }
+      });
     });
   });
-  Object.entries(TOOLTIPS_TEXT).forEach(([sel, text]) => {
-    document.querySelectorAll(sel).forEach(el => { el.title = text; });
-  });
-  // Punkteanzeige
   const punkte = document.querySelector('#total-score')?.closest('.score-item');
   if (punkte) punkte.title = 'Gesammelte Punkte. Es gibt nie Abzüge, nur Zuschläge.';
   const best = document.querySelector('#high-score')?.closest('.score-item');
   if (best) best.title = 'Deine persönliche Bestleistung. Vergleich nur mit dir selbst.';
+}
+
+/* ─────────── Hilfe-Fenster ───────────
+   Sammelt alle Erklärungen an einem Ort, damit sie nicht dauerhaft unter
+   den Bedienelementen stehen müssen. Wichtig für Touchgeräte: Dort gibt es
+   keine title-Tooltips, die Hilfe ist deshalb der einzige Weg. */
+function renderHilfe() {
+  const ziel = document.getElementById('help-body');
+  if (!ziel || ziel.childElementCount) return;   // nur einmal aufbauen
+  HILFE.forEach(gruppe => {
+    const h = document.createElement('h3');
+    h.className = 'help-group-title';
+    h.textContent = gruppe.titel;
+    ziel.appendChild(h);
+
+    const dl = document.createElement('dl');
+    dl.className = 'help-list';
+    gruppe.eintraege.forEach(e => {
+      const dt = document.createElement('dt');
+      dt.textContent = e.name;
+      const dd = document.createElement('dd');
+      dd.textContent = e.text;
+      dl.append(dt, dd);
+    });
+    ziel.appendChild(dl);
+  });
 }
 
 /* Lernrichtungsschalter verdrahten + initialen Zustand anzeigen */
@@ -2617,15 +2709,25 @@ document.getElementById('round-overlay-menu')?.addEventListener('click', () => {
   closeRoundOverlay();
   openTab('menu');
 });
-document.getElementById('round-overlay')?.addEventListener('click', (e) => {
-  if (e.target.id === 'round-overlay') closeRoundOverlay();
+/* Hilfe-Fenster */
+document.getElementById('help-btn')?.addEventListener('click', openHelp);
+document.getElementById('help-close')?.addEventListener('click', () => closeOverlay(document.getElementById('help-overlay')));
+document.getElementById('help-ok')?.addEventListener('click', () => closeOverlay(document.getElementById('help-overlay')));
+
+/* Klick auf den Hintergrund schließt, Klick auf die Karte nicht. */
+['round-overlay', 'help-overlay'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', (e) => {
+    if (e.target.id === id) closeOverlay(document.getElementById(id));
+  });
 });
+
+/* Escape schließt, Tab bleibt im obersten offenen Fenster gefangen. */
 document.addEventListener('keydown', (e) => {
-  const ov = document.getElementById('round-overlay');
-  if (!ov || ov.hidden) return;
-  if (e.key === 'Escape') { closeRoundOverlay(); return; }
+  const offen = [...document.querySelectorAll('.overlay:not([hidden])')].pop();
+  if (!offen) return;
+  if (e.key === 'Escape') { closeOverlay(offen); return; }
   if (e.key !== 'Tab') return;
-  const fokussierbar = ov.querySelectorAll('button');
+  const fokussierbar = offen.querySelectorAll('button');
   if (!fokussierbar.length) return;
   const erste = fokussierbar[0];
   const letzte = fokussierbar[fokussierbar.length - 1];
