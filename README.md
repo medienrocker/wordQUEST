@@ -159,8 +159,15 @@ ein. Vier Bereiche:
 |---------|-------|
 | **Übersicht** | Anonyme Nutzungszahlen, dazu die Wörter mit den meisten Fehlern |
 | **Wortlisten** | Hochladen, prüfen, Vorschau, freigeben. Abgelehntes bleibt erhalten und lässt sich zurückholen |
+| **Bearbeiten** | Veröffentlichte Listen ändern: Wörter, Emoji, Kategorien, Beispielsätze |
 | **Foto** | Foto einer Wortschatzseite im Browser erkennen und als Einreichung übernehmen |
 | **Bilder** | Bilder zu Vokabeln hochladen und zuordnen, mit Arbeitsliste "ohne Visualisierung" |
+
+**Wo kommen Bilder und Emoji hin?** Emoji stehen beim Wort und werden unter
+**Bearbeiten** eingetragen, entweder von Hand oder mit „Leere Emoji füllen",
+das für rund 345 bekannte Wörter einen Vorschlag kennt. Bilder werden unter
+**Bilder** hochgeladen und dort einem Wort zugeordnet. Hat ein Wort weder
+Emoji noch Bild, zeigt die App einen farbigen Kreis mit dem Anfangsbuchstaben.
 
 Hochgeladene Bilder werden serverseitig nach WebP mit 256 Pixel Kantenlänge neu
 erzeugt und liegen in `img/auto/`. Der Ordner ist nicht im Repo und gehört in

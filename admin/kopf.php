@@ -60,6 +60,7 @@ if ($wqAdmin && function_exists('wq_db')) {
   <nav>
     <a href="dashboard.php">Übersicht</a>
     <a href="listen.php">Wortlisten<?php if ($wqOffen > 0): ?><span class="zaehler"><?= $wqOffen ?><span class="sr-only"> offene Einreichungen</span></span><?php endif; ?></a>
+    <a href="bearbeiten.php">Bearbeiten</a>
     <a href="foto.php">Foto</a>
     <a href="bilder.php">Bilder</a>
     <?php if ($wqAdmin['rolle'] === 'superadmin'): ?>

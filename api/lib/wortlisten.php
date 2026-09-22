@@ -322,6 +322,70 @@ function wq_einreichung_zurueckholen(PDO $pdo, int $id): array
     return ['ok' => true];
 }
 
+/** Liest eine veröffentlichte Wortliste. */
+function wq_wortliste_lesen(string $datei): ?array
+{
+    $config = wq_config();
+    $pfad = rtrim((string) $config['wordlists_dir'], '/') . '/' . basename($datei);
+    if (!is_file($pfad)) {
+        return null;
+    }
+    $daten = json_decode((string) @file_get_contents($pfad), true);
+    return is_array($daten) ? $daten : null;
+}
+
+/**
+ * Schreibt eine bearbeitete Wortliste zurück.
+ *
+ * Auch hier gilt der Grundsatz aus der Freigabe: Geschrieben wird nicht, was
+ * hereinkam, sondern was die Prüfung als sauber zurückgibt. Der Editor im
+ * Admincenter ist damit an dieselbe Schranke gebunden wie jeder Upload.
+ *
+ * Vor dem Überschreiben entsteht eine Sicherungskopie. Eine Liste, die Kinder
+ * im Unterricht nutzen, soll ein Versehen im Editor überleben.
+ *
+ * @return array{ok: bool, fehler?: string[], hinweise?: string[], anzahl?: int}
+ */
+function wq_wortliste_speichern(string $datei, array $daten): array
+{
+    $config = wq_config();
+    $verzeichnis = rtrim((string) $config['wordlists_dir'], '/');
+    $pfad = $verzeichnis . '/' . basename($datei);
+    if (!is_file($pfad)) {
+        return ['ok' => false, 'fehler' => ['Diese Wortliste gibt es nicht.']];
+    }
+
+    $roh = json_encode($daten, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($roh === false) {
+        return ['ok' => false, 'fehler' => ['Die Liste liess sich nicht umwandeln.']];
+    }
+    $geprueft = wq_wortliste_pruefen($roh);
+    if (!$geprueft['ok']) {
+        return ['ok' => false, 'fehler' => $geprueft['fehler'], 'hinweise' => $geprueft['hinweise']];
+    }
+
+    $json = json_encode($geprueft['daten'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    if ($json === false) {
+        return ['ok' => false, 'fehler' => ['Die Datei liess sich nicht erzeugen.']];
+    }
+
+    // Sicherungskopie der bisherigen Fassung, eine Generation zurück.
+    @copy($pfad, $pfad . '.bak');
+
+    $temp = $pfad . '.tmp';
+    if (file_put_contents($temp, $json, LOCK_EX) === false || !rename($temp, $pfad)) {
+        @unlink($temp);
+        return ['ok' => false, 'fehler' => ['Das Schreiben ist fehlgeschlagen.']];
+    }
+    @chmod($pfad, 0644);
+
+    return [
+        'ok'       => true,
+        'hinweise' => $geprueft['hinweise'],
+        'anzahl'   => count($geprueft['daten']['words']),
+    ];
+}
+
 /** Alle veröffentlichten Listen im Wortlistenverzeichnis. */
 function wq_vorhandene_listen(): array
 {

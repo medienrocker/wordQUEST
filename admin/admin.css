@@ -393,3 +393,56 @@ form.reihe input[type="file"] {
 
 .begleitung dt { font-weight: 700; }
 .begleitung dd { margin: 0 0 6px; overflow-wrap: anywhere; }
+
+/* ─── Listeneditor ─── */
+.wortliste input[type="text"] {
+    width: 100%;
+    min-width: 90px;
+    font: inherit;
+    font-size: .9rem;
+    padding: 7px 8px;
+    border: 1px solid var(--linie);
+    border-radius: 4px;
+}
+
+.wortliste select {
+    font-size: .88rem;
+    padding: 6px 8px;
+    min-width: 130px;
+    max-width: 180px;
+}
+
+.wortliste th { white-space: nowrap; }
+.wortliste td { padding: 5px 6px; }
+.wortliste .spalte-emoji { white-space: nowrap; }
+.wortliste .spalte-emoji input { width: 76px; min-width: 0; text-align: center; font-size: 1.05rem; }
+.wortliste .bildmerker { margin-left: 4px; }
+
+/* Ankreuzfelder gross genug fuer einen Finger, ueberall im Admincenter. */
+input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--gruen);
+}
+
+.wortliste .neue-zeile input { background: #fbfdfb; }
+.wortliste .neue-zeile td:first-child { border-left: 3px solid var(--gruen); }
+
+.blaettern { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.blaettern a, .blaettern strong {
+    display: inline-block;
+    min-width: 34px;
+    padding: 7px 9px;
+    text-align: center;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--dunkel);
+}
+.blaettern strong { background: var(--gruen); color: #fff; border-color: var(--gruen); }
+
+.aktionsreihe { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+
+/* Beim Bearbeiten wird viel gescrollt. Der Rahmen bekommt deshalb mehr
+   Höhe als die schmale Vorschau auf der Fotoseite. */
+.rahmen-gross { max-height: 72vh; }

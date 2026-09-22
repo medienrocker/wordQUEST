@@ -384,6 +384,32 @@ WebAssembly, einen Worker aus einem Blob und die Sprachdaten benötigt. Sie
 setzt sie aus PHP, und die `.htaccess` entfernt für genau diese Datei den
 geerbten Header, denn mehrere CSP-Header gelten immer als Schnittmenge.
 
+## Listeneditor im Admincenter
+
+Der Editor schreibt zum ersten Mal direkt in eine veröffentlichte Liste, also
+in eine Datei, die Kinder im Unterricht laden. Drei Vorkehrungen dazu:
+
+**Auch hier wird nicht geschrieben, was hereinkam**, sondern was
+`wq_wortliste_pruefen()` zurückgibt. Der Editor hängt damit an derselben
+Schranke wie jeder Upload: Längen, Anzahl, erlaubte Felder, Bildadressen.
+
+**Vor jedem Überschreiben entsteht eine Sicherungskopie** als `.json.bak`
+neben der Liste. Die `.htaccess` sperrt die Endung `.bak`, sie ist über HTTP
+also nicht abrufbar. Geschrieben wird über eine Nebendatei und `rename`, damit
+die App nie eine halb geschriebene Liste sieht.
+
+**Abgeschnittene Formulare werden erkannt.** PHP nimmt je Anfrage nur
+`max_input_vars` Felder entgegen, standardmässig 1000, und verwirft den Rest
+**ohne jede Meldung**. Bei 500 Wörtern mal sieben Feldern wäre das erreicht,
+und ein Speichern hätte stillschweigend Wörter gelöscht. Deshalb wird in
+Seiten zu 40 Wörtern gearbeitet, und zusätzlich vergleicht der Server die Zahl
+empfangener Zeilen mit der erwarteten. Stimmen sie nicht überein, wird gar
+nichts gespeichert. Geprüft mit einer absichtlich verkürzten Anfrage: Die
+Liste blieb unverändert.
+
+**Kategorie-Kennungen werden auf Buchstaben, Ziffern, Strich und Unterstrich
+beschränkt.** Sie landen in den Wörtern und in der Filterleiste der App.
+
 ## Vor dem Postfach zwingend zu erledigen
 
 Diese Punkte sind noch offen und dürfen nicht übersprungen werden, sobald Lehrkräfte hochladen können.

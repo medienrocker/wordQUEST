@@ -283,7 +283,7 @@ require __DIR__ . '/kopf.php';
     dem Server, nicht im Repository. Sie gehören deshalb in die Sicherung.
   </p>
   <table>
-    <thead><tr><th>Titel</th><th>Datei</th><th class="zahl">Wörter</th><th>Geändert</th></tr></thead>
+    <thead><tr><th>Titel</th><th>Datei</th><th class="zahl">Wörter</th><th>Geändert</th><th>Aktion</th></tr></thead>
     <tbody>
     <?php foreach ($listen as $l): ?>
       <tr>
@@ -291,6 +291,10 @@ require __DIR__ . '/kopf.php';
         <td><?= wq_h($l['datei']) ?></td>
         <td class="zahl"><?= (int) $l['anzahl'] ?></td>
         <td><?= wq_h($l['geaendert']) ?></td>
+        <td class="aktionen">
+          <a class="klein-link" href="bearbeiten.php?liste=<?= urlencode($l['datei']) ?>">bearbeiten</a>
+          <a class="klein-link" href="bilder.php?liste=<?= urlencode($l['datei']) ?>">Bilder</a>
+        </td>
       </tr>
     <?php endforeach; ?>
     </tbody>
