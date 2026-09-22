@@ -30,18 +30,15 @@ require __DIR__ . '/../api/lib/auth.php';
    Skript mit einer wenig sprechenden Meldung. Deshalb hier früh und
    deutlich prüfen. */
 if (!in_array('sqlite', PDO::getAvailableDrivers(), true)) {
-    fwrite(STDERR, "Diesem PHP fehlt der SQLite-Treiber (pdo_sqlite).
-");
-    fwrite(STDERR, 'Verwendet wurde: ' . PHP_BINARY . ' (Version ' . PHP_VERSION . ")
+    fwrite(STDERR, 'Diesem PHP fehlt der SQLite-Treiber (pdo_sqlite).' . PHP_EOL);
+    fwrite(STDERR, 'Verwendet wurde: ' . PHP_BINARY . ' (Version ' . PHP_VERSION . ')' . PHP_EOL . PHP_EOL);
 
-");
     $kandidaten = glob('/opt/plesk/php/*/bin/php') ?: [];
     if ($kandidaten) {
         rsort($kandidaten);
-        fwrite(STDERR, "Nimm stattdessen die PHP-Version des Webauftritts, zum Beispiel:
-");
-        fwrite(STDERR, '  ' . $kandidaten[0] . ' ' . ($argv[0] ?? 'scripts/admin-anlegen.php') . " ...
-");
+        $skript = $argv[0] ?? 'scripts/admin-anlegen.php';
+        fwrite(STDERR, 'Nimm stattdessen die PHP-Version des Webauftritts:' . PHP_EOL);
+        fwrite(STDERR, '  ' . $kandidaten[0] . ' ' . $skript . ' ...' . PHP_EOL);
     }
     exit(1);
 }
