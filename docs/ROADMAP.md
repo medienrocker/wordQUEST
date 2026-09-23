@@ -636,7 +636,15 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
    **`prefers-reduced-motion`** galt vorher nur an vier Stellen bei 36 Animationen. Jetzt greift eine Regel für alles, auch für später hinzukommende.
 
    **Ansagen für Screenreader** waren bereits vorhanden: Alle fünf Spielrückmeldungen haben `aria-live`. Ergänzt wurden Mindestgrössen von 44 Pixeln bei den Richtungsknöpfen und dem Würfel.
-8. **Adaptive Schwierigkeit.** Zwei statt vier Antwortoptionen, wenn die Trefferquote einbricht. Zielkorridor 70 bis 80 Prozent Erfolg.
+8. ~~**Adaptive Schwierigkeit.**~~ **Umgesetzt.** Angepasst wird die Zahl der Antwortmöglichkeiten im Quiz, vier, drei oder zwei, anhand der Trefferquote der letzten zwölf Antworten. Zielkorridor 70 bis 80 Prozent.
+
+   Drei Entscheidungen gehören zusammen und sind wichtiger als die Schwellen selbst:
+
+   - **Es kostet keine Punkte.** Wer ohnehin kämpft, soll nicht zusätzlich weniger bekommen, nur weil die App hilft. Die ältere Erleichterung bei Knackpunkten behält ihre eigene Wertung, die hängt am einzelnen Wort und ist kein Urteil über eine Runde.
+   - **Es wird nicht angesagt.** Ein Hinweis „du bist gerade schwach" wäre genau die Rückmeldung, die diese Zielgruppe nicht braucht. Sichtbar und abschaltbar ist es unter Üben, dort als Einstellung und nicht als Urteil.
+   - **Es bewegt sich langsam**, höchstens eine Stufe je Frage und erst ab der sechsten Antwort, sonst springt die Knopfzahl mitten in der Runde.
+
+   Die Kurve ist bewusst unsymmetrisch: Hilfe kommt schnell, sie geht langsam. Durchgerechnet: Nach zwölf Fehlern stehen zwei Antworten zur Auswahl, elf richtige Antworten später wieder drei, nach der vierundzwanzigsten wieder vier.
 9. ~~**Vollständiger Offlinebetrieb**~~ **Umgesetzt.** Der Service Worker hält Wortlisten und Bilder in einem eigenen, unversionierten Speicher, der ein Update überlebt. Wortlisten laufen nach "Netz zuerst, Speicher als Rückfall", damit eine frisch freigegebene Liste sofort erscheint; Bilder nach "Speicher zuerst", weil ein Bilddateiname stabil ist und erneutes Laden nur Datenvolumen kostet. Vorher startete die App offline zwar, fand aber keine einzige Vokabel und zeigte nur eine Fehlermeldung. Sie funktionierte damit genau dann nicht, wenn man sie sich gerade nicht leisten kann.
 
 ---

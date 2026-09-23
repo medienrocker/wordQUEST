@@ -266,6 +266,18 @@
     </p>
   </div>
   <div class="card practice-card" style="margin-top:14px;">
+    <h3 class="karten-titel">🎚️ Hilfe bei schweren Runden</h3>
+    <label class="stats-toggle-label">
+      <input type="checkbox" id="adaptiv-toggle" />
+      <span>Weniger Antworten zur Auswahl, wenn es gerade schwerfällt</span>
+    </label>
+    <p class="practice-privacy" id="adaptiv-hinweis"></p>
+    <p class="practice-privacy">
+      Punkte kostet das nichts. Läuft es wieder rund, kommen die vier
+      Antworten von selbst zurück.
+    </p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
     <h3 class="karten-titel">👓 Lesehilfe</h3>
     <label class="stats-toggle-label">
       <input type="checkbox" id="lesehilfe-toggle" />
@@ -1326,6 +1338,103 @@ function statsSenden() {
   } catch {
     /* Statistik ist Beiwerk, ein Fehler hier darf nichts beeinflussen. */
   }
+}
+
+/* ═══════════════════════════════════════════════
+   ADAPTIVE SCHWIERIGKEIT (Epic 10, Punkt 8)
+
+   Zielkorridor sind 70 bis 80 Prozent richtige Antworten. Darunter wird
+   Lernen zur Niederlagenserie, darüber langweilt es.
+
+   Angepasst wird die **Zahl der Antwortmöglichkeiten** im Quiz, vier, drei
+   oder zwei. Das ist die Stellschraube, die am wenigsten kaputtmacht: Die
+   Aufgabe bleibt dieselbe, nur das Raten wird leichter.
+
+   Drei Entscheidungen, die zusammengehören:
+
+   1. **Es kostet keine Punkte.** Wer ohnehin kämpft, soll nicht zusätzlich
+      weniger bekommen, nur weil die App hilft. Die ältere Erleichterung bei
+      Knackpunkten behält ihre eigene Wertung, die hängt am einzelnen Wort und
+      ist nicht das Urteil über eine ganze Runde.
+   2. **Es wird nicht angesagt.** Ein Hinweis "du bist gerade schwach" wäre
+      genau die Rückmeldung, die diese Zielgruppe nicht braucht. Sichtbar und
+      abschaltbar ist es unter Üben, dort als Einstellung und nicht als Urteil.
+   3. **Es bewegt sich langsam**, höchstens eine Stufe je Frage, und erst nach
+      sechs Antworten. Sonst springt die Zahl der Knöpfe mitten in der Runde
+      hin und her, und das verwirrt mehr, als es hilft.
+   ═══════════════════════════════════════════════ */
+const ADAPTIV_FENSTER  = 12;    // letzte Antworten, die zählen
+const ADAPTIV_AB       = 6;     // vorher wird nichts verändert
+const ADAPTIV_RUNTER   = 0.55;  // darunter wird erleichtert
+const ADAPTIV_RAUF     = 0.85;  // darüber wieder erschwert
+const ADAPTIV_MIN      = 1;     // Ablenker, also zwei Knöpfe
+const ADAPTIV_MAX      = 3;     // Ablenker, also vier Knöpfe
+
+let adaptivStufe = ADAPTIV_MAX;
+
+function adaptivErlaubt() {
+  try { return localStorage.getItem('wq.adaptiv') !== 'aus'; } catch { return true; }
+}
+
+function adaptivSetzen(an) {
+  try { localStorage.setItem('wq.adaptiv', an ? 'an' : 'aus'); } catch {}
+  if (!an) adaptivStufe = ADAPTIV_MAX;
+  syncAdaptivKnopf();
+}
+
+function adaptivFenster() {
+  try {
+    const roh = localStorage.getItem('wq.quote') || '';
+    return roh.replace(/[^01]/g, '').slice(-ADAPTIV_FENSTER);
+  } catch { return ''; }
+}
+
+/** Merkt sich eine Antwort im gleitenden Fenster. */
+function adaptivMerken(richtig) {
+  try {
+    const neu = (adaptivFenster() + (richtig ? '1' : '0')).slice(-ADAPTIV_FENSTER);
+    localStorage.setItem('wq.quote', neu);
+  } catch {}
+}
+
+/** Trefferquote im Fenster, oder null bei zu wenigen Antworten. */
+function adaptivQuote() {
+  const f = adaptivFenster();
+  if (f.length < ADAPTIV_AB) return null;
+  return [...f].filter(z => z === '1').length / f.length;
+}
+
+/**
+ * Wie viele Ablenker soll die nächste Frage haben?
+ * Bewegt die Stufe um höchstens einen Schritt, damit die Knopfzahl nicht
+ * mitten in der Runde springt.
+ */
+function adaptivAblenker() {
+  if (!adaptivErlaubt()) return ADAPTIV_MAX;
+  const quote = adaptivQuote();
+  if (quote === null) return adaptivStufe;
+  if (quote < ADAPTIV_RUNTER && adaptivStufe > ADAPTIV_MIN) adaptivStufe--;
+  else if (quote > ADAPTIV_RAUF && adaptivStufe < ADAPTIV_MAX) adaptivStufe++;
+  return adaptivStufe;
+}
+
+function syncAdaptivKnopf() {
+  const box = document.getElementById('adaptiv-toggle');
+  if (!box) return;
+  const an = adaptivErlaubt();
+  box.checked = an;
+  const zeile = document.getElementById('adaptiv-hinweis');
+  if (!zeile) return;
+  if (!an) {
+    zeile.textContent = 'Im Quiz stehen immer vier Antworten zur Auswahl.';
+    return;
+  }
+  const quote = adaptivQuote();
+  const knoepfe = adaptivStufe + 1;
+  zeile.textContent = quote === null
+    ? 'Wenn eine Runde schwer läuft, stehen weniger Antworten zur Auswahl. Punkte kostet das nicht.'
+    : 'Zurzeit ' + knoepfe + ' Antworten zur Auswahl, bei '
+      + Math.round(quote * 100) + ' Prozent richtigen Antworten zuletzt.';
 }
 
 /* ═══════════════════════════════════════════════
@@ -2962,7 +3071,7 @@ function openTab(name, opts) {
   if (name === 'spelling')startSpelling();
   if (name === 'memory')  startMemory(8);
   if (name === 'vocab')   renderVocab('all');
-  if (name === 'practice') updatePracticePanel();
+  if (name === 'practice') { updatePracticePanel(); syncAdaptivKnopf(); }
   if (name === 'tafel')   { syncTafelKnopf(); ladeTafel(true); }
 }
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3127,7 +3236,8 @@ function showQuizQuestion() {
   if (pron) { pron.innerHTML = ''; pron.hidden = true; }
   setNextReady('quiz', false);
 
-  const wanted      = quizEasyMode ? 1 : 3;
+  // Knackpunkte bleiben bei zwei Knöpfen, sonst entscheidet die Trefferquote.
+  const wanted      = quizEasyMode ? 1 : adaptivAblenker();
   const distractors = pickDistractors(item, wanted);
   const choices     = shuffle([item, ...distractors]);
   const rightAnswer = tgtText(item);
@@ -3153,6 +3263,8 @@ function handleQuizAnswer(btn, correct, rightAnswer, item, before) {
     if (b.textContent === rightAnswer) b.classList.add('correct-ans');
   });
   const fb = document.getElementById('quiz-feedback');
+  // Jede Antwort zählt für die adaptive Schwierigkeit, auch im Übungsmodus.
+  adaptivMerken(correct);
   if (correct) {
     btn.classList.add('correct-ans');
     const award = awardAnswer(quizEasyMode ? 'quizEasy' : 'quiz', before);
@@ -4188,6 +4300,8 @@ const HILFE = [
       { name: 'Lautsprecher am Wort', text: 'Tippe darauf, um das englische Wort zu hören. Du findest ihn in der Vokabelliste und nach jeder Antwort im Quiz, beim Spelling und beim Lückensatz. Von selbst spielt nichts ab, nur im Hörmodus, weil das dort die Aufgabe ist.' },
       { sel: '#stats-toggle', name: 'Anonyme Nutzungsstatistik', text: 'Zählt mit, welche Listen und Spiele genutzt werden. Kein Name, keine Punkte, keine Adresse. Lässt sich unter Üben abschalten.' },
       { sel: '#bruecke-wahl', name: 'Sprache von zu Hause', text: 'Sprichst du zu Hause eine andere Sprache? Dann steht das Wort zusätzlich in dieser Sprache neben dem deutschen. Das hilft, weil sich das neue englische Wort an etwas hängt, das du längst kannst.' },
+      { sel: '#adaptiv-toggle', name: 'Hilfe bei schweren Runden', text: 'Wenn mehrere Antworten hintereinander danebengehen, stehen im Quiz nur noch drei oder zwei statt vier Antworten zur Auswahl. Punkte kostet das nicht. Läuft es wieder gut, kommen die vier zurück.' },
+      { sel: '#lern-sichern', name: 'Lernstand mitnehmen', text: 'Dein Lernstand liegt nur auf diesem Gerät. Als Datei oder QR-Code nimmst du ihn auf ein anderes mit, etwa vom Schultablet aufs eigene Handy.' },
       { sel: '#lesehilfe-toggle', name: 'Lesehilfe', text: 'Stellt Buchstaben, Wörter und Zeilen weiter auseinander. Das hilft vielen beim Lesen, besonders bei langen englischen Wörtern. Die Einstellung bleibt gespeichert.' },
       { sel: '#klasse-code', name: 'Klassencode', text: 'Wenn deine Lehrkraft einen Code genannt hat, übst du damit dieselben Wörter wie der Rest der Klasse. Deine Lehrkraft sieht nur die Summe aller, nie dich einzeln.' },
       { sel: '#tafel-toggle', name: 'Ehrentafel', text: 'Wer eine Liste einmal ganz durchspielt, erscheint mit Würfelname und Tier auf der Tafel. Es zählt nur das Durchkommen, nicht die Geschwindigkeit. Übertragen werden Name und Tier, sonst nichts.' },
@@ -4311,6 +4425,10 @@ document.getElementById('lern-jetzt')?.addEventListener('click', () => {
     + (verworfen ? ' ' + verworfen + ' Einträge waren unlesbar und wurden übergangen.' : ''));
 });
 lernstandAusAdresse();
+
+/* Adaptive Schwierigkeit. */
+syncAdaptivKnopf();
+document.getElementById('adaptiv-toggle')?.addEventListener('change', e => adaptivSetzen(e.target.checked));
 
 /* Lesehilfe zuerst, damit die Seite nicht erst gesetzt und dann umspringt. */
 syncLesehilfe();
