@@ -78,12 +78,23 @@ Für diese steht der Beispielsatz in der Vokabelliste, und der erklärt mehr,
 als ein Bild es je könnte. Wer es trotzdem versucht, bekommt eine Illustration,
 die das Kind erst entschlüsseln muss, bevor es lernen kann.
 
+## Stand
+
+14 der 15 Motive sind erzeugt und zugeordnet, sie liegen in `img/wq/`.
+Ausgenommen ist `again`: Dort steht bereits das Emoji 🔁, und nach der Regel
+oben schliessen Bilder nur Lücken, wo kein passendes Emoji existiert.
+
 ## So kommen die Bilder in die App
 
 1. Bild erzeugen, am besten quadratisch. Die Grösse ist gleichgültig, der
    Server rechnet ohnehin um.
 2. Im Admincenter unter **Bilder** die Wortliste wählen.
 3. In der Arbeitsliste „Ohne Visualisierung" beim passenden Wort hochladen.
+
+**Mehrere Motive in einem Bild?** Bildmodelle liefern oft ein Raster mit vier
+Motiven auf einmal. Das ist günstig, muss aber vor dem Hochladen zerlegt
+werden: ein Bild, ein Wort. Wichtig dabei ist nur, dass zwischen den Motiven
+ein freier Streifen bleibt, dann ist der Schnitt eindeutig.
 
 Der Server erzeugt daraus ein neues WebP mit höchstens 256 Pixel Kantenlänge.
 Die hochgeladene Datei selbst wird nie ausgeliefert, sie wird neu gezeichnet,

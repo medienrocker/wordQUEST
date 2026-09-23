@@ -583,10 +583,25 @@ function tgtLangName() { return LEARN_DIR === 'de2en' ? 'Englisch'  : 'Deutsch';
 /* Palette für automatisch generierte Kategorie-Akzentfarben */
 const CAT_PALETTE = ['#ff9800', '#4caf50', '#2196f3', '#9c27b0', '#f44336', '#ffc107', '#00bcd4', '#795548'];
 
-/* ─────────── Growth-Mindset-Feedback ───────────
-   Kurze, variierende Phrasen statt "Falsch!" – fördert
-   Lernmotivation: Fehler als Lernchance, nicht als Urteil.
-   (Dweck, C.S. – Mindset; "the power of yet") */
+/* ─────────── Rückmeldung bei richtig und falsch ───────────
+
+   Bei einer falschen Antwort steht zuerst, was richtig gewesen wäre. Nichts
+   anderes.
+
+   Die frühere Fassung lobte an dieser Stelle: "Gut mitgedacht", "Fast!",
+   "Knapp daneben". Damit behauptete sie eine Nähe zur richtigen Antwort, die
+   es gar nicht gab. Wer im Lückensatz "bathroom" statt "living room" wählt,
+   war nicht knapp dran, und im Betrieb ist genau das aufgefallen: Dem Kind
+   war nicht klar, was es denn gut gemacht haben soll. Eine Rückmeldung, die
+   man erst deuten muss, kostet Aufmerksamkeit, die zum Lernen fehlt.
+
+   Das ist kein Widerspruch zum Wachstumsdenken, sondern dessen Kern. Nicht
+   das Lob trägt, sondern das "noch nicht". Lob für etwas, das nicht
+   stattgefunden hat, entwertet nebenbei auch das Lob für alles Übrige.
+
+   Echte Nähe gibt es an genau einer Stelle, und dort steht sie auch: Wer sich
+   beim Schreiben nur vertippt hat, bekommt "Fast perfekt" samt Punkten.
+   (Dweck, C. S., Mindset, zur Kraft des "noch nicht") */
 const PRAISE_PHRASES = [
   '✨ Stark!',
   '🎯 Genau!',
@@ -595,13 +610,15 @@ const PRAISE_PHRASES = [
   '👏 Sauber!',
   '🚀 Weiter so!'
 ];
+/* Jede Zeile endet so, dass die richtige Antwort direkt anschliesst, und
+   jede funktioniert auch mit einem Paar wie "apple = der Apfel". */
 const GROWTH_PHRASES = [
-  'Fast! Merk dir: ',
-  'Knapp daneben – es heißt: ',
-  "Gleich hast du's! Richtig: ",
-  'Noch nicht – es ist: ',
-  'Nochmal merken: ',
-  'Gut mitgedacht – richtig: '
+  'Richtig ist: ',
+  'Noch nicht. Richtig ist: ',
+  'Merk dir: ',
+  'Die Lösung: ',
+  'Kein Problem. Richtig ist: ',
+  'Das Wort kommt wieder. Richtig ist: '
 ];
 /* Ohne Argument nur die Lobphrase, mit Award-Objekt zusätzlich die Punkte
    samt Begründung ("Comeback +10"), damit das System nachvollziehbar ist. */
@@ -3285,7 +3302,10 @@ function checkSpelling() {
   } else if (tolerantMatch) {
     inp.className  = 'almost';
     const award = awardAnswer(kind, before);
-    fb.textContent = `⚠️ Fast perfekt! Schreibweise: ${target} · +${award.pts}`;
+    // Zählt als richtig, es gab volle Punkte. Deshalb ein Haken und kein
+    // Warnzeichen: Das Warnzeichen las sich wie ein Fehler, obwohl der
+    // Vertipper durchgewunken wurde.
+    fb.textContent = `✅ Richtig. Schreibweise: ${target} · +${award.pts}`;
     fb.className   = 'feedback almost';
     spellingScore++;
     celebrate();
@@ -3445,7 +3465,7 @@ function checkListenDictation() {
     const award = awardAnswer('dictation', before);
     fb.textContent = genau
       ? praiseMsg(award)
-      : `⚠️ Fast perfekt! Schreibweise: ${item.en} · +${award.pts}`;
+      : `✅ Richtig. Schreibweise: ${item.en} · +${award.pts}`;
     fb.className = genau ? 'feedback correct' : 'feedback almost';
     listenScore++;
     celebrate();

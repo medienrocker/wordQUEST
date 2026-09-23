@@ -1,4 +1,11 @@
-img/
+# Lokales Bildmaterial und die im Admincenter hochgeladenen Bilder bleiben
+# draussen. Die mitgelieferten Vokabelbilder gehoeren dagegen ins Repo: Sie
+# sind kuratierter Inhalt, reisen so mit jedem Deploy mit und liegen in der
+# Versionsgeschichte.
+# Nur der Inhalt von img/ wird ausgeschlossen, nicht der Ordner selbst. Sonst
+# steigt git gar nicht erst hinein, und eine Ausnahme darunter bliebe wirkungslos.
+img/*
+!img/wq/
 index2.html
 _RAW/
 

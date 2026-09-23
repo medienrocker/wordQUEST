@@ -118,7 +118,8 @@
       "de": "haben",
       "cat": "words",
       "example": "They have got two cats.",
-      "exampleDe": "Sie haben zwei Katzen."
+      "exampleDe": "Sie haben zwei Katzen.",
+      "img": "img/wq/have-got.webp"
     },
     {
       "en": "also",
@@ -138,7 +139,8 @@
     {
       "en": "I haven't got",
       "de": "ich habe nicht",
-      "cat": "words"
+      "cat": "words",
+      "img": "img/wq/i-haven-t-got.webp"
     },
     {
       "en": "dog",
@@ -153,7 +155,8 @@
       "de": "immer",
       "cat": "words",
       "example": "I always walk to school.",
-      "exampleDe": "Ich gehe immer zu Fuß zur Schule."
+      "exampleDe": "Ich gehe immer zu Fuß zur Schule.",
+      "img": "img/wq/always.webp"
     },
     {
       "en": "India",

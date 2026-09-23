@@ -65,7 +65,8 @@
       "de": "mir, mich, ich",
       "cat": "words",
       "example": "Give the book to me, please.",
-      "exampleDe": "Gib mir bitte das Buch."
+      "exampleDe": "Gib mir bitte das Buch.",
+      "img": "img/wq/to-me.webp"
     },
     {
       "en": "banana",
@@ -184,7 +185,8 @@
       "de": "viel(e), sehr, jede Menge",
       "cat": "words",
       "example": "She has got a lot of friends.",
-      "exampleDe": "Sie hat jede Menge Freunde."
+      "exampleDe": "Sie hat jede Menge Freunde.",
+      "img": "img/wq/a-lot-of.webp"
     },
     {
       "en": "hello",
@@ -207,7 +209,8 @@
       "de": "ich habe",
       "cat": "words",
       "example": "I've got a new bike.",
-      "exampleDe": "Ich habe ein neues Fahrrad."
+      "exampleDe": "Ich habe ein neues Fahrrad.",
+      "img": "img/wq/i-ve-got.webp"
     },
     {
       "en": "little",
@@ -230,14 +233,16 @@
       "de": "sein/seine/seiner/seins",
       "cat": "words",
       "example": "His brother is wearing a green T-shirt.",
-      "exampleDe": "Sein Bruder trägt ein grünes T-Shirt."
+      "exampleDe": "Sein Bruder trägt ein grünes T-Shirt.",
+      "img": "img/wq/his.webp"
     },
     {
       "en": "he",
       "de": "er",
       "cat": "words",
       "example": "He is a boy.",
-      "exampleDe": "Er ist ein Junge."
+      "exampleDe": "Er ist ein Junge.",
+      "img": "img/wq/he.webp"
     },
     {
       "en": "football",
@@ -338,7 +343,8 @@
       "de": "viel, jede Menge",
       "cat": "words",
       "example": "There are lots of books in my room.",
-      "exampleDe": "In meinem Zimmer sind jede Menge Bücher."
+      "exampleDe": "In meinem Zimmer sind jede Menge Bücher.",
+      "img": "img/wq/lots-of.webp"
     },
     {
       "en": "song",
@@ -469,7 +475,8 @@
       "de": "kommen",
       "cat": "words",
       "example": "Come to my house after school.",
-      "exampleDe": "Komm nach der Schule zu mir."
+      "exampleDe": "Komm nach der Schule zu mir.",
+      "img": "img/wq/come.webp"
     },
     {
       "en": "city",
@@ -563,7 +570,8 @@
       "de": "bleiben; wohnen",
       "cat": "words",
       "example": "I stay at my grandma's house in summer.",
-      "exampleDe": "Im Sommer wohne ich bei meiner Oma."
+      "exampleDe": "Im Sommer wohne ich bei meiner Oma.",
+      "img": "img/wq/stay.webp"
     },
     {
       "en": "not",
@@ -577,7 +585,8 @@
       "de": "weit",
       "cat": "words",
       "example": "The shop is not far from here.",
-      "exampleDe": "Der Laden ist nicht weit von hier."
+      "exampleDe": "Der Laden ist nicht weit von hier.",
+      "img": "img/wq/far.webp"
     },
     {
       "en": "away",
@@ -627,14 +636,16 @@
       "de": "wollen",
       "cat": "words",
       "example": "I want a dog for my birthday.",
-      "exampleDe": "Ich will einen Hund zum Geburtstag."
+      "exampleDe": "Ich will einen Hund zum Geburtstag.",
+      "img": "img/wq/want.webp"
     },
     {
       "en": "them",
       "de": "sie, ihnen",
       "cat": "words",
       "example": "They are my friends. Do you want to meet them?",
-      "exampleDe": "Das sind meine Freunde. Willst du sie kennenlernen?"
+      "exampleDe": "Das sind meine Freunde. Willst du sie kennenlernen?",
+      "img": "img/wq/them.webp"
     },
     {
       "en": "What do you think?",

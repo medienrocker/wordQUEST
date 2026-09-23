@@ -54,10 +54,38 @@ function wq_einreichungen_schema(PDO $pdo): void
     ');
 }
 
-/** Prüft eine Bild-URL wie der Client: nur HTTPS, nur bekannte Hosts. */
+/**
+ * Prüft eine Bild-Adresse wie der Client.
+ *
+ * Zwei Formen sind erlaubt:
+ *
+ * 1. **Eigene Bilder** als Pfad unterhalb von `img/`. Dort liegen die im
+ *    Admincenter hochgeladenen (`img/auto/`) und die mitgelieferten
+ *    (`img/wq/`). Sie stammen vom eigenen Server und sind damit so
+ *    vertrauenswürdig wie die Seite selbst.
+ * 2. **Fremde Bilder** nur über HTTPS und nur von bekannten Hosts. Eine
+ *    beliebige fremde Adresse wäre ein Zählpixel auf dem Gerät jedes Kindes.
+ *
+ * Der erste Fall hat lange gefehlt, und das war ein stiller Datenverlust:
+ * Der Editor schickt jede Liste beim Speichern durch diese Prüfung, und dabei
+ * flogen sämtliche über die Bilderseite zugeordneten Bilder wieder heraus.
+ * Aufgefallen ist es erst, als die ersten mitgelieferten Bilder dazukamen.
+ */
 function wq_bild_url_ok(string $url): bool
 {
-    $teile = parse_url(trim($url));
+    $url = trim($url);
+
+    // Eigener Pfad. Bewusst eng: kein führender Schrägstrich, kein Schema,
+    // kein "..", keine Rückwärtsschrägstriche, nur harmlose Zeichen und nur
+    // Bildendungen.
+    if (str_starts_with($url, 'img/')) {
+        if (str_contains($url, '..') || str_contains($url, '\\') || str_contains($url, '//')) {
+            return false;
+        }
+        return (bool) preg_match('#^img/[A-Za-z0-9._/-]+\.(webp|png|jpe?g|gif)$#', $url);
+    }
+
+    $teile = parse_url($url);
     if (!$teile || ($teile['scheme'] ?? '') !== 'https' || empty($teile['host'])) {
         return false;
     }

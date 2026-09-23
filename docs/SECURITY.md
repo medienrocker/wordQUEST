@@ -431,6 +431,17 @@ Liste blieb unverändert.
 **Kategorie-Kennungen werden auf Buchstaben, Ziffern, Strich und Unterstrich
 beschränkt.** Sie landen in den Wörtern und in der Filterleiste der App.
 
+**Bild-Adressen: eigene Pfade und fremde Hosts getrennt geprüft.** Erlaubt ist
+entweder ein Pfad unterhalb von `img/` oder eine HTTPS-Adresse von einem
+bekannten Host. Der erste Fall hat lange gefehlt, und das war ein stiller
+Datenverlust: Der Editor schickt jede Liste beim Speichern durch die Prüfung,
+und dabei flogen sämtliche über die Bilderseite zugeordneten Bilder wieder
+heraus. Aufgefallen ist es erst, als die ersten mitgelieferten Bilder
+dazukamen. Der eigene Pfad ist eng gefasst: kein führender Schrägstrich, kein
+Schema, kein `..`, kein Rückwärtsschrägstrich, keine Abfrage und nur
+Bildendungen. Geprüft mit 19 Fällen, darunter `img/../../etc/passwd`,
+`img/wq/schad.php` und `img/wq/schad.svg`.
+
 ## Ehrentafel, Stand nach WQ-8.3
 
 Die Tafel ist der erste Ort, an dem etwas von einem Gerät auf eine Seite
