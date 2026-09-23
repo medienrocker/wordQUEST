@@ -47,8 +47,11 @@ andere aus.
 
 **Dein Name**
 Du bekommst einen Namen geschenkt, zum Beispiel "Flinker Fuchs".
-Tippe auf den Würfel daneben, dann bekommst du einen neuen.
 Dein echter Name steht nirgends. Das ist Absicht.
+
+Der Name bleibt, solange du willst. Er ändert sich nur, wenn du auf den
+Würfel daneben tippst, und auch dann fragt wordQUEST vorher nach. Wenn du
+deinen Namen gut findest, tippe einfach auf **Abbrechen**.
 
 **Punkte und Bestleistung**
 Punkte sammelst du beim Spielen. Die Bestleistung ist dein eigener Rekord.
@@ -204,7 +207,7 @@ weitermachen? Das geht.
 
 ![Lernstand als QR-Code](bilder/app-lernstand.png)
 
-Gehe auf **Üben** und suche **Lernstand mitnehmen**. Du hast zwei Wege:
+Gehe auf **Üben** und suche **Lernstand mitnehmen**. Du hast drei Wege:
 
 **Als Datei sichern**
 Speichert eine Datei. Die schickst du dir selbst, zum Beispiel per Mail.
@@ -218,9 +221,41 @@ Gerät. wordQUEST öffnet sich dort und fragt, ob es deinen Lernstand
 In einen QR-Code passt nicht beliebig viel. Wenn du schon sehr viele Wörter
 geübt hast, sagt dir wordQUEST das und du nimmst einfach die Datei.
 
+**Als Tabelle sichern**
+Speichert eine Tabelle zum Anschauen. Darin steht für jedes Wort, wie oft du
+es schon hattest, wie oft richtig, wie oft falsch und ob es schon sitzt.
+Die Datei öffnet sich in Excel oder in LibreOffice Calc. Gut, um jemandem zu
+zeigen, wie weit du bist.
+
+Die beiden anderen Wege sind zum Umziehen auf ein anderes Gerät da.
+Diese Tabelle ist zum Lesen.
+
 ---
 
-## 12. Die Ehrentafel
+## 12. Punkte zurücksetzen
+
+Du willst wieder bei null anfangen? Gehe auf **Üben** und scrolle nach unten.
+
+![Der Knopf Punkte zurücksetzen](bilder/app-punkte-karte.png)
+
+Dort stehen drei Knöpfe, die verschiedene Dinge tun:
+
+| Knopf | Was passiert |
+|---|---|
+| **Durchlauf neu starten** | Alle Wörter sind wieder dran. Dein Lernstand bleibt. |
+| **Punkte zurücksetzen** | Punkte und Bestleistung fangen bei null an. Dein Lernstand bleibt. |
+| **Diagnose-Daten löschen** | wordQUEST vergisst, welche Wörter du kannst. Deine Punkte bleiben. |
+
+Vor jedem dieser Schritte fragt wordQUEST nach.
+
+![Die Rückfrage vor dem Zurücksetzen](bilder/app-punkte.png)
+
+Wenn du nur aus Versehen getippt hast, wähle **Abbrechen**. Dann passiert
+nichts.
+
+---
+
+## 13. Die Ehrentafel
 
 ![Die Ehrentafel](bilder/app-tafel.png)
 

@@ -235,6 +235,7 @@
       <label class="btn btn-grey lern-dateiwahl" for="lern-datei">📂 Datei laden</label>
       <input type="file" id="lern-datei" accept="application/json,.json" />
       <button type="button" class="btn btn-grey" id="lern-qr">📱 QR-Code zeigen</button>
+      <button type="button" class="btn btn-grey" id="lern-tabelle">📊 Als Tabelle sichern</button>
     </div>
 
     <div id="lern-qr-feld" hidden>
@@ -316,6 +317,14 @@
   <div class="card practice-card" style="margin-top:14px;">
     <button type="button" class="btn btn-grey" onclick="clearDiagnosis()" title="Löscht den kompletten Lernstand dieses Geräts. Lässt sich nicht rückgängig machen.">🗑 Diagnose-Daten löschen</button>
     <p class="practice-privacy">Daten bleiben ausschließlich lokal auf deinem Gerät.</p>
+  </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <button type="button" class="btn btn-grey" id="punkte-reset"
+            title="Setzt Punkte und Bestleistung auf null. Der Lernstand bleibt.">⭐ Punkte zurücksetzen</button>
+    <p class="practice-privacy">
+      Setzt Punkte und Bestleistung auf null. Welche Wörter du schon kannst,
+      bleibt erhalten.
+    </p>
   </div>
   <div class="card practice-card" style="margin-top:14px;">
     <label class="stats-toggle-label">
@@ -550,6 +559,23 @@
     <div id="help-body"></div>
     <div class="overlay-actions">
       <button type="button" class="btn btn-green" id="help-ok">Alles klar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gemeinsame Rueckfrage vor Schritten, die sich nicht zurueckholen lassen.
+     Bewusst kein window.confirm: Das ist auf Telefonen ein Systemdialog, der
+     ueberlesen und weggetippt wird, und er laesst sich nicht wie der Rest der
+     App gestalten oder vorlesen. -->
+<div id="frage-overlay" class="overlay" hidden>
+  <div class="overlay-card frage-card" role="alertdialog" aria-modal="true"
+       aria-labelledby="frage-titel" aria-describedby="frage-text">
+    <div class="overlay-emoji" id="frage-emoji" aria-hidden="true">⚠️</div>
+    <h2 class="overlay-title" id="frage-titel"></h2>
+    <p class="frage-text" id="frage-text"></p>
+    <div class="overlay-actions">
+      <button type="button" class="btn btn-grey" id="frage-nein">Abbrechen</button>
+      <button type="button" class="btn btn-red" id="frage-ja">Ja</button>
     </div>
   </div>
 </div>
@@ -1219,6 +1245,17 @@ function openHelp() {
 }
 
 function clearDiagnosis() {
+  frageStellen(
+    'Lernstand wirklich löschen?',
+    'Danach weiß wordQUEST nicht mehr, welche Wörter du schon kannst und '
+      + 'welche schwerfallen. Deine Punkte bleiben. Rückgängig geht das nicht.',
+    'Ja, löschen',
+    diagnoseWirklichLoeschen,
+    '🗑️'
+  );
+}
+
+function diagnoseWirklichLoeschen() {
   localStorage.removeItem(DIAG_KEY);
   localStorage.removeItem(SRS_KEY_V1);
   localStorage.removeItem(SRS_KEY);
@@ -2795,8 +2832,141 @@ function renderPlayer() {
   if (emojiEl) emojiEl.textContent = p.emoji;
 }
 function rerollPlayer() {
-  savePlayer(makePlayer());
-  renderPlayer();
+  const jetzt = getPlayer();
+  frageStellen(
+    'Neuen Namen würfeln?',
+    'Du heißt gerade ' + jetzt.name + '. Der neue Name wird ausgewürfelt, '
+      + 'den alten gibt es danach nicht zurück.',
+    'Ja, würfeln',
+    () => { savePlayer(makePlayer()); renderPlayer(); },
+    '🎲'
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   RÜCKFRAGE VOR NICHT UMKEHRBAREN SCHRITTEN
+
+   Drei Knöpfe löschen etwas, das sich nicht zurückholen lässt: der Würfel
+   überschreibt den Spielernamen, "Diagnose-Daten löschen" den Lernstand,
+   "Punkte zurücksetzen" den Punktestand. Bisher genügte dafür ein einziger
+   Tipp. Bei dieser Zielgruppe, auf kleinen Bildschirmen, mit Knöpfen dicht
+   nebeneinander, passiert das ständig.
+
+   Die Rückfrage benutzt den vorhandenen Overlay-Mechanismus, damit sie die
+   Tastaturfalle, das Escape-Verhalten und die Fokusrückgabe erbt. Der
+   harmlose Weg ("Abbrechen") steht links und bekommt den ersten Fokus.
+   ═══════════════════════════════════════════════ */
+function frageStellen(titel, text, jaText, aktion, emoji) {
+  const ov   = document.getElementById('frage-overlay');
+  const ja   = document.getElementById('frage-ja');
+  const nein = document.getElementById('frage-nein');
+  if (!ov || !ja || !nein) { aktion(); return; }   // ohne Fenster lieber handeln
+
+  document.getElementById('frage-titel').textContent = titel;
+  document.getElementById('frage-text').textContent  = text;
+  document.getElementById('frage-emoji').textContent = emoji || '⚠️';
+  ja.textContent = jaText;
+
+  // Frische Knöpfe, sonst sammeln sich die Zuhörer früherer Fragen an.
+  const jaNeu   = ja.cloneNode(true);
+  const neinNeu = nein.cloneNode(true);
+  ja.replaceWith(jaNeu);
+  nein.replaceWith(neinNeu);
+
+  jaNeu.addEventListener('click', () => {
+    closeOverlay(ov);
+    aktion();
+  });
+  neinNeu.addEventListener('click', () => closeOverlay(ov));
+
+  openOverlay(ov, neinNeu);
+}
+
+/* ═══════════════════════════════════════════════
+   PUNKTE ZURÜCKSETZEN
+
+   Bewusst getrennt vom Lernstand: Wer von vorn zählen will, verliert dabei
+   nicht, was er schon gelernt hat. Umgekehrt räumt "Diagnose-Daten löschen"
+   den Lernstand weg und lässt die Punkte stehen.
+   ═══════════════════════════════════════════════ */
+function punkteZuruecksetzen() {
+  totalScore = 0;
+  highScore  = 0;
+  try {
+    localStorage.setItem('wq.score', '0');
+    localStorage.setItem('wq.high', '0');
+  } catch {}
+  updateScoreBar();
+  lernMeldung('Punkte und Bestleistung stehen wieder auf null. Dein Lernstand ist unberührt.');
+}
+
+/* ═══════════════════════════════════════════════
+   LERNSTAND ALS TABELLE
+
+   Die JSON-Datei ist zum Umziehen zwischen zwei Geräten gebaut, nicht zum
+   Lesen: Darin stehen interne Kennungen und gepackte Zahlenketten. Wer den
+   Stand ansehen oder im Elterngespräch zeigen will, braucht Klartext.
+
+   Trennzeichen ist das Semikolon und vorne steht eine Byte-Order-Mark,
+   weil Excel im deutschen Sprachraum sonst alles in eine Spalte kippt und
+   die Umlaute zerlegt.
+   ═══════════════════════════════════════════════ */
+const TABELLE_KOPF = [
+  'Englisch', 'Deutsch', 'Kategorie', 'Stufe', 'Gesehen',
+  'Richtig', 'Falsch', 'Serie', 'Status', 'Wieder dran am'
+];
+
+function tabellenFeld(wert) {
+  const text = String(wert ?? '');
+  return /[";\n\r]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+}
+
+function lernZeilen() {
+  const heute = Date.now();
+  return VOCAB.map(v => {
+    const e = getSrsEntry(v._wqId);
+    let status;
+    if (!e.seen)            status = 'neu';
+    else if (e.leech)       status = 'Knackpunkt';
+    else if (e.box >= 4)    status = 'sitzt';
+    else if (e.due <= heute) status = 'heute dran';
+    else                    status = 'am Üben';
+    return [
+      v.en,
+      v.de,
+      categoryLabel(v.cat || 'default'),
+      e.box,
+      e.seen,
+      e.correct,
+      e.wrong,
+      e.streak,
+      status,
+      e.due ? new Date(e.due).toLocaleDateString('de-DE') : ''
+    ];
+  });
+}
+
+function lernstandAlsTabelle() {
+  if (!VOCAB.length) {
+    lernMeldung('Erst eine Wortliste auswählen, dann gibt es etwas zu sichern.', 'warnung');
+    return;
+  }
+  try {
+    const zeilen = [TABELLE_KOPF, ...lernZeilen()];
+    const text = '﻿' + zeilen.map(z => z.map(tabellenFeld).join(';')).join('\r\n');
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'wordquest-lernstand-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    lernMeldung(zeilen.length - 1 + ' Wörter als Tabelle gesichert. Die Datei öffnet sich in Excel oder Calc.');
+  } catch {
+    lernMeldung('Das Sichern hat nicht geklappt.', 'warnung');
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -4406,6 +4576,15 @@ syncNetzHinweis();
 
 /* Lernstand mitnehmen. */
 document.getElementById('lern-sichern')?.addEventListener('click', lernstandSichern);
+document.getElementById('lern-tabelle')?.addEventListener('click', lernstandAlsTabelle);
+document.getElementById('punkte-reset')?.addEventListener('click', () => frageStellen(
+  'Punkte wirklich zurücksetzen?',
+  'Punkte und Bestleistung fangen dann wieder bei null an. Welche Wörter du '
+    + 'schon kannst, bleibt gespeichert.',
+  'Ja, zurücksetzen',
+  punkteZuruecksetzen,
+  '⭐'
+));
 document.getElementById('lern-datei')?.addEventListener('change', (e) => {
   lernstandAusDatei(e.target.files && e.target.files[0]);
   e.target.value = '';
@@ -4508,7 +4687,7 @@ document.getElementById('help-close')?.addEventListener('click', () => closeOver
 document.getElementById('help-ok')?.addEventListener('click', () => closeOverlay(document.getElementById('help-overlay')));
 
 /* Klick auf den Hintergrund schließt, Klick auf die Karte nicht. */
-['round-overlay', 'help-overlay'].forEach(id => {
+['round-overlay', 'help-overlay', 'frage-overlay'].forEach(id => {
   document.getElementById(id)?.addEventListener('click', (e) => {
     if (e.target.id === id) closeOverlay(document.getElementById(id));
   });

@@ -235,6 +235,12 @@ anderen Seiten laufen ohne Skripte.
 | **Nach jedem Deploy** | Prüfliste in `docs/DEPLOY.md` abarbeiten. |
 | **Regelmäßig** | Sicherung. Freigegebene Listen, hochgeladene Bilder und die Datenbank liegen nicht im Repository. |
 
+Hinweis für Rückfragen aus dem Kollegium: Lernstände der Kinder liegen
+ausschliesslich auf deren Geräten. Der Server kennt sie nicht, also gibt es
+im Admincenter auch nichts zurückzusetzen oder auszulesen. Die Kinder
+sichern ihren Stand bei Bedarf selbst, als Datei, QR-Code oder lesbare
+Tabelle unter Üben.
+
 ---
 
 ## 8. Wenn etwas nicht stimmt

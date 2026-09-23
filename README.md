@@ -8,13 +8,18 @@ In der **Vokabelansicht** kannst du einzelne Wörter für die Spiele aktivieren 
 
 ## Anleitungen
 
-| Für wen | Datei |
-|---|---|
-| Kinder | [docs/anleitung-kinder.md](docs/anleitung-kinder.md) |
-| Lehrkräfte | [docs/anleitung-lehrkraefte.md](docs/anleitung-lehrkraefte.md) |
-| Admins | [docs/anleitung-admin.md](docs/anleitung-admin.md) |
+| Für wen | Quelle | Druckfassung |
+|---|---|---|
+| Kinder und Eltern | [anleitung-kinder.md](docs/anleitung-kinder.md) | [wordQUEST-Elternabend.pdf](docs/wordQUEST-Elternabend.pdf) |
+| Lehrkräfte | [anleitung-lehrkraefte.md](docs/anleitung-lehrkraefte.md) | [wordQUEST-Lehrkraefte.pdf](docs/wordQUEST-Lehrkraefte.pdf) |
+| Admins | [anleitung-admin.md](docs/anleitung-admin.md) | [wordQUEST-Admincenter.pdf](docs/wordQUEST-Admincenter.pdf) |
 
-Die Bildschirmfotos dazu liegen in `docs/bilder/`.
+Die Bildschirmfotos liegen in `docs/bilder/`. Die PDFs entstehen aus den
+Markdown-Quellen im bildungssprit-Design:
+
+```bash
+python scripts/handreichung.py
+```
 
 ---
 

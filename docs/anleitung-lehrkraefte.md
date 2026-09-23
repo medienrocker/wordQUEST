@@ -183,6 +183,11 @@ Rückmeldung, falls etwas unklar ist.
   Die Vokabelliste zeigt dann eine dritte Zeile je Wort.
 - **Lernstand mitnehmen.** Vom Schultablet aufs eigene Handy per Datei oder
   QR-Code, ohne Konto und ohne Server.
+- **Lesbarer Auszug für das Elterngespräch.** Unter Üben gibt es
+  **Als Tabelle sichern**. Die Datei öffnet sich in Excel oder Calc und
+  nennt je Wort: gesehen, richtig, falsch, Serie, Status und wann es wieder
+  dran ist. Das Kind erzeugt sie selbst auf seinem Gerät, es wird nichts
+  übertragen.
 
 ---
 

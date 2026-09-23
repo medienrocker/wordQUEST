@@ -75,6 +75,17 @@
     padding: 0;
 }
 
+/* Das hidden-Attribut wird vom Browser nur mit sehr schwacher Kraft gesetzt.
+   Jede eigene Regel mit display gewinnt dagegen, und das Element bleibt
+   sichtbar, obwohl es versteckt sein soll. Genau das ist hier mehrfach
+   passiert, zuletzt bei den Menuekarten: .menu-card setzt display:block,
+   also stand die Karte "Lueckensatz" auch dann im Menue, wenn die Liste gar
+   keine Beispielsaetze hat. Diese eine Regel raeumt die ganze Fehlerklasse
+   ab, weil hidden hier immer gewinnt. */
+[hidden] {
+    display: none !important;
+}
+
 body {
     font-family: 'Nunito', sans-serif;
     background: var(--bg);
@@ -753,6 +764,22 @@ nav {
 .tab-btn.active[data-tab="listen"] {
     background: var(--teal-dark);
     color: #fff;
+}
+
+/* Rueckfrage vor nicht umkehrbaren Schritten. Nutzt die Overlay-Karte,
+   bekommt aber eine ruhigere Breite und linksbuendigen Text, weil hier
+   gelesen und nicht gefeiert wird. */
+.frage-card {
+    max-width: 420px;
+    text-align: center;
+}
+
+.frage-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text);
+    margin: 10px 0 4px;
+    text-align: left;
 }
 
 /* ─── SECTIONS ─── */
