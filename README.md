@@ -14,12 +14,14 @@ In der **Vokabelansicht** kannst du einzelne Wörter für die Spiele aktivieren 
 | Lehrkräfte | [anleitung-lehrkraefte.md](docs/anleitung-lehrkraefte.md) | [wordQUEST-Lehrkraefte.pdf](docs/wordQUEST-Lehrkraefte.pdf) |
 | Admins | [anleitung-admin.md](docs/anleitung-admin.md) | [wordQUEST-Admincenter.pdf](docs/wordQUEST-Admincenter.pdf) |
 
-Die Bildschirmfotos liegen in `docs/bilder/`. Die PDFs entstehen aus den
-Markdown-Quellen im bildungssprit-Design:
+Die PDFs entstehen aus den Markdown-Quellen im bildungssprit-Design:
 
 ```bash
 python scripts/handreichung.py
 ```
+
+Die Bildschirmfotos liegen in `docs/bilder/` und werden reproduzierbar
+erzeugt, siehe [docs/BILDSCHIRMFOTOS.md](docs/BILDSCHIRMFOTOS.md).
 
 ---
 

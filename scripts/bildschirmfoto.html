@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Aufnahmehilfe</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #f0faf0; }
+  /* Feste Telefongroesse. Ein kopfloser Browser legt die aeussere Seite sonst
+     mit einer anderen Breite aus, als das Bild spaeter breit ist, und dann
+     ist am rechten Rand etwas abgeschnitten. */
+  iframe { border: 0; width: 390px; height: 844px; display: block; }
+</style>
+</head>
+<body>
+<!--
+  Hilfsseite zum Erstellen der Bilder fuer die Anleitungen in docs/.
+  Sie laedt die App in einem Rahmen, bringt sie ueber ?s=... in einen
+  bestimmten Zustand und wird dann fotografiert.
+
+  Gedacht fuer den eigenen Rechner. Das Verzeichnis scripts/ wird nicht
+  ausgeliefert. Wie die Aufnahme laeuft, steht in docs/BILDSCHIRMFOTOS.md.
+-->
+<iframe id="rahmen" src="../index.html"></iframe>
+<script>
+const p = new URLSearchParams(location.search);
+const wunsch = p.get('s') || 'start';
+
+function schlaf(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+const rahmen = document.getElementById('rahmen');
+if (p.get('w')) rahmen.style.width = p.get('w') + 'px';
+if (p.get('h')) rahmen.style.height = p.get('h') + 'px';
+
+rahmen.addEventListener('load', async () => {
+  const w = rahmen.contentWindow;
+  const d = rahmen.contentDocument;
+  await schlaf(1200);
+
+  // Immer derselbe Ausgangszustand: fester Name, sichtbarer Fortschritt.
+  // Der Browser behaelt seinen Speicher zwischen den Aufnahmen, deshalb erst
+  // leeren, sonst schleppt ein Bild den Stand des vorigen mit.
+  try { w.localStorage.clear(); } catch (e) {}
+  try {
+    w.savePlayer({ name: 'Flinker Fuchs', emoji: '\u{1F98A}' });
+    w.localStorage.setItem('wq.score', '340');
+    w.localStorage.setItem('wq.high', '520');
+    w.localStorage.setItem('wq.quote', '111011101111');
+    w.renderPlayer();
+    w.updateScoreBar();
+  } catch (e) {}
+
+  // Traege geladene Bilder kommen nie an, solange das Fenster verborgen ist.
+  const eager = () => d.querySelectorAll('img.word-visual').forEach(b => (b.loading = 'eager'));
+
+  async function liste(datei, wieviele) {
+    await w.loadWordlists([datei]);
+    await schlaf(500);
+    if (wieviele) {
+      w.getActiveVocab().slice(0, wieviele).forEach(
+        (v, i) => (i % 4 === 0 ? w.recordWrong(v._wqId) : w.recordCorrect(v._wqId))
+      );
+      w.updateProgressStrip();
+    }
+  }
+
+  if (wunsch === 'start' || wunsch === 'menue') {
+    await liste('rooms-floors.json', 9);
+    w.openTab('menu');
+  }
+
+  if (wunsch === 'listen') {
+    await liste('rooms-floors.json');
+    const knopf = d.getElementById('wordlist-picker-btn');
+    if (knopf) knopf.click();
+    await schlaf(500);
+  }
+
+  if (wunsch === 'quiz') {
+    await liste('rooms-floors.json');
+    w.openTab('quiz');
+    await schlaf(700);
+    eager();
+  }
+
+  // Rueckmeldung nach einer falschen Antwort. Solange weiterklicken, bis
+  // tatsaechlich eine falsche dabei war, sonst zeigt das Bild ein Lob.
+  if (wunsch === 'falsch') {
+    await liste('rooms-floors.json');
+    w.openTab('quiz');
+    await schlaf(700);
+    for (let versuch = 0; versuch < 12; versuch++) {
+      const knoepfe = [...d.querySelectorAll('.choice-btn')].filter(b => !b.disabled);
+      if (!knoepfe.length) break;
+      knoepfe[0].click();
+      await schlaf(350);
+      if (d.querySelector('.choice-btn.wrong-ans')) break;
+      const weiter = d.getElementById('quiz-next-top');
+      if (weiter) weiter.click();
+      await schlaf(450);
+    }
+    eager();
+    await schlaf(700);
+  }
+
+  if (wunsch === 'ueben' || wunsch === 'adaptiv' || wunsch === 'klasse'
+      || wunsch === 'punkte' || wunsch === 'punktekarte') {
+    await liste('rooms-floors.json', 9);
+    w.openTab('practice');
+    await schlaf(500);
+  }
+
+  if (wunsch === 'punkte') {
+    const knopf = d.getElementById('punkte-reset');
+    if (knopf) knopf.click();
+    await schlaf(600);
+  }
+
+  if (wunsch === 'lernstand') {
+    await liste('rooms-floors.json', 11);
+    w.openTab('practice');
+    await schlaf(400);
+    const knopf = d.getElementById('lern-qr');
+    if (knopf) knopf.click();
+    await schlaf(2500);
+  }
+
+  if (wunsch === 'vokabeln') {
+    await liste('nhg-welcome.json');
+    w.openTab('vocab');
+    await schlaf(600);
+    eager();
+    await schlaf(900);
+  }
+
+  if (wunsch === 'tafel') {
+    await schlaf(400);
+    w.openTab('tafel');
+    await schlaf(900);
+  }
+
+  if (wunsch === 'sprache') {
+    await liste('food.json');
+    const wahl = d.getElementById('bruecke-wahl');
+    if (wahl) { wahl.value = 'tr'; wahl.dispatchEvent(new Event('change')); }
+    await schlaf(300);
+    w.openTab('vocab');
+    await schlaf(700);
+    eager();
+    await schlaf(700);
+  }
+
+  // Den gewuenschten Bereich nach oben holen, sonst steht im Bild nur der Kopf.
+  const ZIELE = {
+    menue: 'section-menu',
+    quiz: 'section-quiz',
+    falsch: 'section-quiz',
+    ueben: 'section-practice',
+    lernstand: 'lern-qr-feld',
+    adaptiv: 'adaptiv-toggle',
+    klasse: 'klasse-karte',
+    punktekarte: 'punkte-reset',
+    vokabeln: 'section-vocab',
+    sprache: 'section-vocab',
+    tafel: 'section-tafel'
+  };
+  const zielId = ZIELE[wunsch];
+  if (zielId) {
+    const ziel = d.getElementById(zielId);
+    if (ziel) {
+      const kasten = ziel.closest('.card') || ziel;
+      const y = kasten.getBoundingClientRect().top + w.scrollY - 10;
+      w.scrollTo(0, Math.max(0, y));
+    }
+  }
+
+  await schlaf(700);
+  document.title = 'bereit';
+});
+</script>
+</body>
+</html>
