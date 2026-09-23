@@ -279,6 +279,13 @@ im Ergebnis restlos verschwunden.
 Datei, erlaubt sind JPEG, PNG, WebP und GIF. Eine Textdatei mit der Endung
 `.jpg` wird abgewiesen.
 
+**Einfarbig helle Hintergründe werden auf Weiss gesetzt.** Bildmodelle
+liefern selten reines Weiss, und in der App sitzen die Bilder auf weissen
+Karten, wo sich ein Farbstich als schwaches Quadrat abzeichnet. Umgesetzt wird
+nur, wenn alle vier Ecken dieselbe helle Farbe tragen. Ein randlos gefülltes
+Motiv, ein Verlauf oder ein dunkler Grund bleiben unangetastet, sonst würde
+ein Bild zerschnitten, das die Fläche bis zum Rand nutzt.
+
 **SVG ist ausgeschlossen, auch nach Typprüfung.** SVG ist ein Dokumentformat
 mit Skriptfähigkeit und würde beim direkten Aufruf im Ursprung der App laufen.
 Damit ist Punkt 6 der Liste weiter unten erledigt.

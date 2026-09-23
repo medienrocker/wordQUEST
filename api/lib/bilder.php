@@ -16,6 +16,7 @@ const WQ_BILD_MAX_BYTES   = 6291456;   // 6 MB Eingang
 const WQ_BILD_MAX_PIXEL   = 40000000;  // 40 Megapixel, gegen Dekompressionsbomben
 const WQ_BILD_KANTE       = 256;       // Zielkante, passend zur Darstellung
 const WQ_BILD_VERZEICHNIS = 'img/auto';
+const WQ_BILD_HG_TOLERANZ = 18;        // je Kanal, beim Weissen des Hintergrunds
 
 /** Erlaubte Eingangsformate, erkannt am Inhalt, nicht an der Endung. */
 function wq_bild_typen(): array
@@ -92,6 +93,9 @@ function wq_bild_aufnehmen(array $datei, string $wunschname): array
         imagefilledrectangle($ziel, 0, 0, $neuBreite, $neuHoehe, $weiss);
         imagecopyresampled($ziel, $quelle, 0, 0, 0, 0, $neuBreite, $neuHoehe, $breite, $hoehe);
 
+        // Erst nach dem Verkleinern, dann sind es nur noch wenige Bildpunkte.
+        wq_bild_hintergrund_weissen($ziel);
+
         $verzeichnis = wq_bild_verzeichnis();
         if (!is_dir($verzeichnis) && !@mkdir($verzeichnis, 0775, true) && !is_dir($verzeichnis)) {
             return ['ok' => false, 'fehler' => 'Das Bildverzeichnis ließ sich nicht anlegen: ' . $verzeichnis];
@@ -116,6 +120,74 @@ function wq_bild_aufnehmen(array $datei, string $wunschname): array
         }
         imagedestroy($quelle);
     }
+}
+
+/**
+ * Setzt einen einfarbig hellen Hintergrund auf Weiss.
+ *
+ * Bildmodelle liefern selten reines Weiss, sondern einen leichten Farbstich,
+ * etwa ein helles Grün. In der App sitzen die Bilder auf weissen Karten, und
+ * dann zeichnet sich ein schwach sichtbares Quadrat ab. Bei mehreren Bildern
+ * untereinander in der Vokabelliste fällt das auf.
+ *
+ * Bewusst nur bei einem **einheitlichen und hellen** Rand: Die vier Ecken
+ * müssen dieselbe Farbe tragen. Ein Bild, das randlos gefüllt ist oder einen
+ * dunklen Grund hat, bleibt unangetastet. Sonst würde ein Motiv zerschnitten,
+ * das die Fläche bis zum Rand nutzt.
+ *
+ * @return int Wie viele Bildpunkte geändert wurden.
+ */
+function wq_bild_hintergrund_weissen(GdImage $bild): int
+{
+    $breite = imagesx($bild);
+    $hoehe  = imagesy($bild);
+    if ($breite < 8 || $hoehe < 8) {
+        return 0;
+    }
+
+    $ecke = static function (GdImage $b, int $x, int $y): array {
+        $f = imagecolorsforindex($b, imagecolorat($b, $x, $y));
+        return [$f['red'], $f['green'], $f['blue']];
+    };
+    $ecken = [
+        $ecke($bild, 1, 1),
+        $ecke($bild, $breite - 2, 1),
+        $ecke($bild, 1, $hoehe - 2),
+        $ecke($bild, $breite - 2, $hoehe - 2),
+    ];
+
+    // Alle vier Ecken müssen nah beieinander liegen.
+    foreach ($ecken as $e) {
+        foreach ([0, 1, 2] as $k) {
+            if (abs($e[$k] - $ecken[0][$k]) > WQ_BILD_HG_TOLERANZ) {
+                return 0;
+            }
+        }
+    }
+    [$r, $g, $b] = $ecken[0];
+
+    // Nur helle Hintergründe, und nur wenn sie nicht schon weiss sind.
+    if (min($r, $g, $b) < 225) {
+        return 0;
+    }
+    if ($r >= 252 && $g >= 252 && $b >= 252) {
+        return 0;
+    }
+
+    $weiss = imagecolorallocate($bild, 255, 255, 255);
+    $geaendert = 0;
+    for ($y = 0; $y < $hoehe; $y++) {
+        for ($x = 0; $x < $breite; $x++) {
+            $f = imagecolorsforindex($bild, imagecolorat($bild, $x, $y));
+            if (abs($f['red'] - $r) <= WQ_BILD_HG_TOLERANZ
+                && abs($f['green'] - $g) <= WQ_BILD_HG_TOLERANZ
+                && abs($f['blue'] - $b) <= WQ_BILD_HG_TOLERANZ) {
+                imagesetpixel($bild, $x, $y, $weiss);
+                $geaendert++;
+            }
+        }
+    }
+    return $geaendert;
 }
 
 /** Sicherer, eindeutiger Dateiname aus dem englischen Wort. */
