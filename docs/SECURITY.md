@@ -36,6 +36,26 @@ Unter Windows PowerShell 5.1 gibt es `-SkipHttpErrorCheck` nicht, dort:
 
 canvas-confetti und animate.css werden von fremden CDNs geladen. Ohne Integritätsprüfung führt ein kompromittiertes CDN beliebigen Code in der App-Origin aus. Beide Einbindungen haben jetzt `integrity`, `crossorigin` und `referrerpolicy`. `celebrate()` prüft vor dem Aufruf, ob die Bibliothek überhaupt geladen wurde, damit ein fehlgeschlagener Integritätscheck das Spiel nicht bricht.
 
+### Lernstand mitnehmen
+
+**Kein Server beteiligt.** Die Übergabe läuft über eine Datei oder über den
+Adressteil hinter der Raute. Der wird nie an einen Server geschickt, der
+Lernstand bleibt also auf den beiden Geräten.
+
+**Alles Eingelesene wird geprüft, bevor etwas überschrieben wird.** Formatmarke,
+Wort-Kennungen gegen `^w[a-z0-9]{1,12}$`, jeder Wert auf eine Zahl, die Anzahl
+gegen eine Obergrenze von 3000. Geprüft mit Nicht-Objekten, falscher
+Formatmarke, `__proto__` als Kennung, `<script>` als Kennung, unlesbaren Werten
+und 3100 Einträgen: alles abgewiesen, Boxwerte werden auf 1 bis 5 begrenzt.
+
+**Überschrieben wird erst nach Rückfrage**, und die nennt Zahlen statt nur zu
+warnen: wie viele Wörter kommen, von wann, wie viele bisher auf dem Gerät sind.
+
+**Die QR-Bibliothek wird erst bei Bedarf geladen**, mit Integritätsprüfung,
+`crossorigin` und `referrerpolicy`, wie die übrigen CDN-Einbindungen. Beim
+Nachrüsten ist aufgefallen, dass `tesseract.js` auf den beiden Fotoseiten noch
+ohne Integritätsprüfung eingebunden war. Das ist jetzt auch dort ergänzt.
+
 ### Service Worker und Update-Hinweis
 
 Vorher cache-first ohne Revalidierung und mit unverändertem Cache-Namen. Wer `index.html` änderte, ohne `sw.js` anzufassen, lieferte an alle installierten Geräte dauerhaft die alte Datei aus. Ein behobener Fehler hätte die Schulgeräte nie erreicht.

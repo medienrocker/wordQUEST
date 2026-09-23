@@ -2841,3 +2841,60 @@ body.overlay-offen {
     outline: 3px solid var(--teal-dark);
     outline-offset: 2px;
 }
+
+/* ═══════════════ LERNSTAND MITNEHMEN ═══════════════ */
+.lern-reihe {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 12px 0 6px;
+}
+
+/* Das Dateifeld selbst ist nie hübsch und auf dem Telefon schwer zu treffen.
+   Bedient wird deshalb die Beschriftung, die wie ein Knopf aussieht. */
+#lern-datei {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.lern-dateiwahl {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+#lern-datei:focus-visible + .lern-dateiwahl,
+.lern-dateiwahl:focus-within {
+    outline: 3px solid var(--teal-dark);
+    outline-offset: 2px;
+}
+
+.lern-qr-bild {
+    max-width: 280px;
+    margin: 10px auto 0;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #d5e3d5;
+    border-radius: var(--r-card);
+}
+
+.lern-qr-bild svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.lern-warnung {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-left-width: 5px;
+    border-radius: var(--r-card);
+    color: #6d4c00;
+    font-size: 0.92rem;
+}

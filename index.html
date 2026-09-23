@@ -223,6 +223,38 @@
     </div>
     <p class="practice-hint" id="practice-hint" role="status" aria-live="polite"></p>
   </div>
+  <div class="card practice-card" style="margin-top:14px;">
+    <h3 class="karten-titel">🎒 Lernstand mitnehmen</h3>
+    <p class="practice-privacy">
+      Dein Lernstand liegt nur auf diesem Gerät. Damit er auf ein anderes
+      kommt, etwa vom Schultablet auf dein Handy, nimm ihn hier mit.
+    </p>
+
+    <div class="lern-reihe">
+      <button type="button" class="btn btn-green" id="lern-sichern">💾 Als Datei sichern</button>
+      <label class="btn btn-grey lern-dateiwahl" for="lern-datei">📂 Datei laden</label>
+      <input type="file" id="lern-datei" accept="application/json,.json" />
+      <button type="button" class="btn btn-grey" id="lern-qr">📱 QR-Code zeigen</button>
+    </div>
+
+    <div id="lern-qr-feld" hidden>
+      <p class="practice-privacy">
+        Mit der Kamera des anderen Geräts scannen. Es öffnet wordQUEST und
+        fragt, ob der Lernstand übernommen werden soll.
+      </p>
+      <div class="lern-qr-bild" id="lern-qr-bild"></div>
+    </div>
+
+    <div id="lern-uebernahme" hidden>
+      <p class="lern-warnung" id="lern-warnung"></p>
+      <div class="lern-reihe">
+        <button type="button" class="btn btn-green" id="lern-jetzt">Ja, übernehmen</button>
+        <button type="button" class="btn btn-grey" id="lern-abbruch">Abbrechen</button>
+      </div>
+    </div>
+
+    <p class="practice-privacy" id="lern-stand" role="status"></p>
+  </div>
   <div class="card practice-card" id="bruecke-karte" style="margin-top:14px;" hidden>
     <h3 class="karten-titel">🌍 Sprache von zu Hause</h3>
     <label class="klasse-label" for="bruecke-wahl">Zusätzlich anzeigen</label>
@@ -1293,6 +1325,307 @@ function statsSenden() {
     }).catch(() => {});
   } catch {
     /* Statistik ist Beiwerk, ein Fehler hier darf nichts beeinflussen. */
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LERNSTAND MITNEHMEN (Epic 10, Punkt 6)
+
+   Der Lernstand liegt bewusst nur auf dem Gerät, ohne Konto und ohne Server.
+   Genau das macht den Wechsel zwischen Schultablet und eigenem Handy zum
+   Problem: Bisher fing man dort bei null an.
+
+   Zwei Wege, und die Reihenfolge ist Absicht:
+
+   1. **Datei.** Trägt jeden Umfang, braucht kein Netz, keine Berechtigung und
+      keine fremde Bibliothek. Das ist der verlässliche Weg.
+   2. **QR-Code.** Bequemer, aber begrenzt. Gemessen: Ein QR-Code fasst
+      höchstens 2953 Byte, und ab etwa 100 Modulen Kantenlänge liest ihn eine
+      ältere Handykamera kaum noch vom Bildschirm ab. Deshalb steckt dort nur
+      der Stand der gerade gewählten Listen, und passt auch der nicht, sagt
+      die App das und verweist auf die Datei.
+
+   Der Code steht im Adressteil hinter der Raute. Der wird nie an einen Server
+   geschickt, der Lernstand bleibt also auch auf diesem Weg auf den beiden
+   Geräten.
+═══════════════════════════════════════════════ */
+const LERN_FORMAT = 1;
+const LERN_MAX_EINTRAEGE = 3000;
+const LERN_QR_MAX_MODULE = 97;          // entspricht QR-Version 20
+const LERN_QR_BIB = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+const LERN_QR_HASH = 'sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k';
+
+let lernUebernahmeDaten = null;
+
+function lernMeldung(text, art) {
+  const el = document.getElementById('lern-stand');
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'practice-privacy' + (art ? ' ' + art : '');
+}
+
+/* Ein Eintrag wird zu "box.faelligAmTag.gesehen.richtig.falsch.serie.knackpunkt".
+   Tage statt Millisekunden sparen rund ein Drittel der Länge. */
+function lernEintragKurz(e) {
+  return [
+    clampBox(e.box),
+    Math.round((Number(e.due) || 0) / 86400000),
+    Number(e.seen) || 0,
+    Number(e.correct) || 0,
+    Number(e.wrong) || 0,
+    Number(e.streak) || 0,
+    e.leech ? 1 : 0
+  ].join('.');
+}
+
+function lernEintragLang(kurz) {
+  const t = String(kurz).split('.').map(Number);
+  if (t.length < 7 || t.some(n => !Number.isFinite(n))) return null;
+  return {
+    box: clampBox(t[0]), due: t[1] * 86400000, seen: t[2], correct: t[3],
+    wrong: t[4], streak: t[5], lastSeen: Date.now(), leech: t[6] === 1
+  };
+}
+
+/** Sammelt den Lernstand. `nurIds` beschränkt ihn, das nutzt der QR-Weg. */
+function lernstandSammeln(nurIds) {
+  const srs = loadSrs();
+  const kurz = {};
+  Object.keys(srs).forEach(id => {
+    if (nurIds && !nurIds.has(id)) return;
+    kurz[id] = lernEintragKurz(srs[id]);
+  });
+  const aus = [...getDisabledSet()].filter(id => !nurIds || nurIds.has(id));
+  const spieler = getPlayer();
+  return {
+    wq: LERN_FORMAT,
+    am: new Date().toISOString().slice(0, 10),
+    spieler: { name: spieler.name, emoji: spieler.emoji },
+    punkte: Number(localStorage.getItem('wq.score')) || 0,
+    best: Number(localStorage.getItem('wq.high')) || 0,
+    listen: (CURRENT_WORDLIST && CURRENT_WORDLIST.files) || [],
+    srs: kurz,
+    aus
+  };
+}
+
+/** Prüft einen eingelesenen Lernstand, bevor irgendetwas überschrieben wird. */
+function lernstandPruefen(obj) {
+  if (!obj || typeof obj !== 'object' || obj.wq !== LERN_FORMAT) {
+    return { ok: false, fehler: 'Das ist kein wordQUEST-Lernstand.' };
+  }
+  if (!obj.srs || typeof obj.srs !== 'object') {
+    return { ok: false, fehler: 'Darin stehen keine gelernten Wörter.' };
+  }
+  const ids = Object.keys(obj.srs);
+  if (ids.length > LERN_MAX_EINTRAEGE) {
+    return { ok: false, fehler: 'Der Lernstand ist unerwartet groß.' };
+  }
+  const srs = {};
+  let verworfen = 0;
+  ids.forEach(id => {
+    if (!/^w[a-z0-9]{1,12}$/.test(id)) { verworfen++; return; }
+    const e = lernEintragLang(obj.srs[id]);
+    if (!e) { verworfen++; return; }
+    srs[id] = e;
+  });
+  if (!Object.keys(srs).length) {
+    return { ok: false, fehler: 'Kein einziger Eintrag war lesbar.' };
+  }
+  return { ok: true, srs, verworfen, roh: obj };
+}
+
+/** Schreibt einen geprüften Lernstand auf dieses Gerät. */
+function lernstandAnwenden(geprueft) {
+  const obj = geprueft.roh;
+  saveSrs(geprueft.srs);
+
+  if (Array.isArray(obj.aus)) {
+    const sauber = obj.aus.filter(id => /^w[a-z0-9]{1,12}$/.test(id));
+    try { localStorage.setItem('wq.disabledIds', JSON.stringify(sauber)); } catch {}
+  }
+  if (obj.spieler && typeof obj.spieler.name === 'string' && typeof obj.spieler.emoji === 'string') {
+    savePlayer({ name: obj.spieler.name.slice(0, 60), emoji: obj.spieler.emoji.slice(0, 8) });
+  }
+  const zahl = (v) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.floor(Number(v)) : 0);
+  try {
+    localStorage.setItem('wq.score', String(zahl(obj.punkte)));
+    localStorage.setItem('wq.high', String(Math.max(zahl(obj.best), zahl(obj.punkte))));
+  } catch {}
+
+  renderPlayer();
+  updateProgressStrip();
+  updatePracticePanel();
+  if (LAST_TAB === 'vocab') renderVocab(VOCAB_FILTER);
+}
+
+/** Zeigt, was eine Übernahme bedeuten würde, und wartet auf Zustimmung. */
+function lernUebernahmeAnbieten(geprueft, herkunft) {
+  lernUebernahmeDaten = geprueft;
+  const jetzt = Object.keys(loadSrs()).length;
+  const neu = Object.keys(geprueft.srs).length;
+  const el = document.getElementById('lern-warnung');
+  if (el) {
+    el.textContent = 'Lernstand ' + herkunft + ': ' + neu + (neu === 1 ? ' Wort' : ' Wörter')
+      + ', Stand vom ' + (geprueft.roh.am || 'unbekannt') + '. Auf diesem Gerät sind es bisher '
+      + jetzt + '. Beim Übernehmen wird der Stand dieses Geräts ersetzt.';
+  }
+  const feld = document.getElementById('lern-uebernahme');
+  if (feld) feld.hidden = false;
+  lernMeldung('');
+}
+
+function lernUebernahmeSchliessen() {
+  lernUebernahmeDaten = null;
+  const feld = document.getElementById('lern-uebernahme');
+  if (feld) feld.hidden = true;
+}
+
+/* ─── Datei ─── */
+function lernstandSichern() {
+  try {
+    const daten = JSON.stringify(lernstandSammeln(), null, 1);
+    const blob = new Blob([daten], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'wordquest-lernstand-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    lernMeldung('Gesichert. Die Datei liegt bei deinen Downloads.');
+  } catch {
+    lernMeldung('Das Sichern hat nicht geklappt.', 'warnung');
+  }
+}
+
+function lernstandAusDatei(datei) {
+  if (!datei) return;
+  const leser = new FileReader();
+  leser.onerror = () => lernMeldung('Die Datei ließ sich nicht lesen.', 'warnung');
+  leser.onload = () => {
+    let obj = null;
+    try { obj = JSON.parse(String(leser.result)); } catch {}
+    const geprueft = lernstandPruefen(obj);
+    if (!geprueft.ok) { lernMeldung(geprueft.fehler, 'warnung'); return; }
+    lernUebernahmeAnbieten(geprueft, 'aus der Datei');
+  };
+  leser.readAsText(datei);
+}
+
+/* ─── QR-Code ─── */
+function lernB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function lernB64Zurueck(text) {
+  const roh = atob(text.replace(/-/g, '+').replace(/_/g, '/'));
+  const bytes = new Uint8Array(roh.length);
+  for (let i = 0; i < roh.length; i++) bytes[i] = roh.charCodeAt(i);
+  return bytes;
+}
+
+async function lernPacken(text) {
+  const bytes = new TextEncoder().encode(text);
+  if (typeof CompressionStream === 'function') {
+    try {
+      const strom = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+      const puffer = await new Response(strom).arrayBuffer();
+      return 'd' + lernB64(new Uint8Array(puffer));
+    } catch { /* unten ungepackt weiter */ }
+  }
+  return 'r' + lernB64(bytes);
+}
+
+async function lernEntpacken(text) {
+  const art = text.slice(0, 1);
+  const bytes = lernB64Zurueck(text.slice(1));
+  if (art === 'd') {
+    const strom = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    const puffer = await new Response(strom).arrayBuffer();
+    return new TextDecoder().decode(puffer);
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+/* Die QR-Bibliothek wird erst beim Antippen geholt. Ohne Netz bleibt der
+   Dateiweg, und die App startet dadurch keine Sekunde später. */
+let lernQrBib = null;
+function lernQrBibLaden() {
+  if (lernQrBib) return lernQrBib;
+  lernQrBib = new Promise((fertig, fehlgeschlagen) => {
+    if (typeof qrcode === 'function') { fertig(qrcode); return; }
+    const s = document.createElement('script');
+    s.src = LERN_QR_BIB;
+    // Wie bei den uebrigen CDN-Einbindungen: Ohne Integritaetspruefung
+    // fuehrt ein kompromittiertes CDN beliebigen Code im Ursprung der App aus.
+    s.integrity = LERN_QR_HASH;
+    s.crossOrigin = 'anonymous';
+    s.referrerPolicy = 'no-referrer';
+    s.onload = () => (typeof qrcode === 'function' ? fertig(qrcode) : fehlgeschlagen(new Error('nicht geladen')));
+    s.onerror = () => fehlgeschlagen(new Error('nicht erreichbar'));
+    document.head.appendChild(s);
+  }).catch(e => { lernQrBib = null; throw e; });
+  return lernQrBib;
+}
+
+async function lernstandQr() {
+  const feld = document.getElementById('lern-qr-feld');
+  const bild = document.getElementById('lern-qr-bild');
+  if (!feld || !bild) return;
+
+  if (!feld.hidden) { feld.hidden = true; bild.innerHTML = ''; lernMeldung(''); return; }
+  if (istOffline()) {
+    lernMeldung('Für den QR-Code braucht die App einmal Internet. Die Datei geht immer.', 'warnung');
+    return;
+  }
+
+  lernMeldung('QR-Code wird gebaut …');
+  try {
+    // Nur die Wörter der gerade gewählten Listen, sonst wird es zu viel.
+    const ids = new Set(VOCAB.map(v => v._wqId));
+    const stand = lernstandSammeln(ids);
+    const nutzlast = await lernPacken(JSON.stringify(stand));
+    const adresse = location.origin + location.pathname + '#lernstand=' + nutzlast;
+
+    const qrcodeFn = await lernQrBibLaden();
+    const q = qrcodeFn(0, 'L');
+    q.addData(adresse);
+    q.make();
+
+    if (q.getModuleCount() > LERN_QR_MAX_MODULE) {
+      feld.hidden = true;
+      bild.innerHTML = '';
+      lernMeldung('Das sind zu viele Wörter für einen QR-Code, er wäre nicht mehr zu scannen. '
+        + 'Nimm bitte die Datei, die trägt jeden Umfang.', 'warnung');
+      return;
+    }
+    bild.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+    feld.hidden = false;
+    const n = Object.keys(stand.srs).length;
+    lernMeldung(n + (n === 1 ? ' Wort steckt' : ' Wörter stecken') + ' in diesem Code.');
+  } catch {
+    lernMeldung('Der QR-Code ließ sich nicht erzeugen. Nimm bitte die Datei.', 'warnung');
+  }
+}
+
+/** Beim Start prüfen, ob hinter der Raute ein Lernstand steht. */
+async function lernstandAusAdresse() {
+  const treffer = /[#&]lernstand=([A-Za-z0-9_-]+)/.exec(location.hash || '');
+  if (!treffer) return;
+  // Sofort aus der Adresse nehmen, damit er nicht im Verlauf stehen bleibt.
+  try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+  try {
+    const text = await lernEntpacken(treffer[1]);
+    const geprueft = lernstandPruefen(JSON.parse(text));
+    if (!geprueft.ok) { lernMeldung(geprueft.fehler, 'warnung'); return; }
+    openTab('practice');
+    lernUebernahmeAnbieten(geprueft, 'vom QR-Code');
+  } catch {
+    lernMeldung('Der QR-Code ließ sich nicht lesen.', 'warnung');
   }
 }
 
@@ -3956,6 +4289,28 @@ syncTafelKnopf();
 document.getElementById('tafel-toggle')?.addEventListener('change', e => tafelErlaubnisSetzen(e.target.checked));
 ladeTafel();
 syncNetzHinweis();
+
+/* Lernstand mitnehmen. */
+document.getElementById('lern-sichern')?.addEventListener('click', lernstandSichern);
+document.getElementById('lern-datei')?.addEventListener('change', (e) => {
+  lernstandAusDatei(e.target.files && e.target.files[0]);
+  e.target.value = '';
+});
+document.getElementById('lern-qr')?.addEventListener('click', lernstandQr);
+document.getElementById('lern-abbruch')?.addEventListener('click', () => {
+  lernUebernahmeSchliessen();
+  lernMeldung('Nichts geändert.');
+});
+document.getElementById('lern-jetzt')?.addEventListener('click', () => {
+  if (!lernUebernahmeDaten) return;
+  const anzahl = Object.keys(lernUebernahmeDaten.srs).length;
+  const verworfen = lernUebernahmeDaten.verworfen;
+  lernstandAnwenden(lernUebernahmeDaten);
+  lernUebernahmeSchliessen();
+  lernMeldung(anzahl + ' Wörter übernommen.'
+    + (verworfen ? ' ' + verworfen + ' Einträge waren unlesbar und wurden übergangen.' : ''));
+});
+lernstandAusAdresse();
 
 /* Lesehilfe zuerst, damit die Seite nicht erst gesetzt und dann umspringt. */
 syncLesehilfe();

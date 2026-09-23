@@ -133,6 +133,7 @@ require __DIR__ . '/kopf.php';
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"
+        integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="../ocr.js"></script>
 <?php require __DIR__ . '/fuss.php'; ?>

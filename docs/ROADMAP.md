@@ -616,7 +616,15 @@ Ideensammlung, noch keine Tickets. Sortiert nach erwartetem Nutzen.
    Gefüllt sind die vier konkreten Listen mit Türkisch, Arabisch und Ukrainisch, also 60 Wörter mal drei Sprachen. **Diese Übersetzungen sind nicht von Muttersprachlerinnen geprüft** und gehören vor dem Einsatz durchgesehen; der Editor ist genau dafür da. Bei den Stockwerken steht bewusst keine wörtliche Übersetzung: Im Türkischen und Ukrainischen zählt das Erdgeschoss selbst als erster Stock.
 
    Nicht gefüllt sind die Funktionswörter der Lehrwerkslisten. Für „so" oder „of" gibt es keine Eins-zu-eins-Entsprechung, da trägt nur der Beispielsatz.
-6. **Lernstand mitnehmen ohne Konto.** Export und Import des Fortschritts als Datei oder QR-Code, damit ein Kind zwischen Schultablet und Handy wechseln kann.
+6. ~~**Lernstand mitnehmen ohne Konto.**~~ **Umgesetzt**, unter **Üben**.
+
+   **Datei** trägt jeden Umfang, braucht kein Netz, keine Berechtigung und keine fremde Bibliothek. Das ist der verlässliche Weg.
+
+   **QR-Code** ist bequemer, aber begrenzt, und das wurde vorher gemessen statt geschätzt: Ein QR-Code fasst höchstens 2953 Byte, ab etwa 100 Modulen Kantenlänge liest ihn eine ältere Handykamera kaum noch vom Bildschirm. Deshalb steckt dort nur der Stand der gerade gewählten Listen, und die App prüft die Modulzahl, bevor sie den Code zeigt. Gemessen mit echten Listen: 14 Wörter ergeben 69 Module, 48 Wörter 85, 91 Wörter 105. Über der Grenze verweist die App auf die Datei, statt einen Code zu zeigen, der sich nicht scannen lässt.
+
+   **Kein Server beteiligt.** Der Code steht hinter der Raute in der Adresse, und die wird nie an einen Server geschickt. Gelesen wird er mit der normalen Kamera-App des anderen Geräts, wordQUEST braucht dafür keine Kameraberechtigung.
+
+   **Vor dem Überschreiben wird gefragt**, mit Zahlen: wie viele Wörter kommen, von wann, wie viele sind bisher auf dem Gerät. Eingelesenes wird geprüft, Wort-Kennungen gegen ein Muster, Werte auf Plausibilität, die Anzahl gegen eine Obergrenze.
 7. ~~**Barrierefreiheitspaket.**~~ **Umgesetzt.**
 
    **Das Hauptmenü war mit der Tastatur nicht bedienbar.** Die neun Spielkarten waren `div`-Elemente mit `onclick`: mit der Maus bedienbar, mit der Tastatur nicht, und ein Screenreader kündigte sie gar nicht erst als bedienbar an. Damit war der Einstieg in jedes Spiel für einen Teil der Kinder verschlossen. Jetzt sind es echte Schaltflächen.
