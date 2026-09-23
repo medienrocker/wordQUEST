@@ -6,6 +6,18 @@ In der **Vokabelansicht** kannst du einzelne Wörter für die Spiele aktivieren 
 
 ---
 
+## Anleitungen
+
+| Für wen | Datei |
+|---|---|
+| Kinder | [docs/anleitung-kinder.md](docs/anleitung-kinder.md) |
+| Lehrkräfte | [docs/anleitung-lehrkraefte.md](docs/anleitung-lehrkraefte.md) |
+| Admins | [docs/anleitung-admin.md](docs/anleitung-admin.md) |
+
+Die Bildschirmfotos dazu liegen in `docs/bilder/`.
+
+---
+
 ## Deployment (wordquest.bildungssprit.de)
 
 Der Deploy läuft über **git push lokal, git pull auf dem Server**. Kein FTP.

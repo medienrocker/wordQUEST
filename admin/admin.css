@@ -127,6 +127,16 @@ h2 { font-size: 1.1rem; margin-bottom: 10px; }
 .btn:hover { background: #439a47; }
 .btn:focus-visible { outline: 3px solid var(--dunkel); outline-offset: 2px; }
 
+/* Ein gesperrter Knopf sah bisher aus wie ein bereiter. Wer klickte, bekam
+   keine Reaktion und keine Erklaerung. Graustufe statt nur Deckkraft, damit
+   der Text lesbar bleibt. */
+.btn:disabled,
+.btn:disabled:hover {
+    background: #b9c4b9;
+    color: #3a423a;
+    cursor: not-allowed;
+}
+
 .meldung {
     padding: 10px 12px; border-radius: var(--radius); font-size: .92rem;
 }
@@ -231,6 +241,12 @@ a.klein-link:focus-visible {
 }
 
 /* ─── Fotoseite ─── */
+/* Ohne diese Zeile gewinnt display:block gegen das hidden-Attribut, und vor
+   der Fotoauswahl stand ein leerer Rahmen auf der Seite. */
+.foto-leinwand[hidden] {
+    display: none;
+}
+
 .foto-leinwand {
     display: block;
     max-width: 100%;

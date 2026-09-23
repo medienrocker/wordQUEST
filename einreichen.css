@@ -132,6 +132,12 @@ th { font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; color:
     border-radius: 4px;
 }
 
+/* Ohne diese Zeile gewinnt display:block gegen das hidden-Attribut, und vor
+   der Fotoauswahl stand ein leerer Rahmen auf der Seite. */
+.foto-leinwand[hidden] {
+    display: none;
+}
+
 .foto-leinwand {
     display: block;
     max-width: 100%;
@@ -187,7 +193,13 @@ a:focus-visible {
 }
 
 .knopf:hover { background: #1b5e20; }
-.knopf[disabled] { background: #9db29d; cursor: not-allowed; }
+/* Weiss auf #9db29d kam nur auf 2,20:1. Dunkle Schrift auf hellem Grau
+   erreicht 5,77:1 und sagt zugleich deutlicher, dass hier nichts geht. */
+.knopf[disabled], .knopf[disabled]:hover {
+    background: #b9c4b9;
+    color: #3a423a;
+    cursor: not-allowed;
+}
 .knopf.schmal { padding: 11px 16px; font-size: .95rem; }
 .knopf.gross { font-size: 1.1rem; padding: 15px 28px; width: 100%; }
 

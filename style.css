@@ -711,8 +711,12 @@ nav {
     background: var(--teal-dark);
 }
 
+/* Die Farbregel weiter oben setzt weisse Schrift, die Reiterregel darunter
+   wieder #555. Gleiche Spezifitaet, spaetere Regel gewinnt, also stand hier
+   Grau auf Orange mit 1,49:1. Deshalb die Schriftfarbe erneut setzen. */
 .tab-btn.active[data-tab="tafel"] {
     background: var(--orange-dark);
+    color: #fff;
 }
 
 .tab-btn.active[data-tab="menu"] {
@@ -735,9 +739,10 @@ nav {
     background: var(--red-dark);
 }
 
+/* Dunkelgrau auf dem dunklen Gelb kam nur auf 2,28:1. Weiss erreicht 5,33:1. */
 .tab-btn.active[data-tab="vocab"] {
     background: var(--yellow-dark);
-    color: #333;
+    color: #fff;
 }
 
 .tab-btn.active[data-tab="practice"] {
